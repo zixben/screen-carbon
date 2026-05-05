@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating</title>
+    <!-- font awesome -->
+    <link rel="stylesheet" href="assets/css/all.min.css"/>
+    <!-- bootstraph -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+    <!-- swiper js -->
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css"/>
+    <!-- Fancy Box -->
+    <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css"/>
+    <!-- Select -->
+    <link rel="stylesheet" href="assets/css/select2.min.css"/>
+    <!-- User's CSS Here -->
+    <link rel="stylesheet" href="assets/css/style.css"/>
+    <link rel="stylesheet" href="assets/css/rate.css"/>
+
+
+<body>
+<!-- Header Start  -->
+<header class="header header-sticky">
+    <nav class="nav">
+        <div class="container">
+            <!-- Header Wrap Start  -->
+            <div class="header__wrapper">
+                <div class="header__logo">
+                    <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/> </a>
+                </div>
+
+                <div class="header__menu">
+                    <ul class="main__menu">
+                        <li><a href="index.html">Home</a></li>
+                        <li class="active"><a href="movies.html">Movies</a></li>
+                        <li><a href="tv-shows.html">Tv Shows</a></li>
+
+                        <li class="has__dropdown">
+                            <a href="#">User Center</a>
+                            <!-- Dropdown -->
+                            <ul class="sub__menu">
+                                <li><a href="login.html">Login</a></li> <!--登录后变为logout-->
+                                <li><a href="signup.html">Register</a></li>
+                            </ul>
+                            <!-- Dropdown -->
+                        </li>
+                        <li>
+                            <a href="about-us.html">About Us</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="header__meta">
+                    <ul class="meta__item">
+                        <!--这里加个search bar-->
+                    </ul>
+                </div>
+            </div>
+            <!-- Header Wrap End  -->
+        </div>
+    </nav>
+</header>
+<!-- Header End -->
+
+<!-- pageBody start -->
+<div class="pageBody">
+    <div class="movieInfo">
+        <div class="image " id="poster_path"><img src="#" alt="img"></div>
+        <div class="movieTitle">
+            <h4 style="font-size: 46px;line-height: 70px;font-weight: 800;text-align: center;">You are now rating
+                for:<br/>
+                <span id="title">XXXXXX</span>
+            </h4>
+        </div>
+
+        <h4 style="font-weight: bold; clear: both;">Introduction for the rate</h4>
+        <p style="clear: both;">To rate its ‘Green’ credentials, all you need to do is to respond to 15 questions about
+            this movie. You will be asked how strongly you ‘Agree’ or ‘Disagree’ with fifteen statements about what you
+            have seen and heard.</p>
+        <p style="font-weight: bold">Once you have completed the questionnaire simply click ‘Finish’ and the programme
+            will calculate your rating for the film.</p>
+        <p>‘Your Rating’ with then be shown next to the ‘Average Rating’ of all other contributors.</p>
+    </div>
+    <hr>
+    <div class="movieQuestion">
+        <h2>Question:</h2>
+        <div class="questionGroup1">
+            <div style="background-color: #89c7ee30">
+                <h3><span style="font-weight: bold">AWARENESS</span> – of the natural world, climate change and modern
+                    lifestyles</h3>
+                <h3>This section features a number of statements for you to agree or disagree with.</h3>
+            </div>
+            <form class="questionGroup1Form1">
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q1: The film shows that the natural world
+                        exists and is a valuable resource.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question1" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question1" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question1" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question1" value="4">
+                            <span>Disgree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question1" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q2: The film DOES NOT promote an excessive and
+                        wasteful lifestyle.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question2" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question2" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question2" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question2" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question2" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q3: Characters are shown making ethical daily
+                        climate choices in relation to reducing waste, sustainable transportation, heating, and other
+                        energy choices.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question3" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question3" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question3" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question3" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question3" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q4: Characters are shown making ethical food
+                        and product choices.</label>
+                    <p style="font-style: italic">(e.g., choosing a vegetarian option over a burger, not buying a
+                        conflict diamond, etc.)</p>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question4" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question4" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question4" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question4" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question4" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q5: The film depicts more POSITIVE
+                        environmental behaviours than negative ones.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question5" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question5" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question5" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question5" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question5" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="questionGroup2">
+            <div style="background-color: #89c7ee30">
+                <h3><span style="font-weight: bold">UNDERSTANDING</span> – of the wider issues around climate change
+                </h3>
+                <h3>This section features a number of statements for you to agree or disagree with.</h3>
+            </div>
+            <form class="questionGroup2Form2">
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q6: Characters talk specifically about the
+                        climate emergency, global warming, pollution, waste, and other environmental problems.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question6" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question6" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question6" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question6" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question6" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q7: The film specifically shows that climate
+                        change or environmental degradation have negative impacts on the characters’ lives.</label>
+                    <p style="font-style: italic">(These impacts could be drought, deforestation, damage to habitats and
+                        bio-diversity, extreme weather events, extinction of animals, flooding, reduced natural
+                        resources, environmental degradation, infertile land, new infections, global warming air, water
+                        or soil pollution)</p>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question7" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question7" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question7" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question7" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question7" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q8: The film shows that the negative impacts
+                        of climate change or environmental mismanagement are not shared equally between social groups,
+                        regions, or countries.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question8" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question8" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question8" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question8" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question8" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q9: The film DOES NOT assume that technology
+                        will magically solve all our energy, climate, and resources problems, and that the transition to
+                        carbon neutrality and net zero will be a painless process.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question9" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question9" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question9" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question9" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question9" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q10: The film is directly critical of
+                        unsustainable, wasteful, and polluting activities and people’s inaction in addressing these
+                        problems.</label>
+                    <p style="font-style: italic">(e.g., industrial activities, dumping waste, plastic use, fossil fuel
+                        use, rapid urbanisation, overpopulation, agricultural waste, deforestation, overfishing, reduced
+                        biodiversity)</p>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question10" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question10" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question10" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question10" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question10" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="questionGroup3">
+            <div style="background-color: #89c7ee30">
+                <h3><span style="font-weight: bold">TAKING RESPONSIBILITY</span> – the screen narrative shows characters
+                    taking action to address climate change or other environmental issues.</h3>
+                <h3>This section features a number of statements for you to agree or disagree with.</h3>
+            </div>
+            <form class="questionGroup3Form3">
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q11: The film shows that we all have a role to
+                        play in reducing harm to the environment, even if it means making ourselves financially worse
+                        off.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question11" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question11" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question11" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question11" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question11" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q12: Negative environmental behaviours are
+                        shown as negative character traits.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question12" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question12" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question12" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question12" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question12" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q13: Characters’ attitudes towards the climate
+                        and environment improve during the course of the film.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question13" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question13" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question13" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question13" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question13" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q14: One or more characters takes direct
+                        action to protect the planet or the natural environment and make the world a better
+                        place.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question14" value="1">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question14" value="2">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question14" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question14" value="4">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question14" value="5">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="questionItem">
+                    <label for="exampleInputEmail1" class="questionTitle">Q15: The film has a strong, positive
+                        environmental message.</label>
+                    <div class="QuestionComponents">
+                        <label class="radio-inline">
+                            <input type="radio" name="question15" value="5">
+                            <span>Strongly Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question15" value="4">
+                            <span>Agree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question15" value="3">
+                            <span>Neither agree nor disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question15" value="2">
+                            <span>Disagree</span>
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="question15" value="1">
+                            <span>Strongly Disagree</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <button type="button" style="background-color:  #5192bb;color: #ffffff;" class="btn btn-primary page">Next&nbsp;&nbsp;&nbsp;
+            »
+        </button>
+    </div>
+
+</div>
+<!-- pageBody end -->
+
+
+<!-- Footer Section Start -->
+<footer class="footer__section" style="background:#89c7ee;clear:left;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-12 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget d-block">
+                        <div class="footer__logo">
+                            <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/></a>
+                        </div>
+                        <address>
+                            <a href="#"><img src="assets/images/location.png" alt="location-icon"/> University
+                                Avenue, Glasgow, G12 8QQ</a>
+                            <a href="mailto:Ourstudio@hello.com"><img src="assets/images/email.png"
+                                                                      alt="email-icon"/>student.recruitment@glasgow.ac.uk</a>
+                            <a href="tel:+13866883295"><img src="assets/images/call.png" alt="call-icon"/>0141 330
+                                2000</a>
+                        </address>
+                        <div class="social__title">Follow Us</div>
+                        <div class="social__icon mt-15">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-dribbble"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">Service</div>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Movies</a></li>
+                            <li><a href="#">TV Shows</a></li>
+                            <li><a href="#">User Center</a></li>
+                            <li><a href="#">About Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">The Screen Carbon Test</div>
+                        <div class="app__download">
+                            <h4>The Screen Carbon Test seeks to quantify how well a film or TV show acknowledges and
+                                addresses the issue of climate change during the Global Climate Emergency. It lets you
+                                rate and compare the environmental credentials of screen productions through a
+                                user-generated environmental rating questionnaire. </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer__bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="footer__content text-center">
+                        <div class="content">
+                            <p>
+                                &copy;
+                                <script>
+                                    document.write(new Date().getFullYear());
+
+                                </script>
+                                by <a href="Http://www.bootstrapmb.com">The Screen Carbon Test</a>. All rights reserved
+                            </p>
+                        </div>
+                        <div class="link">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Sitemap</a>
+                            <a href="#">Disclaimer</a>
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+<!-- Scroll-top -->
+<button class="scroll-top scroll-to-target" data-target="html">↑</button>
+<!-- Scroll-top-end-->
+
+
+<script src="assets/js/jquery-3.6.0.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/jquery.fancybox.min.js"></script>
+<script src="assets/js/counterup.min.js"></script>
+<script src="assets/js/jquery.waypoints.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/swiper-bundle.min.js"></script>
+<script src="assets/js/scripts.js"></script>
+<script src="assets/js/server.js"></script>
+<script>
+    let questionGroup1 = document.querySelector(".questionGroup1");
+    let questionGroup2 = document.querySelector(".questionGroup2");
+    let questionGroup3 = document.querySelector(".questionGroup3");
+
+    questionGroup2.style.display = "none";
+    questionGroup3.style.display = "none";
+    let page = document.querySelector(".page")
+
+    let status = 1;
+
+    let score1 = 0;
+    let score2 = 0;
+    let score3 = 0;
+    page.addEventListener("click", () => {
+        if (status == 1) {
+            let data = $(".questionGroup1Form1").serializeArray();
+             console.log(data);
+            if (data.length != 5) {
+                //alert("Please enter");
+                alert("You have unselected options");
+                return;
+            }
+            data.forEach(element => {
+                score1 += Number(element.value);
+            });
+            questionGroup1.style.display = "none";
+            questionGroup2.style.display = "block";
+            questionGroup3.style.display = "none";
+        } else if (status == 2) {
+            let data = $(".questionGroup2Form2").serializeArray();
+            if (data.length != 5) {
+                //alert("Please enter");
+                alert("You have unselected options");
+                return;
+            }
+            console.log(data);
+            data.forEach(element => {
+                score2 += Number(element.value);
+            });
+            questionGroup1.style.display = "none";
+            questionGroup2.style.display = "none";
+            questionGroup3.style.display = "block";
+            page.innerText = "Finish"
+        } else if (status == 3) {
+            let data = $(".questionGroup3Form3").serializeArray();
+            console.log(data);
+            if (data.length != 5) {
+                //alert("Please enter");
+                alert("You have unselected options");
+                return;
+            }
+            data.forEach(element => {
+                score3 += Number(element.value);
+            });
+            let scoreSum = score1 + score2 + score3;
+            let score = scoreSum * 0.1333;
+            console.log(score);
+            console.log(score1);
+            console.log(score2);
+            console.log(score3);
+            alert("Your score is："+score)
+            submitScore(score)
+        }
+        status += 1;
+    })
+
+    var queryString = decodeURIComponent(window.location.search);
+    var params = new URLSearchParams(queryString);
+    var id = params.get('id');
+    var type = params.get('type');
+    var imgPath = "";
+    var vType = "";
+
+    let url = "https://api.themoviedb.org/3/movie/" + id
+    if (type == 'tv') {
+        url = "https://api.themoviedb.org/3/tv/" + id
+    }
+
+    $.ajax({
+        url: url,
+        method: "get",
+        headers: {
+            "Authorization": jwt,
+            "accept": "application/json"
+        },
+        success: function (resp) {
+            console.log(resp)
+            $("#title").html(resp.title);
+            $("#overview").html(resp.overview)
+            imgPath = imgServer + resp.poster_path
+            // vType =
+            $("#poster_path").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>")
+        }
+    })
+
+    function submitScore(score) {
+		console.log(window.localStorage);
+        let user = window.localStorage.getItem("user");
+        console.log(user);
+        if (user == null) {
+            alert("The user is not logged in. Please try again！！！！")
+            return;
+        }
+        let userId = JSON.parse(user).id;
+        console.log(userId);        
+        let title = $("#title").text();
+        let obj = JSON.stringify({
+            uId: userId,
+            vId: id,
+            vImg: imgPath,
+            // vType:
+            videoName: title,
+            score: score
+        });
+        console.log(obj);
+        $.ajax({
+                url: server + "/score/add",
+                method: "post",
+                data: obj,
+                headers: {
+                    "accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                success: (resp) => {
+                    window.location.href = server + "/finish-rating.html?id=" + id + "&score=" + score;
+                }
+            }
+        )
+    }
+
+
+    let user = JSON.parse(window.localStorage.getItem("user"))
+    if (user != null) {
+        let str = "    <li onclick = 'logout()'><a href=\"#\" >Logout</a></li>\n" +
+            "     <li><a href=\"User2.html\">User</a></li>"
+        $(".sub__menu").html(str)
+    } else {
+        let str = "      <li><a href=\"login.html\">Login</a></li> <li><a href=\"signup.html\">Register</a></li>"
+        $(".sub__menu").html(str)
+    }
+
+    function logout() {
+        window.localStorage.clear();
+        window.location.href = server + "/index.html"
+    }
+</script>
+</body>
+
+</html>

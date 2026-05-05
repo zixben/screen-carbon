@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//wwww.mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--   resultType="" 返回值的数据包装类型-->
+<!--        namespace 命名空间-->
+<!--        id是SQL语句的唯一标识-->
+<mapper namespace="com.lks.mapper.UserMapper">
+
+    <select id="getListByUser" resultType="com.lks.bean.User">
+        select * from t_user
+        <where>
+            <if test="username != null and username != ''">
+                username like  '%${username}%'
+            </if>
+            <if test="fullName != null and fullName != ''">
+                and fullName like '%${fullName}%'
+            </if>
+        </where>
+    </select>
+
+</mapper>

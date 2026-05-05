@@ -1,0 +1,40 @@
+.note {
+	font-style: italic;
+	color: #333;
+}
+
+/* Custom styles for the rating section */
+.bg-dark {
+	background-color: #333;
+}
+
+.text-white {
+	color: #fff;
+}
+
+.rating-header {
+	font-size: 2.5rem;
+}
+
+.img-fluid {
+	max-width: 120px;
+	height: auto;
+}
+
+.img-fluid.logos {
+	max-width: 350px;
+	height: auto;
+}
+
+.rating-title {
+	display: block;
+	font-size: 1.3rem;
+	font-weight: bold;
+	margin-top: .5rem;
+}
+
+.rating-percentage {
+	font-size: 1.3rem;
+	display: block;
+
+}

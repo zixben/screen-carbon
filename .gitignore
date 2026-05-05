@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+
+# Java / Maven build output
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Temporary / backup files
+*.tmp
+*.bak
+*.swp
+*~
+backup*/
+target*/
+*.zip
+
+# Local environment files
+.env
+.env.*
+application-local.yaml
+application-local.yml

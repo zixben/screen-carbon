@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Result</title>
+    <!-- font awesome -->
+    <link rel="stylesheet" href="assets/css/all.min.css"/>
+    <!-- bootstraph -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+    <!-- swiper js -->
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css"/>
+    <!-- Fancy Box -->
+    <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css"/>
+    <!-- Select -->
+    <link rel="stylesheet" href="assets/css/select2.min.css"/>
+    <!-- User's CSS Here -->
+    <link rel="stylesheet" href="assets/css/style.css"/>
+    <link rel="stylesheet" href="assets/css/search.css"/>
+    <!-- https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css -->
+    <!-- <link rel="stylesheet" href="assets/css/bootstrap-icons.css"> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+
+<body>
+<!-- Header Start  -->
+<header class="header header-sticky">
+    <nav class="nav">
+        <div class="container">
+            <!-- Header Wrap Start  -->
+            <div class="header__wrapper">
+                <div class="header__logo">
+                    <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/> </a>
+                </div>
+
+                <div class="header__menu">
+                    <ul class="main__menu">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="movies.html">Movies</a></li>
+                        <li><a href="tv-shows.html">Tv Shows</a></li>
+
+                        <li class="has__dropdown">
+                            <a href="#">User Center</a>
+                            <!-- Dropdown -->
+                            <ul class="sub__menu">
+                                <li><a href="login.html">Login</a></li> <!--登录后变为logout-->
+                                <li><a href="signup.html">Register</a></li>
+                            </ul>
+                            <!-- Dropdown -->
+                        </li>
+                        <li>
+                            <a href="about-us.html">About Us</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="header__meta">
+                    <ul class="meta__item">
+                        <!--这里加个search bar-->
+                    </ul>
+                </div>
+            </div>
+            <!-- Header Wrap End  -->
+        </div>
+    </nav>
+</header>
+<!-- Header End -->
+
+<!-- pageBody start -->
+<div class="pageBody">
+    <div class="selectCar">
+        <h2>Search Result for:"<span class="searchValue"></span>"</h2>
+        <form class="row g-3">
+            <div class="col-auto">
+                <div class="btn-group" style="width: 370px;height: 35px;" role="group" aria-label="Basic example">
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-sm  btn-outline-secondary" onclick="movies('movie',1)">Movies
+                    </button>
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-outline-secondary" onclick="movies('tv',1)">tvshow
+                    </button>
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-outline-secondary" onclick="movies('person',1)">Celebrites
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!--<h4>Choose the title that you wish to rate!</h4>-->
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="section-title__wrapper">
+                <div class="section-title" style="margin-bottom: 0px;">
+                    <h2 class="main-title">▎Choose the title that you wish to rate!</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 items">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="section-title__wrapper">
+                <div class="section-title">
+                    <h2 class="more" onclick="more()">See more ></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- pageBody end -->
+
+<!-- Footer Section Start -->
+<footer class="footer__section" style="background:#89c7ee">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-12 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget d-block">
+                        <div class="footer__logo">
+                            <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/></a>
+                        </div>
+                        <address>
+                            <a href="#"><img src="assets/images/location.png" alt="location-icon"/> University
+                                Avenue, Glasgow, G12 8QQ</a>
+                            <a href="mailto:Ourstudio@hello.com"><img src="assets/images/email.png"
+                                                                      alt="email-icon"/>student.recruitment@glasgow.ac.uk</a>
+                            <a href="tel:+13866883295"><img src="assets/images/call.png" alt="call-icon"/>0141 330
+                                2000</a>
+                        </address>
+                        <div class="social__title">Follow Us</div>
+                        <div class="social__icon mt-15">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-dribbble"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">Service</div>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Movies</a></li>
+                            <li><a href="#">TV Shows</a></li>
+                            <li><a href="#">User Center</a></li>
+                            <li><a href="#">About Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">The Screen Carbon Test</div>
+                        <div class="app__download">
+                            <h4>The Screen Carbon Test seeks to quantify how well a film or TV show acknowledges and
+                                addresses the issue of climate change during the Global Climate Emergency. It lets you
+                                rate and compare the environmental credentials of screen productions through a
+                                user-generated environmental rating questionnaire. </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer__bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="footer__content text-center">
+                        <div class="content">
+                            <p>
+                                &copy;
+                                <script>
+                                    document.write(new Date().getFullYear());
+
+                                </script>
+                                by <a href="Http://www.bootstrapmb.com">The Screen Carbon Test</a>. All rights reserved
+                            </p>
+                        </div>
+                        <div class="link">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Sitemap</a>
+                            <a href="#">Disclaimer</a>
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- Footer Section End -->
+
+<!-- Scroll-top -->
+<button class="scroll-top scroll-to-target" data-target="html">↑</button>
+<!-- Scroll-top-end-->
+
+<script src="assets/js/jquery-3.6.0.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/jquery.fancybox.min.js"></script>
+<script src="assets/js/counterup.min.js"></script>
+<script src="assets/js/jquery.waypoints.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/swiper-bundle.min.js"></script>
+<script src="assets/js/scripts.js"></script>
+<script src="assets/js/server.js"></script>
+<script>
+    var queryString = decodeURIComponent(window.location.search);
+    var params = new URLSearchParams(queryString);
+    var value = params.get('value');
+    $(".searchValue").html(value)
+    movies("movie", 1);
+
+    function more() {
+        let where = window.sessionStorage.getItem("where");
+        let page = Number(window.sessionStorage.getItem("page"));
+        page += 1;
+        movies(where, page)
+    }
+
+    function movies(where, page) {
+        window.sessionStorage.setItem("where", where)
+        window.sessionStorage.setItem("page", page)
+        $.ajax({
+            url: "https://api.themoviedb.org/3/search/multi?query=" + value + "&include_adult=false&language=en-US&page=" + page,
+            method: "get",
+            headers: {
+                "Authorization": jwt,
+                "accept": "application/json"
+            },
+            success: function (resp) {
+                let htmlEle = "";
+                for (const respElement of resp.results) {
+                    if (respElement.media_type != where) {
+                        continue;
+                    }
+                    let title = "";
+                    console.log(respElement)
+                    if (respElement.title == undefined) {
+                        title = respElement.name;
+                    } else {
+                        title = respElement.title
+                    }
+                    let mediaType = 0;
+                    if (respElement.media_type == "movie") {
+                        mediaType = 1;
+                    }
+                    let color = "red"
+                    if (respElement.vote_average > 4) {
+                        color = "yellow"
+                    } else if (respElement.vote_average > 7) {
+                        color = "green"
+                    }
+
+                    htmlEle += "<div  class=\"item\">\n" +
+                        "                    <div onclick = 'toDesc(" + respElement.id + "," + mediaType + ")' class=\"item_image\"><img alt='no image' src='" + imgServer + respElement.poster_path + "'></div>\n" +
+                        "                    <div onclick = 'toDesc(" + respElement.id + "," + mediaType + ")' class=\"item_info\">\n" +
+                        "                        <h5>" + title + "</h5>\n" +
+                        "                        <p>" + String(respElement.overview).substring(0, 200) + "..." + "</p>\n" +
+                        "                    </div>\n" +
+                        "                    <div onclick = 'toRate(" + respElement.id + "," + mediaType + ")'  class=\"item_sore\">\n" +
+                        "                        <p style='color:" + color + ";' ><span><i class=\"bi bi-star-fill\"></i></span>\n" +
+                        "                            <span  >" + String(respElement.vote_average).substring(0, 3) + "</span>\n" +
+                        "                        </p>\n" +
+                        "                    </div>\n" +
+                        "                </div>"
+
+                }
+
+                $(".items").html(htmlEle)
+            }
+        });
+    }
+
+    function toRate(id, type) {
+        console.log(type)
+        if (type == 0) {
+            window.location.href = server + "/rate.html?id=" + id + "&type=tv"
+        } else if (type == 1) {
+            window.location.href = server + "/rate.html?id=" + id + "&type=movie"
+        }
+        return false;
+    }
+
+    function toDesc(id, type) {
+
+        if (type == 0) {
+            window.location.href = server + "/tv.html?id=" + id
+        } else if (type == 1) {
+            window.location.href = server + "/movie.html?id=" + id
+        }
+
+    }
+
+    let user = JSON.parse(window.localStorage.getItem("user"))
+    if (user != null) {
+        let str = "    <li onclick = 'logout()'><a href=\"#\" >Logout</a></li>\n" +
+            "     <li><a href=\"User2.html\">User</a></li>"
+        $(".sub__menu").html(str)
+    } else {
+        let str = "      <li><a href=\"login.html\">Login</a></li> <li><a href=\"signup.html\">Register</a></li>"
+        $(".sub__menu").html(str)
+    }
+
+    function logout() {
+        window.localStorage.clear();
+        window.location.href = server + "/index.html"
+    }
+</script>
+
+</body>
+
+</html>

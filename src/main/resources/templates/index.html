@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+<head>
+    <title th:text="${title}"></title>
+    
+
+</head>
+<body>
+    <div layout:fragment="content">
+			<!-- Hero Section -->
+	<section class="position-relative text-center">
+		<img src="assets/images/banner/Masthead_V2.png" alt="Cinema with Earth on fire" class="img-fluid">
+		<div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center"
+			style="background: rgba(0,0,0,.2);">
+			<h1 class="display-5 fw-bold px-4 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">SCREEN CARBON TEST</h1>
+			<h1 class="display-5 fw-bold px-4 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">IS YOUR FAVOURITE FILM OR TV SHOW CLIMATE-FRIENDLY?</h1>
+			<p class="fs-2 text-white playfair-display-sub-heading" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+				Rate the carbon credentials of new screen content</p>
+		</div>
+	</section>
+
+
+
+	<!-- Search Section -->
+	<section class="container-fluid py-5 text-center d-flex flex-column justify-content-center align-items-center"
+		style="background-color: #e9ecef;">
+		<h2 class="fw-bold text-black display-6 display-5-lg display-4-xl">Start rating films and TV shows now!</h2>
+		<div class="mt-4 d-inline-block position-relative w-100" style="max-width: 500px;">
+			<input type="text" class="form-control search-input moveInput" placeholder="Search movie or TV show">
+			<i class="fa fa-search search-icon"></i>
+		</div>
+	</section>
+
+	<!-- Movies Section -->
+	<section class="py-5">
+		<div class="container text-center pb-5">
+			<div class="row mx-auto my-auto justify-content-center">
+				<h2 class="fw-bold text-black pb-3">Popular, climate-rated films & TV shows</h2> <!-- Popular, climate-rated films & TV shows -->
+				<div id="highestRankedClimate" class="carousel slide" data-bs-ride="carousel">
+					<div class="carousel-inner" role="listbox">
+
+					</div>
+					<a class="carousel-control-prev bg-secondary rounded-circle shadow" href="#highestRankedClimate"
+						role="button" data-bs-slide="prev">
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					</a>
+					<a class="carousel-control-next bg-secondary rounded-circle shadow" href="#highestRankedClimate"
+						role="button" data-bs-slide="next">
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="container text-center">
+			<div class="row mx-auto my-auto justify-content-center">
+				<h2 class="fw-bold text-black pb-3">Rate new film & TV shows</h2>  <!-- Rate new film & TV shows -->
+				<div id="trendingMoviesCarousel" class="carousel slide" data-bs-ride="carousel">
+					<div class="carousel-inner" role="listbox">
+
+					</div>
+					<a class="carousel-control-prev bg-secondary rounded-circle shadow" href="#trendingMoviesCarousel"
+						role="button" data-bs-slide="prev">
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					</a>
+					<a class="carousel-control-next bg-secondary rounded-circle shadow" href="#trendingMoviesCarousel"
+						role="button" data-bs-slide="next">
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+	</div>
+
+</body>
+</html>

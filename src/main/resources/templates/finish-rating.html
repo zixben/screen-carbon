@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<head>
+	<title th:text="${title}"></title>
+
+
+</head>
+
+<body>
+	<div layout:fragment="content">
+
+		<div class="container my-5">
+			<div>
+				<div class="row">
+					<div class="poster-container col-lg-4 col-md-5 col-sm-6">
+						<div id="poster_path" class="finish-image"></div>
+					</div>
+					<div class="description col-lg-8 col-md-7">
+						<h3 class="fontStyle">Thank you for rating<br>
+							<span id="title"></span>
+						</h3>
+						<div class="introduction">
+							<p>
+								<span style="font-size: 18px;font-weight: 600;">Overview:</span>
+								<span id="overview">N/A</span>
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<hr>
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12">
+						<div class="video-title">
+							<h2>Thank you for taking the time to rate this title and helping in a small way to combat climate change!</h2>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12">
+						<div class="video-info">
+							<h2>The film has the following rating:</h2>
+							<table class="table">
+								<tr>
+									<td>
+										<h3>Your rating: </h3>
+									</td>
+									<td class="rating-numbers">
+										<h3><span class="icon-path"></span> <span id="score"></span> <span
+												id="scorePerc"></span></h3>
+									</td>
+
+								</tr>
+								<tr>
+									<td>
+										<h3>New average rating: </h3>
+									</td>
+									<td class="rating-numbers">
+										<h3><span class="icon-path"></span> <span></span></h3>
+									</td>
+
+								</tr>
+		
+							</table>
+							
+							<!-- Search Section -->
+							<section
+								class="container-fluid py-5 text-center d-flex flex-column justify-content-center align-items-center"
+								style="background-color: #e9ecef;">
+							
+								<div class="mt-4 d-inline-block position-relative w-100" style="max-width: 500px;">
+									<input type="text" class="form-control search-input moveInput"
+										placeholder="Search for a movie or a TV show">
+									<i class="fa fa-search search-icon"></i>
+								</div>
+							</section>
+							
+							<!-- "Rate another" button --> 
+							<button type="button" class="btn btn-dark">Rate another film
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<head>
+	<title th:text="${title}"></title>
+
+
+</head>
+
+<body>
+	<div layout:fragment="content">
+
+		<!-- pageBody start -->
+		<div class="container my-5">
+			<div class="title">
+				<h1>Hello &nbsp;<span id="userName"></span>!</h1>
+			</div>
+			
+			<div class="row">
+				<div class=" col-lg-3 col-xl-2"> <!-- class="menu"" -->
+				
+				<div class="settings-button navbar-expand-lg">
+					<div class="bd-navbar-toggle">
+						<button id="settings-toggler" class="navbar-toggler p-2" type="button" data-bs-toggle="offcanvas"
+							data-bs-target="#bdSidebar" aria-controls="bdSidebar" aria-label="Toggle settings navigation">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="bi"
+								fill="currentColor" viewBox="0 0 16 16">
+								<path fill-rule="evenodd"
+									d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z">
+								</path>
+							</svg>
+
+
+						</button>
+					</div>
+				</div>
+					
+					<!--<ul>
+						<li id="toMyRatings">
+							<p>
+								<span class="menufont">My ratings</span><span class="menuIcon">></span>
+							</p>
+						</li>
+						<li class="active" id="toAccountSettings">
+							<p>
+								<span class="menufont">Account setting</span><span class="menuIcon">></span>
+							</p>
+						</li>
+					</ul>-->
+					<aside class="bd-sidebar">
+
+						<div class="offcanvas-lg offcanvas-start" tabindex="-1" id="bdSidebar"
+							aria-labelledby="bdSidebarOffcanvasLabel">
+
+							<div class="offcanvas-header border-bottom">
+								<h5 class="offcanvas-title" id="bdSidebarOffcanvasLabel">User Center</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"
+									data-bs-target="#bdSidebar"></button>
+							</div>
+
+							<div class="offcanvas-body">
+								<nav class="bd-links w-100" id="bd-docs-nav" aria-label="Side Settings">
+									<ul class="bd-links-nav list-unstyled mb-0 pb-3 pb-md-2 pe-lg-2">
+
+										<li class="bd-links-group py-2">
+											<strong
+												class="bd-links-heading d-flex w-100 align-items-center fw-semibold">
+
+												Ratings
+											</strong>
+
+											<ul class="list-unstyled fw-normal pb-2 small">
+												<li><a id="toMyRatings"
+														class="bd-links-link d-inline-block rounded">My Ratings</a></li> <!-- href="/user-ratings" -->
+											</ul>
+										</li>
+										<li class="bd-links-group py-2">
+											<strong
+												class="bd-links-heading d-flex w-100 align-items-center fw-semibold">
+
+												Account settngs
+											</strong>
+
+											<ul class="list-unstyled fw-normal pb-2 small">
+												<li><a id="toAccountSettings"
+														class="bd-links-link d-inline-block rounded">Delete Account</a> <!--href="/user-settings"-->
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+							</div>
+						</div>
+					</aside>
+					
+				</div>
+				
+				<div class="menuDesc col-lg-9 col-xl-10">
+					
+					<form id="deleteForm">
+						<h2>Delete your account</h2> 
+						<table>
+							<tr>
+								<td>Username</td>
+								<td><input type="text" class="form-control" name="username" id="username"
+										placeholder="username" required>
+								</td>
+							</tr>
+							<tr>
+								<td>Password</td>
+								<td><input type="password" name="password" class="form-control" id="password"
+										placeholder="password" required></td>
+							</tr>
+							<tr>
+								<td>Email</td>
+								<td><input type="email" name="email" class="form-control" placeholder="email"></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>
+									<input type="hidden" th:name="_csrf" th:value="${csrfToken.token}" />
+									<button type="button" onclick="deleteFuntion()"
+										class="btn btn-danger btn-xs">Delete
+										account
+									</button>
+								</td>
+							</tr>
+						</table>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- pageBody end -->
+	</div>
+
+</body>
+
+</html>

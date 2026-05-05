@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+<head>
+    <title th:text="${title}"></title>
+    
+	
+</head>
+<body>
+    <div layout:fragment="content">
+
+<!-- pageBody start -->
+<div class="pageBody">
+    <div class="selectCar">
+        <h2>Search Result for: "<span class="searchValue"></span>"</h2>
+        <form class="row g-3">
+            <div class="col-auto">
+                <div class="btn-group" style="width: 370px;height: 35px;" role="group" aria-label="Basic example">
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-sm  btn-outline-secondary active" onclick="setActiveTab(this); movies('movie', 1);">Films
+                    </button>
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-outline-secondary" onclick="setActiveTab(this); movies('tv', 1)">TV shows
+                    </button>
+                    <button type="button" style="border: 1px solid #6c757d;"
+                            class="btn btn-outline-secondary" onclick="setActiveTab(this); movies('person', 1)">Cast & crew
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="section-title__wrapper">
+                <div class="section-title" style="margin-bottom: 0px;">
+                    <h2 class="main-title">▎Choose the title that you wish to rate!</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 items">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="section-title__wrapper">
+                <div class="section-title">
+                    <h2 class="more" onclick="more()">See more ></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- pageBody end -->
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+		.navbar-nav {
+			flex-direction: row;
+			justify-content: center;
+			flex-grow: 1;
+		}
+
+		.navbar-nav .nav-link {
+			margin: 0 40px;
+			/* Adjust space between links as needed */
+		}
+
+		.navbar-brand img {
+			height: 70px;
+			/* Adjust based on your logo's aspect ratio */
+			width: auto;
+			margin-top: -15px;
+			/* Adjust top margin to vertically center logo */
+			margin-bottom: -15px;
+
+			/* Adjust bottom margin to prevent navbar from expanding */
+		}
+
+		.navbar {
+			min-height: 100px;
+
+		}
+		
+		
+		#navbarNav ul li a {
+			color: white;
+		}
+
+		#navbarNav ul li.active a {
+			color: blueviolet;
+		}
+		
+		#navbarNav ul li:hover a {
+  			color: #1c425c;
+		}
+
+
+		.btn-subscribe {
+			background-color: transparent;
+			color: white;
+			border: 1px solid white;
+			border-radius: 20px;
+			/* Adjust for more rounded corners */
+			padding: 6px 30px;
+		}
+
+		.btn-subscribe:hover {
+			background-color: white;
+			color: black;
+		}
+		
+		.dropdown-item:active {
+  			background-color: unset;
+		}
+
+		@media (max-width: 576px) {
+			.navbar-nav {
+				flex-direction: column;
+			}
+		}
+		/* Additional styles for collapsed navbar */
+		@media (max-width: 992px) {
+			
+			#navbarNav {
+				margin-top: 20px;
+			}
+			/* Adjusting for Bootstrap's LG breakpoint */
+			.navbar-nav {
+				justify-content: center;
+				align-items: flex-start;
+			}
+
+			.navbar-nav .nav-link,
+			.navbar-nav .btn-subscribe {
+				margin: 5px 35px;
+				/* Adjust vertical spacing */
+				width: 100%;
+				/* Full width for vertical layout */
+			}
+		}

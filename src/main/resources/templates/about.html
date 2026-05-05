@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<head>
+	<title th:text="${title}"></title>
+
+
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<!-- pageBody start -->
+		<div class="container py-5 px-5">
+			<h2 class="mb-4">What is the Screen Carbon Test?</h2>
+
+			<p>Climate Change is probably the greatest existential threat humanity has ever faced, and we believe it is
+				therefore the responsibility of filmmakers and other artists to address this monumental challenge in
+				their
+				creative work.</p>
+
+			<p>The Screen Carbon Test is designed to measure how well a film or TV show
+				acknowledges and addresses the issue of climate change since the United Nations asked all countries
+				to declare a Global Climate Emergency in December 2020.
+				It seeks to expand upon BAFTA Albert’s editorial criteria to:
+			</p>
+
+			<ul>
+				<li>acknowledge that the natural world exists,</li>
+				<li>to show negative environmental behaviour as negative character traits,</li>
+				<li>to have at least one character do something to make the world a better place.</li>
+			</ul>
+
+			<p>To explore this on a deeper level the Screen Carbon Test employs a 3-part Likert-scale questionnaire to
+				rate
+				and compare the environmental credentials of different films and TV shows.</p>
+
+			<p>The first set of five questions explores how well the film or show acknowledges the natural world and the
+				problem of climate change.</p>
+
+			<p>The second set of five questions explores whether the film or show tries to understand and explore the
+				scale
+				of the environmental challenge, and the way in which the impacts of climate change and environmental
+				depredation are not always felt equally.</p>
+
+			<p>The third set of questions asks whether the filmmakers or any of the characters in the film or TV show
+				assume
+				responsibility for trying to find solutions to the many problems surrounding climate change and
+				environmental degradation.</p>
+
+			<p>The higher a film scores on the Screen Carbon Test questionnaire, the stronger its climate credentials.
+			</p>
+
+			<p class="note">NB. To reduce 'tick bias', some of the questions are scored on a scale of 4 to 0 and others
+				from
+				0 to 4.</p>
+		</div>
+
+		<!-- Ratings demonstration Section -->
+		<div class="container-fluid pb-5">
+			<div class="row">
+				<div class="col text-center">
+					<h2 class="rating-header mb-3">Rating Percentages</h2>
+				</div>
+			</div>
+
+			<div class="row justify-content-center gx-2 gy-4">
+				<!-- Each rating -->
+				<div class="col-5 col-md-2 text-center">
+					<img src="assets/images/ranking_icons/ICONS_0000_Green.png" class="img-fluid" alt="Excellent">
+					<span class="rating-title">Excellent</span>
+					<span class="rating-percentage">80%-100%</span>
+				</div>
+				<div class="col-5 col-md-2 text-center">
+					<img src="assets/images/ranking_icons/ICONS_0001_LightGreen.png" class="img-fluid" alt="Good">
+					<span class="rating-title">Good</span>
+					<span class="rating-percentage">60%-79%</span>
+				</div>
+				<div class="col-5 col-md-2 text-center">
+					<img src="assets/images/ranking_icons/ICONS_0002_Orange.png" class="img-fluid" alt="Neutral">
+					<span class="rating-title">Neutral</span>
+					<span class="rating-percentage">40%-59%</span>
+				</div>
+				<div class="col-5 col-md-2 text-center">
+					<img src="assets/images/ranking_icons/ICONS_0003_Red.png" class="img-fluid" alt="Bad">
+					<span class="rating-title">Bad</span>
+					<span class="rating-percentage">20%-39%</span>
+				</div>
+				<div class="col-5 col-md-2 text-center">
+					<img src="assets/images/ranking_icons/ICONS_0004_Grey.png" class="img-fluid" alt="Terrible">
+					<span class="rating-title">Terrible</span>
+					<span class="rating-percentage">0-19%</span>
+				</div>
+			</div>
+
+			<hr>
+			<div class="container px-5">
+				<div class="py-3">
+					<h2 class="mb-4">Credits, code and contacts</h2>
+
+					<p>
+						The Screen Carbon Test rating system was conceived and developed by Filmmaker and Film Educator,
+						David Griffith from Timelock Media Ltd and Dr Inge Sørensen,
+						Senior Lecturer in Screen Industries and Media Policy, University of Glasgow.
+					</p>
+
+					<p>
+						The lead system developer from the College of Arts is Phaedon Koutsoyiannopoulos.
+					</p>
+
+					<p>
+						The prototype for the site was developed by Keshi Li and Xin Zhou, MSc Comp Sci dissertation
+						students (2022-23)
+						at University of Glasgow under the supervision by Dr Tania Wallis (School of Computing Science)
+						and Gordon McLeod (Digital Learning &amp; Innovation, CoAH).
+					</p>
+
+					<p>
+						The website uses code with low environmental impact and is programmed to minimise data traffic
+						between external databases and the tool in order to reduce environmental impact and lower energy
+						requirements as much as possible.
+					</p>
+
+					<p>
+						Questions and press enquiries should be directed to <a
+							href="mailto:faidon.koutsogiannopoulos@glasgow.ac.uk">Faidon</a>,
+						<a href="mailto:davidscgriffith@icloud.com">David</a> or <a
+							href="mailto:inge.sorensen@glasgow.ac.uk">Inge</a>.
+					</p>
+
+				</div>
+				<div class="pb-5">
+					<h3>Funding</h3>
+
+					<p>
+						The Screen Carbon Test is entirely non-profit.
+						It was awarded initial funding from Screen Scotland’s Film Education Programme in 2021
+						and from University of Glasgow’s AHRC Arts Impact Accelerator Account (319944, 2022).
+					</p>
+				</div>
+			</div>
+
+			<!-- pageBody end -->
+
+			<!-- Funders logos -->
+
+			<div class="row py-1">
+				<div class="col text-center my-3">
+					<img src="assets/images/logo/UoG_colour.png" class="img-fluid logos w-75" alt="UofG Logo">
+				</div>
+				<div class="col text-center my-3">
+					<img src="assets/images/logo/UKRI_AHRC_Horizontal_RGB.png" class="img-fluid logos w-75"
+						alt="UKRI AHRC Logo">
+				</div>
+			</div>
+
+		</div>
+</body>
+
+</html>

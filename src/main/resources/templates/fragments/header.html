@@ -1,0 +1,50 @@
+<div th:fragment="header(activePage)">
+	<!-- Navigation -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-black py-3">
+		<div class="container">
+			<a class="navbar-brand text-white" th:href="@{/}">
+				<img src="assets/images/logo/LOGO_V3-WHITE_(NO_TEXT).png" alt="SCT_logo">
+			</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item">
+						<a class="nav-link" th:href="@{/}">Home</a>
+					</li>
+					<li id="movies-menu" class="nav-item" th:classappend="${activePage == 'movies'} ? 'active'">
+						<a class="nav-link" th:href="@{/movies}">Films</a>
+					</li>
+					<li id="tv-shows-menu" class="nav-item" th:classappend="${activePage == 'tv-shows'} ? 'active'">
+						<a class="nav-link" th:href="@{/tv-shows}">TV shows</a>
+					</li>
+					<li class="nav-item" th:classappend="${activePage == 'about'} ? 'active'">
+						<a class="nav-link" th:href="@{/about}">About</a>
+					</li>
+
+				</ul>
+				<div class="dropdown">
+					<button class="btn btn-subscribe dropdown-toggle" type="button" data-bs-toggle="dropdown"
+						aria-expanded="false">My ratings</button>
+
+					<ul class="dropdown-menu" style="background-color: black; border-color: white;">
+						<li th:if="${session.loggedInUser != null}" onclick = 'logout()'>
+							<a th:href="@{/logout}" class="dropdown-item">Logout</a>
+						</li>
+						<li th:if="${session.loggedInUser != null}">
+							<a th:href="@{/user-ratings}" class="dropdown-item">User Center</a>
+						</li>
+						<li th:if="${session.loggedInUser == null}">
+							<a th:href="@{/login}" class="dropdown-item">Login</a>
+						</li>
+						<li th:if="${session.loggedInUser == null}">
+							<a th:href="@{/signup}" class="dropdown-item">Register</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</nav>
+</div>

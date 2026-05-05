@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.lks.mapper.ScoreMapper">
+	<resultMap type="com.lks.bean.Score" id="ScoreMap">
+		<result property="id" column="id" jdbcType="INTEGER" />
+		<result property="uId" column="u_id" jdbcType="INTEGER" />
+		<result property="videoName" column="video_name"
+			jdbcType="STRUCT" />
+		<result property="videoType" column="video_type"
+			jdbcType="STRUCT" />
+		<result property="score" column="score" jdbcType="STRUCT" />
+	</resultMap>
+
+	<!-- 通过ID查询单条数据 -->
+	<select id="queryById" resultMap="ScoreMap">
+		select
+		id,u_id,video_name,
+		video_type, score
+		from score
+		where id = #{id}
+	</select>
+
+	<!--分页查询指定行数据 -->
+	<select id="queryAllByLimit" resultMap="ScoreMap">
+		select
+		id,u_id,video_name, video_type, score
+		from score
+		<where>
+			<if test="id != null and id != ''">
+				and id = #{id}
+			</if>
+			<if test="uId != null and uId != ''">
+				and u_id = #{uId}
+			</if>
+			<if test="videoName != null and videoName != ''">
+				and video_name = #{videoName}
+			</if>
+			<if test="videoType != null and videoType != ''">
+				and video_type = #{videoType}
+			</if>
+			<if test="score != null and score != ''">
+				and score = #{score}
+			</if>
+		</where>
+		limit #{pageable.offset}, #{pageable.pageSize}
+	</select>
+
+	<!--统计总行数 -->
+	<select id="count" resultType="java.lang.Long">
+		select count(1)
+		from score
+		<where>
+			<if test="id != null and id != ''">
+				and id = #{id}
+			</if>
+			<if test="uId != null and uId != ''">
+				and u_id = #{uId}
+			</if>
+			<if test="videoName != null and videoName != ''">
+				and video_name = #{videoName}
+			</if>
+			<if test="score != null and score != ''">
+				and score = #{score}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true">
+		insert
+		into score(id,u_id,v_id,v_img,video_name,video_type,score)
+		values
+		(#{id},#{uId},#{vId},#{vImg},#{videoName},#{videoType},#{score})
+	</insert>
+
+	<insert id="insertReleaseYear" keyProperty="movieId, year"
+		useGeneratedKeys="true">
+		INSERT IGNORE INTO movies_release_year (movie_id,
+		year)
+		VALUES (#{movieId}, #{releaseYear})
+	</insert>
+	<insert id="insertGenres">
+		INSERT IGNORE INTO movies_genres (movie_id, genre_id)
+		VALUES
+		<foreach collection="genres" item="genreId" separator=",">
+			(#{movieId}, #{genreId})
+		</foreach>
+	</insert>
+	<select id="getCountryIdsByShortNames"
+		resultType="java.lang.Integer">
+		SELECT id
+		FROM countries
+		WHERE short_name IN
+		<foreach item="shortName" collection="shortNames" open="("
+			separator="," close=")">
+			#{shortName}
+		</foreach>
+	</select>
+	<insert id="insertCountries">
+		INSERT IGNORE INTO movies_countries (movie_id, country_id)
+		VALUES
+		<foreach collection="countryIds" item="countryId"
+			separator=",">
+			(#{movieId}, #{countryId})
+		</foreach>
+	</insert>
+	<insert id="insertTvReleaseYear" keyProperty="tvId, year"
+		useGeneratedKeys="true">
+		INSERT IGNORE INTO tv_release_year (tv_id,
+		year)
+		VALUES (#{tvId}, #{releaseYear})
+	</insert>
+	<insert id="insertTvGenres">
+		INSERT IGNORE INTO tv_genres (tv_id, genre_id)
+		VALUES
+		<foreach collection="genres" item="genreId" separator=",">
+			(#{tvId}, #{genreId})
+		</foreach>
+	</insert>
+	<select id="getTvCountryIdsByShortNames"
+		resultType="java.lang.Integer">
+		SELECT id
+		FROM countries
+		WHERE short_name IN
+		<foreach item="shortName" collection="shortNames" open="("
+			separator="," close=")">
+			#{shortName}
+		</foreach>
+	</select>
+	<insert id="insertTvCountries">
+		INSERT IGNORE INTO tv_countries (tv_id, country_id)
+		VALUES
+		<foreach collection="countryIds" item="countryId"
+			separator=",">
+			(#{tvId}, #{countryId})
+		</foreach>
+	</insert>
+	
+	<insert id="insertBatch" keyProperty="id"
+		useGeneratedKeys="true">
+		insert into score(id,u_id,video_name,video_type,score)
+		values
+		<foreach collection="entities" item="entity" separator=",">
+			(#{entity.id},#{entity.uId},#{entity.videoName},#{entity.videoType},#{entity.score})
+		</foreach>
+	</insert>
+
+	<insert id="insertOrUpdateBatch" keyProperty="id"
+		useGeneratedKeys="true">
+		insert into score(id,u_id,video_name,video_type,score)
+		values
+		<foreach collection="entities" item="entity" separator=",">
+			(#{entity.id},#{entity.uId},#{entity.videoName},#{entity.videoType},#{entity.score})
+		</foreach>
+		on duplicate key update
+		id=values(id),
+		u_id=values(u_id),
+		video_name=values(video_name),
+		video_type=values(video_type),
+		score=values(score)
+	</insert>
+
+	<!-- 更新数据 -->
+	<update id="update">
+		update score
+		<set>
+			<if test="id != null and id != ''">
+				id = #{id},
+			</if>
+			<if test="uId != null and uId != ''">
+				u_id = #{uId},
+			</if>
+			<if test="videoName != null and videoName != ''">
+				video_name = #{videoName},
+			</if>
+			<if test="videoType != null and videoType != ''">
+				video_type = #{videoType},
+			</if>
+			<if test="score != null and score != ''">
+				score = #{score},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<!--通过主键删除 -->
+	<delete id="deleteById">
+		delete from score where id = #{id}
+	</delete>
+</mapper>

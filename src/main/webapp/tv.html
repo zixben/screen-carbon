@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie</title>
+    <!-- font awesome -->
+    <link rel="stylesheet" href="assets/css/all.min.css"/>
+    <!-- bootstraph -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+    <!-- swiper js -->
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css"/>
+    <!-- Fancy Box -->
+    <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css"/>
+    <!-- Select -->
+    <link rel="stylesheet" href="assets/css/select2.min.css"/>
+    <!-- User's CSS Here -->
+    <link rel="stylesheet" href="assets/css/style.css"/>
+    <link rel="stylesheet" href="assets/css/movie.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+
+<body>
+<!-- Header Start  -->
+<header class="header header-sticky">
+    <nav class="nav">
+        <div class="container">
+            <!-- Header Wrap Start  -->
+            <div class="header__wrapper">
+                <div class="header__logo">
+                    <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/> </a>
+                </div>
+                <div class="header__menu">
+                    <ul class="main__menu">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="movies.html">Movies</a></li>
+                        <li><a href="tv-shows.html">Tv Shows</a></li>
+                        <li class="has__dropdown">
+                            <a href="#">User Center</a>
+                            <!-- Dropdown -->
+                            <ul class="sub__menu">
+                                <li><a href="login.html">Login</a></li>
+                                <li><a href="signup.html">Register</a></li><!--登录后变为logout-->
+                            </ul>
+                            <!-- Dropdown -->
+                        </li>
+                        <li>
+                            <a href="about-us.html">About Us</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="header__meta">
+                    <ul class="meta__item">
+                        <!--这里加个search bar-->
+                    </ul>
+                </div>
+            </div>
+            <!-- Header Wrap End  -->
+        </div>
+    </nav>
+</header>
+<!-- Header End -->
+
+<!-- pageBody start -->
+<div class="pageBody">
+    <div class="movieInfo">
+        <h2 id="title">Movie/TV Shwo Name</h2>
+        <p><span><i class="bi bi-calendar4"></i><span id="release_date">2022</span></span>&nbsp;&nbsp;&nbsp;
+            <span><i class="bi bi-alarm"></i><span id="runtime">120</span>min</span>&nbsp;&nbsp;&nbsp;
+            <span><i class="bi bi-card-heading"></i>Adult:<span id="adult"></span>False</span>
+        </p>
+        <div class="movieDesc">
+            <div class="movieImage">
+
+            </div>
+            <div class="property">
+                <div class="xinzhuang">action</div>
+                <div class="xinzhuang">Sci-Fi</div>
+                <br>
+                <h4>Director:<span id="director">XXXX</span></h4>
+                <h4>Writers:<span id="writer">XXXX</span></h4>
+                <h4>Casts:<span id="cast">XXXX</span></h4>
+                <h4>Production Country/Region:<span id="production_countries">XXXX</span></h4>
+                <h4>Languange:<span id="spoken_languages">XXXX</span></h4>
+                <h3 style="font-size: 20px;font-weight: 700;"><span>Rating:</span>
+                    <span><i class="bi bi-star-fill"></i>7.2/10</span>
+                </h3>
+            </div>
+            <div class="introduction">
+
+                <p><span
+                        style="font-size: 18px;font-weight: 600;">introduction:</span><span id="overview">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="actor">
+        <div class="actorBtn">
+            <p>Rate for Decarbonisation!</p>
+            <button onclick="toRatePage()">RATE</button>
+        </div>
+        <div class="actor_info">
+            <h3>|Cast/Crew</h3>
+            <div class="actor_image">
+
+                <div class="actorImageItem">
+                    <div class="image">
+                        <img src="#" alt="profile" srcset="">
+                    </div>
+                    <div class="actorText">
+                        <h3>Name</h3>
+                        <p>Director</p>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- pageBody end -->
+
+<!-- Footer Section Start -->
+<footer class="footer__section" style="background:#89c7ee;clear:left;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-12 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget d-block">
+                        <div class="footer__logo">
+                            <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo"/></a>
+                        </div>
+                        <address>
+                            <a href="#"><img src="assets/images/location.png" alt="location-icon"/> University
+                                Avenue, Glasgow, G12 8QQ</a>
+                            <a href="mailto:Ourstudio@hello.com"><img src="assets/images/email.png"
+                                                                      alt="email-icon"/>student.recruitment@glasgow.ac.uk</a>
+                            <a href="tel:+13866883295"><img src="assets/images/call.png" alt="call-icon"/>0141 330
+                                2000</a>
+                        </address>
+                        <div class="social__title">Follow Us</div>
+                        <div class="social__icon mt-15">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-dribbble"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">Service</div>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Movies</a></li>
+                            <li><a href="#">TV Shows</a></li>
+                            <li><a href="#">User Center</a></li>
+                            <li><a href="#">About Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="footer__wrapper">
+                    <div class="footer__widget">
+                        <div class="title">The Screen Carbon Test</div>
+                        <div class="app__download">
+                            <h4>The Screen Carbon Test seeks to quantify how well a film or TV show acknowledges and
+                                addresses the issue of climate change during the Global Climate Emergency. It lets you
+                                rate and compare the environmental credentials of screen productions through a
+                                user-generated environmental rating questionnaire. </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer__bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="footer__content text-center">
+                        <div class="content">
+                            <p>
+                                &copy;
+                                <script>
+                                    document.write(new Date().getFullYear());
+
+                                </script>
+                                by <a href="Http://www.bootstrapmb.com">The Screen Carbon Test</a>. All rights reserved
+                            </p>
+                        </div>
+                        <div class="link">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Sitemap</a>
+                            <a href="#">Disclaimer</a>
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+<!-- Scroll-top -->
+<button class="scroll-top scroll-to-target" data-target="html">↑</button>
+<!-- Scroll-top-end-->
+
+
+<script src="assets/js/jquery-3.6.0.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/jquery.fancybox.min.js"></script>
+<script src="assets/js/counterup.min.js"></script>
+<script src="assets/js/jquery.waypoints.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/swiper-bundle.min.js"></script>
+<script src="assets/js/scripts.js"></script>
+<script src="assets/js/server.js"></script>
+<script>
+    var queryString = decodeURIComponent(window.location.search);
+    var params = new URLSearchParams(queryString);
+    var id = params.get('id');
+    $.ajax({
+        url: "https://api.themoviedb.org/3/tv/" + id,
+        method: "get",
+        headers: {
+            "Authorization": jwt,
+            "accept": "application/json"
+        },
+        success: function (resp) {
+            console.log(resp)
+            $("#title").html(resp.name);
+            $("#release_date").html(resp.release_date)
+            $("#runtime").html(resp.runtime)
+            $("#adult").html(resp.adult)
+            $("#overview").html(resp.overview)
+            $("#production_countries").html(resp.production_countries[0].iso_3166_1)
+            $("#spoken_languages").html(resp.spoken_languages[0].english_name)
+
+            $(".movieImage").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>")
+        }
+    })
+
+    $.ajax({
+        url: "https://api.themoviedb.org/3/tv/" + id + "/credits?language=en-US",
+        method: "get",
+        headers: {
+            "Authorization": jwt,
+            "accept": "application/json"
+        },
+        success: function (resp) {
+            console.log(resp)
+            $("#cast").html(resp.cast[0].name)
+            for (const respElement of resp.crew) {
+                if (respElement.known_for_department == "Creator") {
+                    $("#director").html(respElement.name);
+                    break;
+                }
+            }
+            for (const respElement of resp.crew) {
+                if (respElement.known_for_department == "Writing") {
+                    $("#writer").html(respElement.name);
+                    break;
+                }
+            }
+            let castStr = "";
+            for (const respElement of resp.crew.slice(0, 5)) {
+                castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\"  class='actorImageItem'>\n" +
+                    "          <div class=\"image\">\n" +
+                    "            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+                    "          </div>\n" +
+                    "          <div class=\"actorText\">\n" +
+                    "            <h3>" + respElement.name + "</h3>\n" +
+                    "            <p>" + respElement.job + "</p>\n" +
+                    "          </div>\n" +
+                    "        </div>"
+            }
+            for (const respElement of resp.cast.slice(0, 5)) {
+                castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\"  class='actorImageItem'>\n" +
+                    "          <div class=\"image\">\n" +
+                    "            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+                    "          </div>\n" +
+                    "          <div class=\"actorText\">\n" +
+                    "            <h3>" + respElement.name.slice(0, 15) + "</h3>\n" +
+                    "            <p>" + respElement.known_for_department + "</p>\n" +
+                    "          </div>\n" +
+                    "        </div>"
+            }
+            $(".actor_image").html(castStr)
+        }
+    })
+
+    function toRatePage() {
+        window.location.href = server + "/rate.html?id=" + id + "&" + "type=tv"
+    }
+
+    function toPersonPage(uId) {
+        window.location.href = server + "/CelebrityDetail.html?id=" + uId
+    }
+
+    let user = JSON.parse(window.localStorage.getItem("user"))
+    if (user != null) {
+        let str = "    <li onclick = 'logout()'><a href=\"#\" >Logout</a></li>\n" +
+            "     <li><a href=\"User2.html\">User</a></li>"
+        $(".sub__menu").html(str)
+    } else {
+        let str = "      <li><a href=\"login.html\">Login</a></li> <li><a href=\"signup.html\">Register</a></li>"
+        $(".sub__menu").html(str)
+    }
+
+    function logout() {
+        window.localStorage.clear();
+        window.location.href = server + "/index.html"
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<head>
+
+	<title th:text="${title}"></title>
+
+</head>
+
+<body>
+	<div layout:fragment="content">
+
+		<!-- pageBody start -->
+		<main class="container py-5">
+			<div>
+				<h1 id="title">Movie/TV Show Name</h1>
+				<div class="row mt-3">
+					<div class="image-section col-xl-3 col-lg-3 col-md-4 col-sm-5 col-xs-6">
+						<div class="movieDateRuntime">
+							<span id="releaseDateRuntime">
+								<i class="bi bi-calendar4"></i><span id="release_date"> N/A</span>
+							</span>
+							<span id="releaseDateRuntime">
+								<i class="bi bi-alarm"></i><span id="runtime"> N/A</span> min
+							</span>
+
+						</div>
+						<div class="movieDesc">
+							<div id="poster_path" class="movieImage">
+
+							</div>
+						</div>
+					</div>
+					<div class="property col-xl-3 col-lg-4 col-md-6 col-sm-7">
+
+						<div id="genre"></div>
+
+
+						<h4>Director: <span id="director">N/A</span></h4>
+						<h4>Writers: <span id="writer">N/A</span></h4>
+						<h4>Cast: <span id="cast">N/A</span></h4>
+						<h4>Production Country/Region: <span id="production_countries">N/A</span></h4>
+						<h4>Languange: <span id="spoken_languages">N/A</span></h4>
+						<div class="rating-section">
+							<h3 class="rating">Rating:</h3>
+							<div class="rating-layout">
+								<div id="icon-path"></div>
+								<h3 id="currentRatingPerc" class="rating"></h3>
+							</div>
+						</div>
+
+					</div>
+					<div class="col-xl-6 col-lg-5">
+						<div class="introduction-section">
+							<div class="introduction">Introduction: </div> <br />
+							<div id="overview"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="actor row">
+				<div class="actorBtn col-md-3 col-lg-2">
+					<p>Rate its environmental<br>credentials now!</p>
+					<button onclick="toRatePage()">RATE</button>
+				</div>
+				<div class="actor_info col-md-9 col-lg-10">
+					<h3>|Cast/Crew</h3>
+					<div class="actor_image">
+
+						<div class="actorImageItem">
+							<div class="image">
+								<img src="#" alt="profile">
+							</div>
+							<div class="actorText">
+								<h3>Name</h3>
+								<p>Director</p>
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+			<!-- pageBody end -->
+		</main>
+
+</body>
+
+</html>

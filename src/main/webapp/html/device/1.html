@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+  h1{
+    text-align: center;
+    color: cornflowerblue;
+  }
+  #main{
+    margin-top: 3%;
+float: left;
+    width: 50%;
+    height: 360px;
+  }
+  #main2{
+    margin-top: 3%;
+    float: left;
+    width: 50%;
+    height: 360px;
+  }
+  .scoreResult{
+    width: 90%;
+    height: 30px;
+    color: #019ecb;
+    display: flex;
+    justify-content: space-between;
+      margin: 0 85px;
+  }
+</style>
+
+<body>
+<h1>Rating Dashboard</h1>
+<div id="main">
+</div>
+
+<div id="main2">
+  22
+</div>
+
+<div class="scoreResult">
+  <p style="text-align: center; ">the Highest Average Rating of Top10 Movies: <span id="supreme">XXX</span></p>
+  <p style="text-align: center">the Most Popular Movie: <span id="hot">XXX</span></p>
+</div>
+
+
+<script src="../../js/axios.min.js"></script>
+<script src="../../js/echarts.min.js"></script>
+<script>
+
+  let avgData = {}
+  let countData = {}
+  var myChart
+    axios.get("/score/getAvgFraction").then(resp =>{
+      avgData = resp.data;
+      console.log(avgData)
+      document.getElementById("supreme").innerText = avgData.avgX[0]
+      var chartDom = document.getElementById('main');
+       myChart = echarts.init(chartDom);
+      var option;
+      option = {
+        title: {
+          text: "Average Rating",
+         /* subtext: "the average rating of movie",*/
+          sublink: "http://",
+          x: "left",
+          /*textStyle: {
+            color: "rgb(36, 37, 38)"
+          }*/
+        },
+        tooltip: {
+          trigger: "axis",
+          show: true,
+          axisPointer: {
+            type: "none"
+          }
+        },
+        legend: {
+          data: ["highest rating"]
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: {
+              show: true
+            },
+            dataView: {
+              show: true,
+              readOnly: true
+            },
+            magicType: {
+              show: false,
+              type: ["line", "bar"]
+            },
+            restore: {
+              show: true
+            },
+            saveAsImage: {
+              show: true
+            },
+            dataZoom: {
+              show: true
+            }
+          },
+          showTitle: true
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            boundaryGap: false,
+            data: avgData.avgX,
+            position: "bottom",
+            name: "movie",
+            nameTextStyle: {
+              color: "rgb(36, 37, 38)",
+              fontStyle: "normal"
+            },
+            axisLabel: {
+              show: true
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: "value",
+            name: "average rating",
+            nameTextStyle: {
+              fontSize: 12,
+              color: "rgb(46, 47, 48)"
+            },
+            splitLine: {
+              show: true
+            }
+          }
+        ],
+        series: [
+          {
+            name: "highest rating",
+            type: "line",
+            data: avgData.avgY,
+            markPoint: {
+              data: [
+                {
+                  type: "max",
+                  name: "highest rating"
+                },
+                {
+                  type: "min",
+                  name: "lowest rating"
+                }
+              ]
+            },
+            markLine: {
+              data: [
+                {
+                  type: "average",
+                  name: "average rating"
+                }
+              ]
+            },
+            smooth: true,
+            symbolSize: 1,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "top"
+                }
+              }
+            }
+          }
+        ],
+        calculableColor: "rgba(255,165,0,0.6)",
+        animation: true,
+        animationDuration: 1209,
+        animationEasing: "SinusoidalInOut"
+      }
+      option && myChart.setOption(option);
+    })
+
+  var myChart2;
+    axios.get("/score/getCountFraction").then(resp =>{
+      countData = resp.data;
+      document.getElementById("hot").innerText = countData.countX[0]
+      var chartDom2 = document.getElementById('main2');
+      myChart2  = echarts.init(chartDom2);
+      var option2;
+
+      option2 = {
+        title: {
+          text: "Popularity",
+          subtext: "top10 rating"
+        },
+        tooltip: {
+          trigger: "axis",
+          show: true,
+          borderRadius: 4
+        },
+        legend: {
+          data: ["number of rating"]
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: {
+              show: true
+            },
+            dataView: {
+              show: true,
+              readOnly: true
+            },
+            magicType: {
+              show: false,
+              type: ["line", "bar"]
+            },
+            restore: {
+              show: true
+            },
+            saveAsImage: {
+              show: true
+            }
+          }
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            data: countData.countX
+          }
+        ],
+        yAxis: [
+          {
+            type: "value"
+          }
+        ],
+        series: [
+          {
+            name: "number of rating",
+            type: "bar",
+            data: countData.countY,
+            markPoint: {
+              data: [
+                {
+                  type: "max",
+                  name: "max"
+                },
+                {
+                  type: "min",
+                  name: "min"
+                }
+              ]
+            },
+            markLine: {
+              data: [
+                {
+                  type: "average",
+                  name: "average"
+                }
+              ]
+            },
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "top",
+                  textStyle: {
+                    fontStyle: "normal",
+                    fontWeight: "bold"
+                  }
+                },
+                borderRadius: 4
+              }
+            }
+          }
+        ],
+        animation: true,
+        animationThreshold: 1005,
+        animationEasing: "CubicInOut"
+      }
+      option2 && myChart2.setOption(option2);
+    })
+
+
+
+
+  window.addEventListener("resize", function() {
+    myChart2.resize();
+    myChart.resize();
+  })
+
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+server:
+  port: 8081
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  datasource:
+    url: jdbc:mysql://localhost:8889/thunbergtest?characterEncoding=utf8&useSSL=false&serverTimezone=Europe/London&rewriteBatchedStatements=true
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: phaedon
+
+  mail:
+    host: mail-relay.gla.ac.uk
+    port: 25
+    username: screencarbontest@glasgow.ac.uk
+    password: 
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: true
+
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/*.xml  #sqlxml
+  configuration:
+    map-underscore-to-camel-case: true
+

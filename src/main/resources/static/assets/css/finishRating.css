@@ -1,0 +1,159 @@
+/* * {
+	margin: 0;
+	padding: 0;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	/* line-height: normal; 
+} */
+
+.pageBody {
+	width: 80%;
+	margin: 0px auto;
+
+	/* background-color: aquamarine; */
+	color: black;
+}
+
+.finish-image {
+	/* width: 230px;
+    height: 290px;*/
+
+	width: auto;
+	height: auto;
+	border-radius: 22px;
+	border: 12px solid transparent;
+}
+
+@media (min-width: 1200px) {
+	.finish-image {
+		margin: auto 12%;
+	}
+}
+
+@media (min-width: 576px) {
+
+	.poster-container {
+		margin: auto;
+	}
+}
+
+@media (max-width: 576px) {
+	.poster-container {
+		width: 55%;
+		margin: auto;
+	}
+}
+
+.finish-image img {
+	width: 100%;
+	height: 100%;
+	border-radius: 10px;
+	object-fit: cover;
+}
+
+.description {
+	align-self: center;
+	margin-top: 20px;
+}
+
+.fontStyle {
+	text-align: center;
+	font-weight: 800;
+	font-size: 38px;
+	/*    margin-top: 8rem;*/
+}
+
+.vidoe-desc {
+	width: 85%;
+	/*    height: 100px;*/
+	margin: 20px auto;
+	/* background-color: antiquewhite; */
+}
+
+.video-title {
+	/* width: 100%;
+    height: 210px;
+    line-height: 210px;
+    color: black;
+     background-color: antiquewhite; */
+	text-align: center;
+	margin: 20px auto;
+}
+
+.video-title h2 {
+	/*    line-height: 210px;*/
+	line-height: 50px;
+}
+
+.video-info {
+	width: 100%;
+	/*	height: 600px;*/
+
+	text-align: center;
+	/* background-color: aquamarine; */
+}
+
+.video-info table {
+	text-align: left;
+	/*
+	margin: 0 auto;
+	
+	width: 420px;
+	height: 50px; */
+}
+
+.table>tbody {
+	vertical-align: middle;
+}
+
+/* .video-info table td {
+	padding-right: 20px;
+	/* Adds space to the right side of the first <td> 
+} */
+
+.video-info h3 {
+	font-size: 23px;
+	font-weight: 500;
+}
+
+.video-info h3 {
+	display: block;
+	/* Ensures h3 uses the full container width */
+	/* white-space: nowrap; */
+	/* Prevents the text from wrapping */
+}
+
+@media (max-width: 768px) {
+	.table>tbody>tr>.rating-numbers {
+		text-align: right;
+	}
+}
+
+.video-info h3 span,
+.video-info h3 i {
+	display: inline;
+	/* Keeps elements inline */
+	vertical-align: middle;
+	/* Aligns elements vertically in the middle */
+}
+
+.search-input {
+	border: 1px solid black;
+	border-radius: 20px;
+	background-color: transparent;
+	padding-left: 50px;
+	/* Make room for the magnifier icon inside the input */
+}
+
+.search-icon {
+	color: black;
+	position: absolute;
+	left: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+
+.video-info button {
+	margin-top: 40px;
+}

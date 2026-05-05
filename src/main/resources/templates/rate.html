@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<body>
+	<div layout:fragment="content">
+		<main class="container my-5">
+			<div>
+				<h2>You are now rating: <span id="title"></span></h2>
+
+				<div class="row mt-3">
+					<div class="col-md-5 col-xl-3 col-lg-4">
+						<div class="image" id="poster_path"><img src="#" alt="img"></div>
+					</div>
+					<div class="col-xl-9 col-lg-8 mt-md-0">
+						<h4 class="fw-bold mt-3">Introduction to the rating system</h4>
+						<p>To rate its ‘Green’ credentials, all you need to do is to respond to 15 questions about
+							this movie. You will be asked how strongly you ‘Agree’ or ‘Disagree’ with fifteen statements
+							about
+							what you
+							have seen and heard.</p>
+						<p class="fw-bold">Once you have completed the questionnaire simply click ‘Finish’ and the
+							programme
+							will calculate your rating for the film.</p>
+						<p>‘Your Rating’ will then be shown next to the ‘Average Rating’ of all other contributors.</p>
+						<div id="ratingSection" class="d-flex mt-5 mt-mobile-5">
+							<div class="mt-3">
+								<h5 class="currentRatingTitle">Current rating:</h5>
+								<div class="rating-layout">
+									<div id="icon-path"></div>
+
+									<h1 id="currentRatingPerc"></h1>
+								</div>
+							</div>
+							<div>
+
+								<img class="rating-logo" src="/assets/images/logo/LOGO_V3-BLACK.png"
+									alt="SCT_approved_logo">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="questionnaire-container">
+				<h2 id="introduction-title">Question:</h2>
+				<div class="questionGroup1">
+					<div class="messageUnderQuestion">
+						<p><span><strong>AWARENESS</strong></span> – of the natural world, climate change and modern
+							lifestyles <br />
+							This section features a number of statements for you to agree or disagree with.</p>
+					</div>
+
+					<hr>
+
+					<form action="#" class="questionGroup1Form1 my-5">
+
+						<!-- Question 1 -->
+						<p class="question">Q1: The film or TV drama shows that the natural world is a precious resource
+							that is important for the wellbeing of the characters and life on the planet.</p>
+
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question1" id="question1Option1"
+									value="4">
+								<label class="form-check-label" for="question1Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question1" id="question1Option2"
+									value="3">
+								<label class="form-check-label" for="question1Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question1" id="question1Option3"
+									value="2">
+								<label class="form-check-label" for="question1Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question1" id="question1Option4"
+									value="1">
+								<label class="form-check-label" for="question1Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question1" id="question1Option5"
+									value="0">
+								<label class="form-check-label" for="question1Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 2 -->
+						<p class="question">Q2: The film or TV show promotes a wasteful or excessively materialistic
+							lifestyle.</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question2" id="question2Option1"
+									value="0">
+								<label class="form-check-label" for="question2Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question2" id="question2Option2"
+									value="1">
+								<label class="form-check-label" for="question2Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question2" id="question2Option3"
+									value="2">
+								<label class="form-check-label" for="question2Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question2" id="question2Option4"
+									value="3">
+								<label class="form-check-label" for="question2Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question2" id="question2Option5"
+									value="4">
+								<label class="form-check-label" for="question2Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 3 -->
+						<p class="question">Q3: Characters are shown making responsible environmental decisions in their
+							everyday lives, such as using sustainable transport options, practicing recycling, and
+							cutting waste.
+							<br />
+							<span>
+								(For example, sustainable transportation choices might include taking the train instead
+								of a plane, using public transport, or riding a bicycle.)
+							</span>
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question3" id="question3Option1"
+									value="4">
+								<label class="form-check-label" for="question3Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question3" id="question3Option2"
+									value="3">
+								<label class="form-check-label" for="question3Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question3" id="question3Option3"
+									value="2">
+								<label class="form-check-label" for="question3Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question3" id="question3Option4"
+									value="1">
+								<label class="form-check-label" for="question3Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question3" id="question3Option5"
+									value="0">
+								<label class="form-check-label" for="question3Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 4 -->
+						<p class="question">Q4: Characters are shown making ethical food and product choices.
+							<br />
+							<span>
+								(For example, choosing not to buy a Fast Fashion item or foods transported from distant
+								countries, etc.)
+							</span>
+						</p>
+
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question4" id="question4Option1"
+									value="4">
+								<label class="form-check-label" for="question4Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question4" id="question4Option2"
+									value="3">
+								<label class="form-check-label" for="question4Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question4" id="question4Option3"
+									value="2">
+								<label class="form-check-label" for="question4Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question4" id="question4Option4"
+									value="1">
+								<label class="form-check-label" for="question4Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question4" id="question4Option5"
+									value="0">
+								<label class="form-check-label" for="question4Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 5 -->
+						<p class="question">Q5: The film or TV show promotes more harmful environmental actions than
+							beneficial ones.</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question5" id="question5Option1"
+									value="0">
+								<label class="form-check-label" for="question5Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question5" id="question5Option2"
+									value="1">
+								<label class="form-check-label" for="question5Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question5" id="question5Option3"
+									value="2">
+								<label class="form-check-label" for="question5Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question5" id="question5Option4"
+									value="3">
+								<label class="form-check-label" for="question5Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question5" id="question5Option5"
+									value="4">
+								<label class="form-check-label" for="question5Option5">Strongly Disagree</label>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<div class="questionGroup2">
+					<div class="messageUnderQuestion">
+						<p><span><strong>UNDERSTANDING</strong></span> – of the wider issues around climate change
+							<br />
+							This section features a number of statements for you to agree or disagree with.</p>
+					</div>
+
+					<hr>
+
+					<form action="#" class="questionGroup2Form2 my-5">
+
+						<!-- Question 6 -->
+						<p class="question">Q6: Characters don’t stop to think or talk about the climate emergency,
+							global warming, pollution, or any other environmental issues.</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question6" id="question6Option1"
+									value="0">
+								<label class="form-check-label" for="question6Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question6" id="question6Option2"
+									value="1">
+								<label class="form-check-label" for="question6Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question6" id="question6Option3"
+									value="2">
+								<label class="form-check-label" for="question6Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question6" id="question6Option4"
+									value="3">
+								<label class="form-check-label" for="question6Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question6" id="question6Option5"
+									value="4">
+								<label class="form-check-label" for="question6Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 7 -->
+						<p class="question">Q7: The film or TV show demonstrates that climate change and environmental
+							damage have negative impacts on people's lives and well-being.
+							<br />
+							<span>(These negative impacts could include deforestation, air pollution, extreme weather
+								events, crop failures, etc.)</span>
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question7" id="question7Option1"
+									value="4">
+								<label class="form-check-label" for="question7Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question7" id="question7Option2"
+									value="3">
+								<label class="form-check-label" for="question7Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question7" id="question7Option3"
+									value="2">
+								<label class="form-check-label" for="question7Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question7" id="question7Option4"
+									value="1">
+								<label class="form-check-label" for="question7Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question7" id="question7Option5"
+									value="0">
+								<label class="form-check-label" for="question7Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 8 -->
+						<p class="question">Q8: The film or TV show illustrates that the costs and impacts of climate
+							change are not shared
+							or experienced equally by different social groups, regions, or countries.</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question8" id="question8Option1"
+									value="4">
+								<label class="form-check-label" for="question8Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question8" id="question8Option2"
+									value="3">
+								<label class="form-check-label" for="question8Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question8" id="question8Option3"
+									value="2">
+								<label class="form-check-label" for="question8Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question8" id="question8Option4"
+									value="1">
+								<label class="form-check-label" for="question8Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question8" id="question8Option5"
+									value="0">
+								<label class="form-check-label" for="question8Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 9 -->
+						<p class="question">Q9: The film or TV show suggests that new technology will solve the problems
+							of climate change
+							without requiring us to make difficult choices.</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question9" id="question9Option1"
+									value="0">
+								<label class="form-check-label" for="question9Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question9" id="question9Option2"
+									value="1">
+								<label class="form-check-label" for="question9Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question9" id="question9Option3"
+									value="2">
+								<label class="form-check-label" for="question9Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question9" id="question9Option4"
+									value="3">
+								<label class="form-check-label" for="question9Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question9" id="question9Option5"
+									value="4">
+								<label class="form-check-label" for="question9Option5">Strongly Disagree</label>
+							</div>
+						</div>
+						<!-- Question 10 -->
+						<p class="question">Q10: The film or TV show does not comment on pollution or the wasteful use
+							of fossil fuels,
+							and does not criticise characters for ignoring these issues.<br />
+							<span>(For example, a film might glorify destructive activities, like car chases,
+								explosions, or depict people trashing the environment.)</span>
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question10" id="question10Option1"
+									value="0">
+								<label class="form-check-label" for="question10Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question10" id="question10Option2"
+									value="1">
+								<label class="form-check-label" for="question10Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question10" id="question10Option3"
+									value="2">
+								<label class="form-check-label" for="question10Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question10" id="question10Option4"
+									value="3">
+								<label class="form-check-label" for="question10Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question10" id="question10Option5"
+									value="4">
+								<label class="form-check-label" for="question10Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+					</form>
+				</div>
+
+				<div class="questionGroup3">
+					<div class="messageUnderQuestion">
+						<p><span><strong>TAKING RESPONSIBILITY</strong></span> – the screen narrative shows characters
+							taking action to address climate change or other environmental issues.<br />
+							This section features a number of statements for you to agree or disagree with.</p>
+					</div>
+
+					<hr>
+
+					<form action="#" class="questionGroup3Form3 my-5">
+
+						<!-- Question 11 -->
+						<p class="question">Q11: The film or TV programme shows that we all have a role to play in
+							tackling climate change,
+							even if it requires short-term financial or material sacrifices.
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question11" id="question11Option1"
+									value="4">
+								<label class="form-check-label" for="question11Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question11" id="question11Option2"
+									value="3">
+								<label class="form-check-label" for="question11Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question11" id="question11Option3"
+									value="2">
+								<label class="form-check-label" for="question11Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question11" id="question11Option4"
+									value="1">
+								<label class="form-check-label" for="question11Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question11" id="question11Option5"
+									value="0">
+								<label class="form-check-label" for="question11Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 12 -->
+						<p class="question">Q12: When characters harm the environment, they don't face any criticism or
+							suffer any consequence.
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question12" id="question12Option1"
+									value="0">
+								<label class="form-check-label" for="question12Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question12" id="question12Option2"
+									value="1">
+								<label class="form-check-label" for="question12Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question12" id="question12Option3"
+									value="2">
+								<label class="form-check-label" for="question12Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question12" id="question12Option4"
+									value="3">
+								<label class="form-check-label" for="question12Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question12" id="question12Option5"
+									value="4">
+								<label class="form-check-label" for="question12Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 13 -->
+						<p class="question">Q13: The set design emphasizes that the natural world, renewable energy,
+							and sustainable practices and products are important parts of our community, society, and
+							planet.
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question13" id="question13Option1"
+									value="4">
+								<label class="form-check-label" for="question13Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question13" id="question13Option2"
+									value="3">
+								<label class="form-check-label" for="question13Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question13" id="question13Option3"
+									value="2">
+								<label class="form-check-label" for="question13Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question13" id="question13Option4"
+									value="1">
+								<label class="form-check-label" for="question13Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question13" id="question13Option5"
+									value="0">
+								<label class="form-check-label" for="question13Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 14 -->
+						<p class="question">Q14: One or more characters take positive action to address climate change
+							or protect the natural world.
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question14" id="question14Option1"
+									value="4">
+								<label class="form-check-label" for="question14Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question14" id="question14Option2"
+									value="3">
+								<label class="form-check-label" for="question14Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question14" id="question14Option3"
+									value="2">
+								<label class="form-check-label" for="question14Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question14" id="question14Option4"
+									value="1">
+								<label class="form-check-label" for="question14Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question14" id="question14Option5"
+									value="0">
+								<label class="form-check-label" for="question14Option5">Strongly Disagree</label>
+							</div>
+						</div>
+
+						<!-- Question 15 -->
+						<p class="question">Q15: Overall, the film or TV show delivers a positive environmental message.
+						</p>
+						<div class="radio-buttons">
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question15" id="question15Option1"
+									value="4">
+								<label class="form-check-label" for="question15Option1">Strongly Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question15" id="question15Option2"
+									value="3">
+								<label class="form-check-label" for="question15Option2">Agree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question15" id="question15Option3"
+									value="2">
+								<label class="form-check-label" for="question15Option3">Neither agree nor
+									disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question15" id="question15Option4"
+									value="1">
+								<label class="form-check-label" for="question15Option4">Disagree</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="question15" id="question15Option5"
+									value="0">
+								<label "form-check-label" for="question15Option5">Strongly Disagree</label>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<input type="hidden" th:name="_csrf" th:value="${csrfToken.token}" />
+				<button type="button" class="btn btn-next mb-3 page">Next</button>
+			</div>
+		</main>
+	</div>
+</body>
+
+</html>

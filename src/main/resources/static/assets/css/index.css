@@ -1,0 +1,291 @@
+	/*	body {
+			font-family: 'Open Sans', sans-serif;
+		} */
+
+		/* <uniquifier>: Use a unique and descriptive class name
+		** <weight>: Use a value from 400 to 900
+		*/
+
+		.playfair-display-sub-heading {
+			font-family: "Playfair Display", serif;
+			font-optical-sizing: auto;
+			font-weight: 400;
+			font-style: normal;
+		}
+
+				.search-input {
+					border: 1px solid black;
+					border-radius: 20px;
+					background-color: transparent;
+					padding-left: 50px;
+					/* Make room for the magnifier icon inside the input */
+				}
+		
+				.search-icon {
+					color: black;
+					position: absolute;
+					left: 15px;
+					top: 50%;
+					transform: translateY(-50%);
+					pointer-events: none;
+				}
+
+		@media (max-width: 767px) {
+			.carousel-inner .carousel-item>div {
+				display: none;
+			}
+
+			.carousel-inner .carousel-item>div:first-child {
+				display: block;
+			}
+		}
+
+		.carousel-inner .carousel-item.active,
+		.carousel-inner .carousel-item-next,
+		.carousel-inner .carousel-item-prev {
+			display: flex;
+		}
+
+		/* medium and up screens */
+		@media (min-width: 768px) {
+
+			.carousel-inner .carousel-item-end.active,
+			.carousel-inner .carousel-item-next {
+				transform: translateX(25%);
+			}
+
+			.carousel-inner .carousel-item-start.active,
+			.carousel-inner .carousel-item-prev {
+				transform: translateX(-25%);
+			}
+		}
+
+		.carousel-inner .carousel-item-end,
+		.carousel-inner .carousel-item-start {
+			transform: translateX(0);
+		}
+		
+		.card-text {
+			font-size: 1.6rem;
+		}
+		
+		
+		/* Additional CSS for card titles and texts */
+		.card-body .card-title,
+		.card-body .card-text {
+			text-align: left;
+			/* Ensure text is aligned to the left */
+			margin: 0;
+			/* Remove default margins */
+			white-space: nowrap;
+			/* Keep the title in a single line */
+			overflow: hidden;
+			/* Avoid text spilling out */
+			text-overflow: ellipsis;
+			/* Add ellipsis if text is too long */
+		}
+
+		.card-body .card-text {
+			font-weight: bold;
+		}
+
+		/* Ensure the card titles are left-aligned and responsive */
+		.card {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			/* Make sure card takes full height */
+			border: none;
+			margin: 0 14px;
+			cursor: pointer;
+		}
+		
+
+		.card-img {
+			width: 100%;
+			/* Ensure container covers the full card width */
+			height: auto;
+			/* Maintain the aspect ratio */
+			border: 12px solid #ff4500;
+			border-radius: 32px;
+			/* Apply border-radius to the container */
+			overflow: hidden;
+			/* Hide overflow to respect the border-radius */
+			box-sizing: border-box;
+		}
+		
+
+		.card-img img {
+			width: 100%;
+			/* Ensure images cover the full width */
+			/* height: auto; */
+			/* height: 28vw; */
+			/* Maintain the aspect ratio of images */
+			border: none;
+			border-radius: 20px;
+			/* Remove border from the image, if you don't need it */
+		}
+		.card-img img:hover {
+            transform: scale(1.1); /* Move the card slightly on hover */
+            transition: transform 0.3s ease-in-out; /* Smooth transition */
+        }
+        
+		.card-icon {
+			width: 40px;
+			height: 40px;
+			margin-right: 10px;
+		}
+		  
+		
+		/* Extra small devices (phones, less than 576px) */
+		/* No media query since this is the default in Bootstrap */
+
+		/* Small devices (portrait tablets and large phones, 576px and up) */
+		@media (min-width: 576px) {
+			/* CSS rules for small devices */
+
+			.card-img img {
+				height: auto;
+			}
+		}
+
+		/* Medium devices (landscape tablets, 768px and up) */
+		@media (min-width: 768px) {
+			/* CSS rules for medium devices */
+
+			.card-img img {
+				height: 174px;
+			}
+			
+			.card-text {
+				font-size: 1.1rem;
+			}
+			
+			.card-icon {
+				width: 30px;
+				height: 30px;
+				margin-right: 8px;
+			}
+		}
+
+		/* Large devices (laptops/desktops, 992px and up) */
+		@media (min-width: 992px) {
+			/* CSS rules for large devices */
+
+			.card-img img {
+				height: 264px;
+			}
+			
+			.card-text {
+				font-size: 1.4rem;
+			}
+			
+			.card-icon {
+			width: 40px;
+			height: 40px;
+			margin-right: 10px;
+		}
+		}
+
+		/* Extra large devices (large desktops, 1200px and up) */
+		@media (min-width: 1200px) {
+			/* CSS rules for extra large devices */
+
+			.card-img img {
+				height: 331.5px;
+			}
+			
+			.card-text {
+				font-size: 1.5rem;
+			}
+		}
+
+		/* Extra extra large devices (larger desktops, 1400px and up) - Depending on need */
+		@media (min-width: 1400px) {
+			/* CSS rules for extra extra large devices */
+
+			.card-img img {
+				height: 399px;
+			}
+		}
+
+		.card-body {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			/* Ensure title and text are laid out vertically */
+		}
+
+		.carousel-control-prev,
+		.carousel-control-next {
+			width: 45px;
+			/* Adjust the size of the buttons */
+			height: 45px;
+			/* Adjust the size of the buttons */
+			align-items: center;
+			/* Center items vertically inside the button */
+			/*  justify-content: center;*/
+			/* Center items horizontally inside the button */
+			top: 50%;
+			/* Position buttons in the middle vertically */
+			transform: translateY(-50%);
+			/* Offset the button by half its height */
+			border: none;
+			/* Remove any default borders */
+		}
+
+		.carousel-control-prev-icon,
+		.carousel-control-next-icon {
+			width: 24px;
+			/* Adjust the size of the icon if needed */
+			height: 24px;
+			/* Adjust the size of the icon if needed */
+			background-size: 100% 100%;
+			/* Ensure the icon covers the area properly */
+		}
+
+		/* Ensure the background is properly set for visibility */
+		.bg-secondary {
+			background-color: var(--bs-secondary);
+			/* Use Bootstrap's secondary color */
+			display: flex;
+			/* Ensure the flexbox layout for centering content */
+		}
+		
+		
+
+		@media (max-width: 767px) {
+			.card-title {
+				font-size: 1.8rem;
+				/* Adjust title font size for small devices */
+			}
+
+			.card-text {
+				font-size: 1.8rem;
+				/* Adjust text font size for small devices */
+			}
+
+			.card {
+				margin: 10px 5px;
+				/* Adjust the margin for smaller screens */
+			}
+		}
+@media (max-width: 576px) {
+			/* CSS rules for small devices */
+			.display-5 {
+				font-size: 1rem;
+			}
+			.fs-2{
+				font-size: 0.8rem !important;
+			}
+			
+			.card-title {
+				font-size: 1.4rem;
+				/* Adjust title font size for small devices */
+			}
+
+			.card-text {
+				font-size: 1.4rem;
+				/* Adjust text font size for small devices */
+			}
+		}

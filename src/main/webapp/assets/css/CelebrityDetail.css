@@ -1,0 +1,124 @@
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    line-height: normal;
+}
+.pageBody {
+    width: 80%;
+    margin: 0px auto;
+    /* background-color: aquamarine; */
+    color: black;
+}
+.celebrity{
+    padding-top: 40px;
+    width: 100%;
+    height: 140px;
+    /*background-color: chocolate;*/
+}
+
+.celebrity h1{
+    color: black;
+}
+.celebrityDesc{
+    width: 100%;
+    height: 330px;
+    /*background-color: coral;*/
+}
+.image {
+    width: 20%;
+    height: 330px;
+    /*background-color: cornsilk;*/
+    float: left;
+}
+.celebrityDesc .image img{
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+.celebrityInfo{
+    float: left;
+    width: 80%;
+    height: 330px;
+    padding-top: 50px;
+    padding-left: 30px;
+    /*background-color: crimson;*/
+}
+.celebrityInfo h3{
+    font-weight: 700;
+    line-height: 35px;
+}
+
+
+.knownName{
+    margin-top: 40px;
+    width: 100%;
+    height: 40px;
+    line-height:  40px;
+    background-color: #89c7ee;
+    text-align: left;
+    line-height: 40px;
+    font-weight: 700;
+}
+.known{
+    width: 100%;
+}
+
+.knownItem{
+    height: 380px;
+    /* background-color: beige; */
+    width: 20%;
+    padding: 10px;
+    float: left;
+    color: black;
+    margin-bottom: 15px;
+}
+
+
+.knownItem h5{
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.knownItem h5:hover{
+    color: #5b5b5b;
+    text-decoration: underline ;
+}
+
+.knownItem p{
+    color: black;
+    margin-top: 1rem;
+    margin-bottom: 0rem;
+}
+
+.knownItem p > span:nth-child(2){
+    font-weight: 800;
+}
+
+.VideoImage{
+    width: 100%;
+    height: 80%;
+    /*background-color: blueviolet;*/
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.knownItem:hover  .VideoImage img{
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+}
+
+
+.VideoImage img{
+    height: 100%;
+    width: 100%;
+    display: block;
+    -o-object-fit: cover;
+    object-fit: cover;
+    -o-object-position: center;
+    object-position: center;
+    border-radius: 8px;
+    -webkit-transition: all 300ms ease-in-out;
+    transition: all 300ms ease-in-out;
+}

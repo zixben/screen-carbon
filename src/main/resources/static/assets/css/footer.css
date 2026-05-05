@@ -1,0 +1,136 @@
+		/* Custom CSS for Footer */
+		.footer-background {
+			background-color: #000;
+			/* Assuming a black background as per the image */
+			color: white;
+			padding: 40px 0;
+			/* Adjusted padding for better spacing */
+		}
+
+		.footer-logo {
+			margin-bottom: 20px;
+			/* Space below the logo */
+		}
+
+		.footer-logo img {
+			width: 100%;
+			/* Make logo responsive */
+			max-width: 130px;
+			/* Maximum size of the logo */
+			height: auto;
+			/* Maintain aspect ratio */
+		}
+
+		.footer-heading {
+			font-size: 24px;
+			/* Assuming larger text for headings */
+			font-weight: bold;
+			margin-bottom: 20px;
+			/* Space between heading and content */
+		}
+
+		.footer-content p {
+			margin-bottom: 10px;
+			/* Space between paragraphs */
+		}
+
+		.footer-service p a {
+			color: #fff;
+			-webkit-box-align: center;
+			-ms-flex-align: center;
+			align-items: center;
+			display: -webkit-box;
+			display: -ms-flexbox;
+			display: flex;
+			-ms-flex-wrap: wrap;
+			flex-wrap: wrap;
+			-webkit-box-pack: inherit;
+			-ms-flex-pack: inherit;
+			justify-content: inherit;
+			-webkit-transition: all 300ms ease-in-out;
+			transition: all 300ms ease-in-out;
+			position: relative;
+		}
+
+		.footer-service p a i {
+			margin-right: 8px;
+		}
+
+		.footer-service p a::after {
+			content: "\f101";
+			position: absolute;
+			top: 0;
+			left: 0;
+			font-family: "Font Awesome 6 Free";
+			font-weight: 900;
+			color: #fff;
+			opacity: 0;
+			visibility: hidden;
+			-webkit-transition: all 300ms ease-in-out;
+			transition: all 300ms ease-in-out;
+		}
+
+		.footer-service p a:hover {
+			color: #fff;
+			padding-left: 18px;
+		}
+
+		.footer-service p a:hover::after {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		@media (max-width: 767px) {
+
+			.footer-heading,
+			.footer-logo img {
+				margin-top: 20px;
+				/* Extra spacing on smaller screens */
+			}
+		}
+
+		.scroll-top {
+			width: 50px;
+			height: 50px;
+			line-height: 50px;
+			position: fixed;
+			bottom: -30px;
+			right: 30px;
+			font-size: 20px;
+			border-radius: 50%;
+			z-index: 99;
+			color: #fff;
+			text-align: center;
+			cursor: pointer;
+			background: #5d7185;
+			/*  #808080 #5192bb; */
+			text-transform: capitalize;
+			-webkit-transition: 1s ease;
+			transition: 1s ease;
+			border: none;
+			opacity: 0;
+			font-family: revert;
+		}
+
+		.scroll-top.open {
+			bottom: 30px;
+			opacity: 1;
+			right: 30px;
+		}
+
+		.scroll-top::after {
+			position: absolute;
+			z-index: -1;
+			content: "";
+			top: 100%;
+			left: 5%;
+			height: 10px;
+			width: 90%;
+			opacity: 1;
+			background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 80%);
+		}
+
+		.scroll-top:hover {
+			background: #1c425c;
+			/* #17384e;*/
+		}

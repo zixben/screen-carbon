@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/default}">
+
+<head>
+	<title th:text="${title}"></title>
+
+</head>
+
+<body>
+
+	<div layout:fragment="content">
+
+		<!-- pageBody start -->
+		<div class="pageBody">
+			<div class="selectCar">
+				<div class="headingToggleSwitcher my-3">
+					<h2>Choose the movie you wish to rate!</h2>
+
+					<!-- Toggle Switch -->
+					<div class="form-check form-switch toggleSwitcher-Label">
+						<input class="form-check-input" type="checkbox" id="toggleSwitch"
+							th:checked="${session.toggleState ? 'checked' : null}"
+							onchange="toggleContent(this.checked)">
+						<label class="form-check-label" for="toggleSwitch">Toggle TMDB / Screen Carbon Test
+							Rated</label>
+					</div>
+				</div>
+				<form class="row g-3 search">
+					<div class="col-auto" id="sortSelectContainer">
+
+					</div>
+					<div class="col-auto">
+						<select class="form-select genre-select" aria-label="Default select example">
+							<option value="" selected>Genre</option>
+							<option value="28">Action</option>
+							<option value="12">Adventure</option>
+							<option value="16">Animation</option>
+							<option value="35">Comedy</option>
+							<option value="80">Crime</option>
+							<option value="99">Documentary</option>
+							<option value="18">Drama</option>
+							<option value="10751">Family</option>
+							<option value="14">Fantasy</option>
+							<option value="36">History</option>
+							<option value="27">Horror</option>
+							<option value="10402">Music</option>
+							<option value="9648">Mystery</option>
+							<option value="10749">Romance</option>
+							<option value="878">Science Fiction</option>
+							<option value="10770">TV Movie</option>
+							<option value="53">Thriller</option>
+							<option value="10752">War</option>
+							<option value="37">Western</option>
+						</select>
+					</div>
+					<div class="col-auto">
+						<select class="form-select country-select" aria-label="Default select example">
+							<option value="" selected>Country</option>
+							<option value="AU">Australia</option>
+							<option value="BE">Belgium</option>
+							<option value="CA">Canada</option>
+							<option value="CN">China</option>
+							<option value="DK">Denmark</option>
+							<option value="FI">Finland</option>
+							<option value="FR">France</option>
+							<option value="DE">Germany</option>
+							<option value="GR">Greece</option>
+							<option value="HU">Hungary</option>
+							<option value="IN">India</option>
+							<option value="IT">Italy</option>
+							<option value="JP">Japan</option>
+							<option value="KR">South Korea</option>
+							<option value="MX">Mexico</option>
+							<option value="NL">Netherlands</option>
+							<option value="NG">Nigeria</option>
+							<option value="NO">Norway</option>
+							<option value="PE">Peru</option>
+							<option value="PL">Poland</option>
+							<option value="PT">Portugal</option>
+							<option value="RU">Russia</option>
+							<option value="ZA">South Africa</option>
+							<option value="ES">Spain</option>
+							<option value="SE">Sweden</option>
+							<option value="TR">Turkey</option>
+							<option value="UA">Ukraine</option>
+							<option value="GB">United Kingdom</option>
+							<option value="US">United States</option>
+						</select>
+					</div>
+					<div class="col-auto">
+						<select class="form-select year-select" aria-label="Default select example">
+							<option value="" selected>Year</option>
+							<option value="2034">2034</option>
+							<option value="2033">2033</option>
+							<option value="2032">2032</option>
+							<option value="2031">2031</option>
+							<option value="2030">2030</option>
+							<option value="2029">2029</option>
+							<option value="2028">2028</option>
+							<option value="2027">2027</option>
+							<option value="2026">2026</option>
+							<option value="2025">2025</option>
+							<option value="2024">2024</option>
+							<option value="2023">2023</option>
+							<option value="2022">2022</option>
+							<option value="2021">2021</option>
+							<option value="2020">2020</option>
+							<option value="2019">2019</option>
+						</select>
+					</div>
+				</form>
+				<!-- Search Section -->
+
+
+				<div class="mt-4 d-inline-block position-relative w-100" style="max-width: 500px;">
+					<input type="text" class="form-control search-input moveInput" placeholder="Search for a movie">
+					<i class="fa fa-search search-icon"></i>
+				</div>
+
+			</div>
+			<div class="videoStyle" id="movies">
+			</div>
+
+
+			<div class="toPage" style="height: 60px;width: 100%;margin-top: 20px;clear: both;">
+				<nav aria-label="Page navigation example">
+					<ul class="pagination">
+						<li class="page-item" data-action="prev"><a class="page-link" href="#">Previous</a></li>
+						<li class="page-item"><a class="page-link" href="#" id="pageNum">1</a></li>
+						<li class="page-item" data-action="next"><a class="page-link" href="#">Next</a></li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+		<!-- pageBody end -->
+	</div>
+
+</body>
+
+</html>

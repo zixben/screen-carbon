@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Login</title>
+    <!-- font awesome -->
+    <link rel="stylesheet" href="assets/css/all.min.css" />
+    <!-- bootstraph -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+    <!-- swiper js -->
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css" />
+    <!-- Fancy Box -->
+    <link rel="stylesheet" href="assets/css/jquery.fancybox.min.css" />
+    <!-- Select -->
+    <link rel="stylesheet" href="assets/css/select2.min.css" />
+    <!-- User's CSS Here -->
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+    <!-- Contact Page Start -->
+    <section class="fullPage-section p-0 bg-color">
+        <div class="full-page__wrapper">
+            <div class="full-page__image">
+                <!-- <div class="full-page__logo">
+                    <a href="index.html"><img src="assets/images/logo/logo.png" alt="logo" /></a>
+                </div> -->
+                <img src="assets/images/comming-soon.jpg" alt="comming-soon" />
+                <div class="contact__overlay">
+                    <div class="contact__info">
+                        <h2 class="section__title">Let's talk about all things!</h2>
+                        <p class="content">We’re here to help and answer any question you might have. Write to us or
+                            give us a call. We will reply to you as soon as possible. But yes, it can take up to 24
+                            hours.</p>
+                        <div class="contact__meta">
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="full-page__inner">
+                <div class="full-page__content">
+                    <div class="full-page__logo" style="color: red;text-align:center;">
+                        <img style="width:250px;" src="assets/images/logo/logo.png" alt="logo" />
+                    </div>
+                    <div class="form__inner">
+                        <form action="#" class="form__wrapper p-0">
+                            <h2 class="popup__title">Welcome Back</h2>
+                            <div class="form-group">
+                                <label for="email2">Account</label>
+                                <input type="text" name="account" id="email2" class="form-control" required
+                                    data-error="Please enter account" placeholder="Enter your account" />
+                            </div>
+                            <div class="form-group">
+                                <label for="pass2">Password</label>
+                                <input type="password" name="password" id="pass2" class="form-control" required=""
+                                    data-error="Please enter password" placeholder="Password" />
+                            </div>
+                            <div class="form-group">
+                                <label for="pass2">Code (Case sensitive)</label>
+                                <input type="text" name="code" id="pass2" style="width: 325px;float: left;"
+                                    class="form-control" required="true" data-error="Please enter code, click to change the picture！"
+                                    placeholder="code" />
+                                <span><img id="imgpw" style="width: 170px;margin-left:10px;margin-top:2px;border:2px solid #babbbc;float: left;" src=""
+                                        alt="Click to change"></span>
+                            </div>
+                            <div class="submit__btn" style="padding-top: 70px;">
+                                <button type="button" class="btn btn-primary mt-0 w-100 login">Login</button>
+                              <!--<button type="button" class="btn btn-primary mt-0 w-100 test">Test</button>-->
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__meta">
+                                    Don’t have an account?
+                                    <a href="signup.html">Sign up</a>
+                                </div>
+                                <!-- <a href="forget-password.html">Forgot Password?</a> -->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Contact Page End -->
+
+
+    <!-- Scroll-top -->
+    <button class="scroll-top scroll-to-target" data-target="html">scroll</button>
+    <!-- Scroll-top-end-->
+
+    <!-- JS -->
+    <script src="assets/js/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/jquery.fancybox.min.js"></script>
+    <script src="assets/js/counterup.min.js"></script>
+    <script src="assets/js/jquery.waypoints.js"></script>
+    <script src="assets/js/select2.min.js"></script>
+    <script src="assets/js/swiper-bundle.min.js"></script>
+    <script src="assets/js/scripts.js"></script>
+    <script src="assets/js/server.js"></script>
+<script>
+  $("#imgpw").attr("src",server +"/user/getCode")
+  //切换验证码
+  $("#imgpw").on("click", function() {
+    var date = new Date().getMilliseconds();
+    $("#imgpw").attr("src", server+"/user/getCode?" + date)
+  })
+  $(".test").on("click",function () {
+    $.ajax({
+      url: "https://api.themoviedb.org/3/search/multi?query=love&include_adult=false&language=en-US&page=1",
+      method:"get",
+      headers:{
+ //       "Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2ZjVhZjIwYmYxMDk1MGZhYTVkZmM1NDc4Y2Q0Y2ZiYSIsInN1YiI6IjY0OTA3OTk0NTU5ZDIyMDBjNTc3ZDM0MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.g7OKZiJ7GmZzkOWlNjqxo0GgG9b4uvlVK4akV4N-L9Y",
+        "Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1YzhmNGE5ZWE0MmZjY2Q5NDM1OTU1Njg0ZWZiMDQwMSIsInN1YiI6IjY1NTc2MzI2ZDRmZTA0MDBjNDIzMGVjMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.QEZuL47NYCWKmQoGwxuv9XHzwpsWKnwNqZ6i4ZzxV-c",
+        "accept":"application/json"
+      },
+      success: function (resp) {
+        for (const respKey in  resp.results) {
+          console.log(respKey)
+        }
+      }
+    });
+  })
+
+  //login
+  /**
+  $(".login").on("click",function () {
+    var formData = $('form').serialize();
+    console.log(server);
+    $.ajax({
+      url: server+"/user/login",
+      data: formData,
+      contentType: "application/json;charset=UTF-8",
+      success: function (resp) {
+		      console.log(resp);
+        if (resp.account == "admin"){
+            window.location.href=server+"/main.html"
+        }else{
+          alert("Login Successfully!")
+            window.location.href=server+"/index.html"
+        }
+        window.localStorage.setItem("user",JSON.stringify(resp))
+		
+      }
+    });
+  })
+**/
+$(".login").on("click", function () {
+    var formData = $('form').serializeArray();
+    var requestData = {};
+    
+    $.each(formData, function(index, field){
+        requestData[field.name] = field.value;
+    });
+
+    console.log(server);
+    $.ajax({
+        method: "POST",
+        url: server + "/user/login",
+        data: JSON.stringify(requestData),
+        contentType: "application/json;charset=UTF-8", // Update content type
+        success: function (resp) {
+            if (resp && resp.account === "admin") {
+                window.location.href = server + "/main.html";
+            } else {
+                alert("Login Successfully!");
+                window.location.href = server + "/index.html";
+            }
+            window.localStorage.setItem("user", JSON.stringify(resp));
+        }
+    });
+});
+
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>AccountManage</title>
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">-->
+
+  <link href="../../table/css/uiduck.css" type="text/css" rel="stylesheet">
+  <link href="../../table/css/simple.css" type="text/css" rel="stylesheet">
+  <!-- AJAX封装框架 -->
+  <script src="../../js/axios.min.js"></script>
+  <!-- 新 Bootstrap5 核心 CSS 文件 -->
+  <link rel="stylesheet" href="../../plugins/css/bootstrap.min.css">
+  <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+  <script src="../../js/bootstrap.min.js"></script>
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+<body>
+  <!--增加用户模态框-->
+  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+      <div class="modal-content" style="position: relative;">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addUserFrom" autocomplete="off">
+            <fieldset>
+              <div class="mb-2">
+                <label class="form-label col-form-label-sm fa-text-height">UserName:</label>
+                <input type="text" title="UserName" maxlength="10" id="adduname" name="username"
+                  class="username form-control form-control-sm" placeholder="Please enterUserName">
+              </div>
+              <div class="mb-2">
+                <label class="form-label  col-form-label-sm">Account:</label>
+                <input type="text" title="Account" maxlength="10" id="addlogname" name="account"
+                  class="logName  form-control form-control-sm" placeholder="Please enter你的Account">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-2 col-form-label col-form-label-sm">Password:</label>
+                <input type="text" title="Password" maxlength="10" id="addpw"
+                  class="form-control inputPassword form-control-sm" placeholder="Please enterPassword">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-4 col-md-5 col-form-label">Enter the Password Again:</label>
+                <input type="text" title="Password" maxlength="10" id="addpw2" name="password"
+                  class="form-control inputPassword2 form-control-sm" placeholder="Enter the Password Again">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-2 col-form-label">Description:</label>
+                <textarea class="form-control cmmt form-control-sm" id="addcmmt" maxlength="10" name="description" title="description"
+                  aria-label="With textarea"></textarea>
+              </div>
+              <div class="mb-12">
+                <button type="button" class="btn btn-primary btn-sm" id="sub" onclick="addUser()"
+                  style="margin-left: 30%;">Submit</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Exit</button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--警告框-->
+  <div class="alert alert-warning hide " style="z-index: 9999;position: absolute;left:42%;top: 0;">
+    <strong>Warning！</strong>The input cannot be empty!
+  </div>
+  <!-- Update模态框 -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="alert alert-warning hide " style="z-index: 100;position: absolute;left:42%;top: 0;">
+      <strong>Warning！</strong>The input cannot be empty!
+    </div>
+    <div class="modal-dialog ">
+      <div class="modal-content" style="position: relative;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Account Edit</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form class="row" id="selectLogname" autocomplete="off">
+            <div class="col-10">
+              <label class="visually-hidden">Account</label>
+              <input title="Account" type="text" name="account" maxlength="10"
+                class="logName updateLogname form-control form-control-sm" placeholder="Please Enter Account">
+            </div>
+            <div class="col-2">
+              <button type="button" onclick="selectBylogname()" class="btn btn-primary btn-sm mb-3 ">Query</button>
+            </div>
+          </form>
+          <hr>
+          <form id="updateUserForm" autocomplete="off">
+            <fieldset>
+              <div class="mb-2">
+                <label class="form-label col-form-label-sm ">UserName:</label>
+                <input type="text" title="UserName" id="updateUname" name="username"
+                  class="username updateUname form-control form-control-sm " placeholder="Please enter UserName">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-2 col-form-label col-form-label-sm">Password:</label>
+                <input type="text" title="Password" id="updatepw" class="inputPassword updatePw form-control form-control-sm"
+                  placeholder="Please enter Password">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-4 col-md-5 col-form-label">请再次Password:</label>
+                <input type="text" title="Password" id="updatepw2" name="password"
+                  class="inputPassword2 updatePw2 form-control form-control-sm" placeholder="Enter Password Again">
+              </div>
+              <div class="mb-2">
+                <label class="col-sm-2 col-form-label">description:</label>
+                <textarea name="description" title="description" class="form-control form-control-sm cmmt updateCmmt"
+                  aria-label="With textarea"></textarea>
+              </div>
+              <div class="mb-12">
+                <button type="button" onclick="submitUser()" class="btn btn-primary"
+                  style="margin-left: 30%;">Update</button>
+                <button type="button" class="btn btn-secondary " data-bs-dismiss="modal">Exit</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除模态框 -->
+  <div class="modal" data-backdrop="true" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header text-sm-center">
+          <h6 class="modal-title">You are prompted:</h6>
+          <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+        </div>
+        <div class="modal-body">
+          Do you really want to delete this record?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Exit</button>
+          <button type="button" id="deleteBtn" class="btn btn-sm btn-primary">Delect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--面包屑导航1-->
+  <nav style="position: absolute;left: 2.5%;top: 2.5%;--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" style="font-weight: bold"><a href="#">UserManagement</a></li>
+      <li class="breadcrumb-item active" aria-current="page">AccountManagement</li>
+    </ol>
+  </nav>
+  <br>
+  <!-- 数据表格 -->
+  <!--以下为两个必须div元素-->
+  <script type="text/html" id="barDemo">
+    <button class="uiduck-btn btn-primary" style="padding: 5px 10px;font-size: 12px;" onClick=updateUser(uiduck5,this);>Update</button>
+    <button class="uiduck-btn btn-primary" style="padding: 5px 10px;font-size: 12px;" onClick=deleteModal(uiduck5,this);>Delect</button>
+  </script>
+  <!-- 条件Query -->
+  <div class="container">
+    <form class="row" id="selectData" style="--bs-gutter-x:0.5rem;" autocomplete="off">
+      <div class="col-1" style="width: 6%;">
+        <label class="col-form-label col-form-label-sm float-md-end">Account:</label>
+      </div>
+      <div class="col-2">
+        <input title="Account" type="text" maxlength="10" name="account" class="form-control form-control-sm"
+          placeholder="Please enter Account">
+      </div>
+      <div class="col-1" style="width: 6%;">
+        <label class="col-form-label col-form-label-sm float-md-end">Name:</label>
+      </div>
+      <div class="col-2">
+        <input title="UserName" type="text" maxlength="10" name="username" class=" form-control form-control-sm"
+          placeholder="Please enter UserName">
+      </div>
+      <div class="col-1">
+        <button type="button" class=" btn btn-sm btn-primary" onclick="setUserData()">Search</button>
+      </div>
+      <div class="col-1">
+        <button type="button" data-bs-toggle="modal" data-bs-target="#addUserModal"
+          class=" btn btn-sm btn-primary ">Add</button>
+      </div>
+      <!--        <div class="col-2">-->
+      <!--          <input type="text" name="cmmt" class=" form-control form-control-sm"-->
+      <!--                 placeholder="Please enter相关注释">-->
+      <!--        </div>-->
+
+    </form>
+    <p></p>
+    <div id="table-highlight"></div>
+  </div>
+</body>
+<script language="Javascript" src="../../table/js/jquery.min.js"></script>
+<script language="Javascript" src="../../table/js/json2.js"></script>
+<script language="Javascript" src="../../table/js/uiduck.js"></script>
+<script src="../../assets/js/server.js"></script>
+<script LANGUAGE="javascript">
+  $(".alert").hide();
+  var addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'))
+  var myModal = new bootstrap.Modal(document.getElementById('exampleModal'))
+
+  $('#addUserModal').on('hidden.bs.modal', function () { //模态框隐藏时清空表单
+    $("#addUserFrom :input").not("button,submit,reset,hidden,checkbox,radio").val("");
+  })
+
+  var uiduck5
+  axios.get(server+"/user/all").then(resp => {//发送get请求获取数据
+    var data = resp.data;
+    console.log(data)
+    uiduck5.setData(data, false);
+  })
+
+  uiduck5 = new uiduck('uiduck5', {
+    templateId: "table-highlight",
+    language:{tag : 'English'},
+    style: {
+      size: "mini",
+      stripe: false,
+      highlight: true,
+      tbClass: "uiduck-table"
+    },
+    rightTool: {
+      templateId: "barDemo",
+      title: "operation",
+      width: "180px"
+    },
+    loading: {
+      icon: "uiduck-loading-6",
+      time: 1000
+    },
+    page: true,
+    pageOptions: {
+      limit: 5,
+      limits: ['5', '10', '15', '20', '25']
+    },
+    fieldOptions: [{
+      index: true,
+      title: "Serial"
+    }, {
+      key: "account",
+      title: "Account"
+    }, {
+      key: "password",
+      title: "Password"
+    }, {
+      key: "username",
+      title: "UserName"
+    }, {
+      key: "description",
+      title: "description"
+    }]
+  });
+
+  //表单验证规则
+  var p = /[0-9a-z]/i;
+  $(".form-control").blur(function () {
+    $(".alert").removeClass("alert-success").addClass("alert-warning")
+    $(".alert").css("top", "0px").finish();
+    if ($(this).val().length == 0) {
+      if (!$(this).hasClass("cmmt")) {
+        $(".alert").html("<strong>Warning！</strong>" + $(this).attr("title") + "Input cannot be empty!")
+        myAnimate()
+      }
+    } else if ($(this).hasClass("logName") && !p.test($(this).val())) {
+      $(".alert").html("<strong>Warning！</strong>Account must be letters or numbers!");
+      myAnimate()
+    } else if ($(this).hasClass("inputPassword")) {
+      if ($(this).val().length > 9 || !p.test($(this)[0].value)) {
+        $(".alert").html("<strong>Warning！</strong>Password must be 10 digits or letters!");
+        myAnimate()
+      }
+    }
+    if (($(this).hasClass("inputPassword") && $(".inputPassword").val() != $(".inputPassword2").val())) {
+      $(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!!!");
+      myAnimate();
+    }
+    if (($(this).hasClass("inputPassword2") && $(".inputPassword").val() != $(".inputPassword2").val())) {
+      $(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!!!");
+      myAnimate();
+    }
+  });
+
+
+  //动画函数
+  function myAnimate() {
+    $(".alert").stop();
+    var width = $(window).width() / 2 - $(".alert").width() / 2;
+    $(".alert").css("left", width + "px")
+    $(".alert").show().animate({
+      opacity: 0.7,
+      top: '+100',
+    }, 500).delay(1000).fadeOut();
+  }
+  //获取所有用户
+  function getSelectAll() {
+    axios.get(server+"/user/all").then(resp => {
+      var data = resp.data;
+      uiduck5.setData(data, false);
+    })
+  }
+  //展示用户数据
+  function updateUser(e, index) {
+    // console.log(e.getRow(index))
+    var userRow = e.getRow(index)
+    // alert(JSON.stringify(e.getRow(index)))
+    myModal.show();//显示模态框
+    $(".updateUname").val(userRow.username);
+    $(".updatePw").val(userRow.password);
+    $(".updatePw2").val(userRow.password)
+    $(".cmmt").val(userRow.description);
+    $(".updateLogname").val(userRow.account)
+  }
+  //Update后提交用户数据
+  function submitUser() {
+    var addUserFormArray = $("#updateUserForm").serialize();
+    var addUserFormDate = $("#updateUserForm").serialize();
+    var updateForm = $("#selectLogname").serialize();
+    if ($("#updateUname").val().length == 0) {
+      $(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
+      myAnimate()
+      $("#updateUname")[0].focus()
+    } else if ($("#updatepw").val().length == 0) {
+      $(".alert").html("<strong>Warning！</strong>Password cannot be empty!");
+      myAnimate()
+      if ($("#updatepw").val().length == 0) {
+        $("#updatepw")[0].focus()
+      } else {
+        $("#updatepw2")[0].focus()
+      }
+    } else if ($("#updatepw").val() != $("#updatepw2").val()) {
+      $(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
+      myAnimate()
+    } else if (!p.test(addUserFormArray[1].value)) {
+      $(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
+      myAnimate()
+    } else {
+      axios.get(server+"/user/update?"+ updateForm+"&"+addUserFormArray).then(resp => {
+        if (resp.data == "success") {
+          // getSelectAll();
+          $(".alert").removeClass("alert-warning").addClass("alert-success");
+          $(".alert").html("<strong>Congratulation！</strong>Update succeeded!");
+          myAnimate()
+          getSelectAll();
+        } else {
+          $(".alert").html("<strong>Warning！</strong>Update failed, please check again!");
+          myAnimate()
+        }
+      })
+      $(".alert").removeClass("alert-success").addClass("alert-warning")
+    }
+  }
+  //添加数据
+  function addUser() {
+    var addUserFrom = $("#addUserFrom").serialize();
+    var addUserFormArray = $("#addUserFrom").serializeArray();
+    // console.log($("#addUserFrom").serialize())
+    // console.log(addUserFormArray)
+    if (addUserFormArray[0].value.length == 0) {
+      $(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
+      myAnimate()
+      $("#adduname")[0].focus()
+    } else if (addUserFormArray[1].value.length == 0) {
+      $(".alert").html("<strong>Warning！</strong>Account cannot be empty!");
+      myAnimate()
+      $("#addlogname")[0].focus()
+    } else if (!p.test(addUserFormArray[1].value)) {
+      $(".alert").html("<strong>Warning！</strong>Account must be letters or numbers!");
+      myAnimate()
+      $("#addlogname")[0].focus()
+    } else if ($("#addpw").val().length == 0) {
+      $(".alert").html("<strong>Warning！</strong>Password cannot be empty!");
+      myAnimate()
+      if ($("#addpw").val().length == 0) {
+        $("#addpw")[0].focus()
+      } else {
+        $("#addpw2")[0].focus()
+      }
+    } else if ($("#addpw").val() != $("#addpw2").val()) {
+      $(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
+      myAnimate()
+    } else if (!p.test(addUserFormArray[2].value)) {
+      $(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
+      myAnimate()
+      if (!p.test($("#addpw").val())) {
+        $("#addpw")[0].focus()
+      } else {
+        $("#addpw2")[0].focus()
+      }
+    } else {
+      axios.get(server+"/user/save?" + addUserFrom).then(resp => {
+        if (resp.data == "success") {
+          $(".alert").removeClass("alert-warning").addClass("alert-success");
+          getSelectAll();
+          $(".alert").html("<strong>Congratulation！</strong>User added successfully!");
+          myAnimate()
+        } else if (resp.data == "exist") {
+          $(".alert").html("<strong>Warning！</strong>User already exists!");
+          myAnimate()
+        }
+      })
+      $(".alert").removeClass("alert-success").addClass("alert-warning")
+    }
+  }
+
+  //删除用户方法
+  function deleteModal(e, index) {
+    var deleteM = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteM.show();
+    // event.stopPropagation()
+    $("#deleteBtn").unbind("click")
+    $("#deleteBtn").bind("click", function () {
+      // console.log(e.getRow(index))
+      var id = e.getRow(index).id
+      axios.get(server+"/user/delete/"+id).then(resp => {
+        if (resp.data == "success") {
+          $(".alert").removeClass("alert-warning").addClass("alert-success");
+          getSelectAll();
+          $(".alert").html("<strong>Congratulation！</strong>Delete user successfully!");
+          myAnimate()
+        } else {
+          $(".alert").html("<strong>Warning！</strong>Delete user failed!");
+          myAnimate()
+        }
+      })
+      $(".alert").removeClass("alert-success").addClass("alert-warning");
+      deleteM.hide();
+    })
+  }
+
+  //根据AccountQusery用户
+  function selectBylogname() {
+    var logname = $("#selectLogname").serializeArray();
+    if (p.test(logname[0].value)) {
+      var jsonStr = $("#selectLogname").serialize();
+      axios.post(server+"/user/selectByLogUsername?" + jsonStr).then(resp => {
+        if (resp.data == "noExist") {
+          $(".alert").html("<strong>warning！</strong>The account does not exist, please re-enter it!");
+          myAnimate()
+        } else {
+          // console.log(resp.data)
+          $(".updateUname").val(resp.data.uname);
+          $(".updatePw").val(resp.data.pwd);
+          $(".cmmt").val(resp.data.cmmt);
+        }
+      })
+    } else {
+      $(".alert").html("<strong>warning！</strong>Account is a number or letter, please re-enter it!");
+      myAnimate()
+    }
+  }
+  //条件Qusery
+  function setUserData() {
+    var fromData = $("#selectData").serialize();
+    axios.get(server+"/user/selectByUser?" + fromData).then(resp => {
+      uiduck5.setData(resp.data, false);
+    })
+  }
+</script>
+
+</html>

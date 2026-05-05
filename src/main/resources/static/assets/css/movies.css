@@ -1,0 +1,310 @@
+/* OLD CSS
+
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            line-height: normal;
+  }
+  .pageBody {
+    width: 80%;
+    margin: 0 auto;
+    color: black;
+  }
+  .selectCar {
+    width: 100%;
+    height: 135px;
+    padding-top: 30px;
+    padding-left: 10px;
+  }
+  .selectCar h2{
+    color: black;
+  }
+
+  .form-select{
+    border-radius: 20px 20px;
+    width: 100px;
+    height: 28px;
+  }
+  .videoStyle{
+    width: 100%; 
+  }
+
+  @media screen and (max-width:1200px){
+    .videoCar{
+      width: 25%;
+    }
+  }
+
+  @media screen and (max-width:900px){
+    .videoCar{
+      width: 33.3%;
+    }
+  }
+
+
+  @media screen and (max-width:600px){
+    .videoCar{
+      width: 50%;
+    }
+  }
+
+.videoCar{
+  height: 380px;
+  width: 20%;
+  padding: 10px;
+  float: left;
+  color: black;
+  margin-bottom: 20px;
+}
+
+
+.videoCar h5{
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.videoCar h5:hover{
+  color: #5b5b5b;
+  text-decoration: underline ;
+}
+
+.videoCar p{
+  color: black;
+  margin-top: 1rem;
+  margin-bottom: 0rem;
+}
+
+.videoCar p > span:nth-child(2){
+  font-weight: 800;
+}
+
+  .VideoImage{
+    width: 100%;
+    height: 80%;
+    background-color: blueviolet;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .videoCar:hover  .VideoImage img{ 
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+  }
+
+
+  .VideoImage img{ 
+    height: 100%;
+    width: 100%;
+    display: block;
+    -o-object-fit: cover;
+    object-fit: cover;
+    -o-object-position: center;
+    object-position: center;
+    border-radius: 8px;
+    -webkit-transition: all 300ms ease-in-out;
+    transition: all 300ms ease-in-out;
+  }
+  
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	line-height: normal;
+}*/
+
+.pageBody {
+	width: 80%;
+	margin: 0 auto;
+	color: black;
+}
+
+.selectCar {
+	width: 100%;
+	/* height: 135px; */
+	height: auto;
+	/* padding-top: 30px;
+    padding-left: 10px; */
+	padding: 30px 10px;
+}
+
+.selectCar h2 {
+	color: black;
+}
+
+.headingToggleSwitcher {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.toggleSwitcher-Label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.form-switch .form-check-input {
+	--bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.7%29'/%3e%3c/svg%3e");
+}
+
+.form-check-input {
+	width: 50px;
+	height: 25px;
+	position: relative;
+	background-color: blueviolet;
+	border: 1px solid blueviolet;
+	cursor: pointer;
+}
+
+.form-check-input:checked {
+	background-color: #34c759;
+	/* Background color when on (right side) */
+	border-color: #34c759;
+	/* Match border color to on state */
+}
+
+/* Optional: Customizing the label color */
+.form-check-input+.form-check-label {
+	color: blueviolet;
+	/* Label color when unchecked */
+	margin-left: 10px;
+	cursor: pointer;
+}
+
+.form-check-input:checked+.form-check-label {
+	color: #34c759;
+	/* Label color when checked */
+}
+
+.form-switch {
+	padding-right: 10px;
+}
+
+.form-select {
+	border-radius: 20px;
+	/* width: 100px; */
+	width: auto;
+	/* height: 28px; */
+}
+
+.search-input {
+	border: 1px solid lightgray;
+	border-radius: 20px;
+	background-color: transparent;
+	padding-left: 50px;
+	/* Make room for the magnifier icon inside the input */
+}
+
+.search-icon {
+	color: black;
+	position: absolute;
+	left: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+
+.videoStyle {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+.videoCar {
+	display: flex;
+	flex-direction: column;
+	/* align-items: center; */
+	justify-content: space-between;
+	width: 20%;
+	/*    height: 380px;*/
+	padding: 10px;
+	margin-bottom: 20px;
+	box-sizing: border-box;
+}
+
+.videoCar h5 {
+	font-weight: 800;
+	font-size: 16px;
+	white-space: nowrap;
+	/* Keep the title in a single line */
+	overflow: hidden;
+	/* Avoid text spilling out */
+	text-overflow: ellipsis;
+	/* Add ellipsis if text is too long */
+	cursor: pointer;
+}
+
+.videoCar h5:hover {
+	color: #5b5b5b;
+	text-decoration: underline;
+}
+
+.videoCar p {
+	color: black;
+	/*margin-top: 1rem;*/
+	margin-bottom: 0rem;
+}
+
+.videoCar p>span:nth-child(2) {
+	font-weight: 800;
+}
+
+.VideoImage {
+	width: 100%;
+	height: 77%;
+	/* background-color: blueviolet; */
+	border: 12px solid transparent;
+	border-radius: 20px;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+.VideoImage img {
+	height: 100%;
+	width: 100%;
+	display: block;
+	object-fit: cover;
+	object-position: center;
+	border-radius: 8px;
+	transition: all 300ms ease-in-out;
+}
+
+.videoCar:hover .VideoImage img {
+	transform: scale(1.1);
+}
+
+.card-icon {
+	width: 40px;
+	height: 40px;
+	margin-right: 10px;
+}
+
+.page-link {
+	color: #ffffff;
+	background-color: #000;
+}
+
+.page-link:hover {
+	color: #000;
+}
+
+@media screen and (max-width: 1200px) {
+	.videoCar {
+		width: 25%;
+	}
+}
+
+@media screen and (max-width: 900px) {
+	.videoCar {
+		width: 33.3%;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.videoCar {
+		width: 50%;
+	}
+}
