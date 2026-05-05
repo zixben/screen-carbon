@@ -28,9 +28,17 @@ logs/
 backup*/
 target*/
 *.zip
+*.sql
+*.dump
+*.backup
 
 # Local environment files
 .env
 .env.*
 application-local.yaml
 application-local.yml
+
+# Local Spring Boot config
+src/main/resources/application-local.yaml
+src/main/resources/application-live.yaml
+real passwords / live credentials

@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/thunbergtest?characterEncoding=utf8&useSSL=false&serverTimezone=Europe/London&rewriteBatchedStatements=true
+    hikari:
+      driver-class-name: org.mariadb.jdbc.Driver
+      username: YOUR_LOCAL_DB_USER
+      password: YOUR_LOCAL_DB_PASSWORD
+
+  mail:
+    host: mail-relay.gla.ac.uk
+    port: 25
+    username: screencarbontest@glasgow.ac.uk
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: true

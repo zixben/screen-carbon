@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: screen-carbon-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: thunbergtest
+      MARIADB_USER: screen_carbon
+      MARIADB_PASSWORD: screen_carbon_password
+      MARIADB_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - screen_carbon_mariadb:/var/lib/mysql
+
+volumes:
+  screen_carbon_mariadb:
