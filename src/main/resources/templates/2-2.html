@@ -4,6 +4,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>AccountManage</title>
+	<meta name="_csrf" th:content="${csrfToken.token}">
+	<meta name="_csrf_header" th:content="${csrfToken.headerName}">
 	<!--  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">-->
 
 	<link href="../../table/css/uiduck.css" type="text/css" rel="stylesheet">
@@ -348,6 +350,9 @@
 		$(".updateLogname").val(userRow.account)
 	}
 
+	const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
+	const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content") || "X-CSRF-TOKEN";
+
 	//Update
 	function submitUser() {
 		var addUserFormArray = $("#updateUserForm").serialize();
@@ -372,7 +377,12 @@
 			$(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
 			myAnimate()
 		} else {
-			axios.get(server + "/user/update?" + updateForm + "&" + addUserFormArray).then(resp => {
+			axios.post(server + "/user/update", updateForm + "&" + addUserFormArray, {
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					[csrfHeader]: csrfToken
+				}
+			}).then(resp => {
 				if (resp.data == "success") {
 					// getSelectAll();
 					$(".alert").removeClass("alert-warning").addClass("alert-success");

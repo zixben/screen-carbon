@@ -191,7 +191,7 @@ public class UserController {
 		return user.getLockTime() != null && user.getLockTime().toInstant().isAfter(Instant.now());
 	}
 
-	@RequestMapping("/all")
+	@GetMapping("/all")
 	public ResponseEntity<?> getUserList(HttpSession session) {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
@@ -199,7 +199,7 @@ public class UserController {
 		return ResponseEntity.ok(userMapper.userList());
 	}
 
-	@RequestMapping("/login")
+	@PostMapping("/login")
 	public ResponseEntity<Map<String, String>> loginUser(@RequestBody User user, HttpServletRequest req) {
 		HttpSession session = req.getSession();
 		String vcode = (String) session.getAttribute("vcode");
@@ -304,7 +304,7 @@ public class UserController {
 		}
 	}
 
-	@RequestMapping("/update")
+	@PostMapping("/update")
 	public ResponseEntity<String> updateUser(User user, HttpSession session) {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
@@ -324,7 +324,7 @@ public class UserController {
 	 * @param resp
 	 * @return void
 	 */
-	@RequestMapping("/getCode")
+	@GetMapping("/getCode")
 	public void getCode(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		ValidateCode vCode = new ValidateCode(140, 40, 5, 50);
 		HttpSession session = req.getSession();
@@ -339,7 +339,7 @@ public class UserController {
 	 * @Date
 	 * @return void
 	 */
-	@RequestMapping("/selectByUser")
+	@GetMapping("/selectByUser")
 	public ResponseEntity<?> getUserWhere(User user, HttpSession session) throws IOException {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));

@@ -214,12 +214,16 @@ public class WebController {
 		return "1";
     }
 	@GetMapping("/2-2")
-    public String userManagement(HttpSession session) {
+    public String userManagement(HttpSession session, Model model, HttpServletRequest request) {
 		User loggedInUser = (User) session.getAttribute("loggedInUser");
 		if (loggedInUser == null || !"ADMIN".equalsIgnoreCase(loggedInUser.getRole())) {
 			
 			return "redirect:/"; // Redirect to home or another page
 		}
+
+		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+		model.addAttribute("csrfToken", csrfToken);
+
 		return "2-2";
     }
 
