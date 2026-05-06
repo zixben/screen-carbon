@@ -107,6 +107,7 @@
 					<hr>
 					<form id="updateUserForm" autocomplete="off">
 						<fieldset>
+							<input type="hidden" name="id" class="updateId">
 							<div class="mb-2">
 								<label class="form-label col-form-label-sm ">UserName:</label>
 								<input type="text" title="UserName" id="updateUname" name="username"
@@ -117,13 +118,13 @@
 								<label class="col-sm-2 col-form-label col-form-label-sm">Password:</label>
 								<input type="text" title="Password" id="updatepw"
 									class="inputPassword updatePw form-control form-control-sm"
-									placeholder="Please enter Password">
+									placeholder="Leave blank to keep password">
 							</div>
 							<div class="mb-2">
 								<label class="col-sm-4 col-md-5 col-form-label">Password:</label>
 								<input type="text" title="Password" id="updatepw2" name="password"
 									class="inputPassword2 updatePw2 form-control form-control-sm"
-									placeholder="Enter Password Again">
+									placeholder="Enter new password again">
 							</div>
 							<div class="mb-2">
 								<label class="col-sm-2 col-form-label">description:</label>
@@ -343,11 +344,12 @@
 		var userRow = e.getRow(index)
 		// alert(JSON.stringify(e.getRow(index)))
 		myModal.show();
+		$(".updateId").val(userRow.id);
 		$(".updateUname").val(userRow.username);
-		$(".updatePw").val(userRow.password);
-		$(".updatePw2").val(userRow.password)
+		$(".updatePw").val("");
+		$(".updatePw2").val("")
 		$(".cmmt").val(userRow.description);
-		$(".updateLogname").val(userRow.account)
+		$(".updateLogname").val(userRow.username)
 	}
 
 	const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
@@ -355,29 +357,21 @@
 
 	//Update
 	function submitUser() {
-		var addUserFormArray = $("#updateUserForm").serialize();
-		var addUserFormDate = $("#updateUserForm").serialize();
-		var updateForm = $("#selectLogname").serialize();
+		var updateUserForm = $("#updateUserForm").serialize();
+		var password = $("#updatepw").val();
+		var confirmPassword = $("#updatepw2").val();
 		if ($("#updateUname").val().length == 0) {
 			$(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
 			myAnimate()
 			$("#updateUname")[0].focus()
-		} else if ($("#updatepw").val().length == 0) {
-			$(".alert").html("<strong>Warning！</strong>Password cannot be empty!");
-			myAnimate()
-			if ($("#updatepw").val().length == 0) {
-				$("#updatepw")[0].focus()
-			} else {
-				$("#updatepw2")[0].focus()
-			}
-		} else if ($("#updatepw").val() != $("#updatepw2").val()) {
+		} else if ((password.length > 0 || confirmPassword.length > 0) && password != confirmPassword) {
 			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
 			myAnimate()
-		} else if (!p.test(addUserFormArray[1].value)) {
+		} else if (password.length > 0 && !p.test(password)) {
 			$(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
 			myAnimate()
 		} else {
-			axios.post(server + "/user/update", updateForm + "&" + addUserFormArray, {
+			axios.post(server + "/user/update", updateUserForm, {
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
 					[csrfHeader]: csrfToken

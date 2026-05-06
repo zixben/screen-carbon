@@ -2,11 +2,17 @@ package com.lks.controller;
 
 import com.lks.bean.User;
 import com.lks.bean.RecoveryToken;
+import com.lks.dto.AdminUserUpdateRequest;
+import com.lks.dto.DeleteAccountRequest;
+import com.lks.dto.PasswordRecoveryRequest;
+import com.lks.dto.UserLoginRequest;
+import com.lks.dto.UserRegistrationRequest;
+import com.lks.dto.UserResponse;
+import com.lks.dto.UserSearchRequest;
 import com.lks.mapper.UserMapper;
 import com.lks.util.ValidateCode;
 import com.lks.service.EmailService;
 
-import com.mysql.cj.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +30,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -49,8 +56,21 @@ public class UserController {
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // Create an instance of the password
 
 	@PostMapping("/password-recovery")
-	public ResponseEntity<?> recoverPassword(@RequestBody User request, HttpServletRequest httpRequest) {
-		String email = request.getEmail().toLowerCase();
+	public ResponseEntity<?> recoverPassword(@RequestBody PasswordRecoveryRequest request) {
+		if (request == null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "Invalid request body."));
+		}
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		}
+
+		String email = normalizeEmail(request.getEmail());
+		if (email == null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "Email is required."));
+		}
+
 		log.info("Password recovery requested for email: {}", email);
 
 		// Find the user by email
@@ -183,7 +203,7 @@ public class UserController {
 	private boolean isPasswordStrong(String password) {
 
 		// Implement password strength validation logic (length, special characters
-		return password.length() >= 8 && password.matches(".*[!@#$%^&*()].*");
+		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*()].*");
 	}
 
 	private boolean isAccountLocked(User user) {
@@ -196,26 +216,41 @@ public class UserController {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
 		}
-		return ResponseEntity.ok(userMapper.userList());
+		return ResponseEntity.ok(toUserResponses(userMapper.userList()));
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<Map<String, String>> loginUser(@RequestBody User user, HttpServletRequest req) {
+	public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserLoginRequest request, HttpServletRequest req) {
 		HttpSession session = req.getSession();
 		String vcode = (String) session.getAttribute("vcode");
 
 		Map<String, String> response = new HashMap<>();
-
-		// Verify the code (case-insensitive)
-		if (vcode == null || !vcode.equalsIgnoreCase(user.getCode())) {
-			response.put("message", "Verification code is incorrect.");
+		if (request == null) {
+			response.put("message", "Invalid request body.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
-		// Fetch the user by username
-		User userFromDb = userMapper.findByUsername(user.getUsername());
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			response.put("message", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
-		if (userFromDb != null && passwordEncoder.matches(user.getPassword(), userFromDb.getPassword())) {
+		// Verify the code (case-insensitive)
+		if (vcode == null || isBlank(request.getCode()) || !vcode.equalsIgnoreCase(request.getCode().trim())) {
+			response.put("message", "Verification code is incorrect.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		if (isBlank(request.getUsername()) || isBlank(request.getPassword())) {
+			response.put("message", "Invalid username or password.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		}
+
+		// Fetch the user by username
+		User userFromDb = userMapper.findByUsername(request.getUsername().trim());
+
+		if (userFromDb != null && passwordEncoder.matches(request.getPassword(), userFromDb.getPassword())) {
 			// Valid credentials, set user in session
 			session.setAttribute("loggedInUser", userFromDb);
 
@@ -235,23 +270,29 @@ public class UserController {
 	}
 
 	@DeleteMapping("/delete")
-	public ResponseEntity<String> deleteUser(@RequestBody User user, HttpSession session) {
+	public ResponseEntity<String> deleteUser(@RequestBody DeleteAccountRequest request, HttpSession session) {
 		User sessionUser = (User) session.getAttribute("loggedInUser");
+		if (request == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body.");
+		}
+
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		}
 
 		// Check if the user is logged in and the request data is valid
-		if (sessionUser == null || user == null || StringUtils.isEmptyOrWhitespaceOnly(user.getUsername())
-				|| StringUtils.isEmptyOrWhitespaceOnly(user.getPassword())) {
+		if (sessionUser == null || request == null || isBlank(request.getPassword())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user data or no user logged in.");
 		}
 
-		// Check if the username of the logged-in user matches the username of the user
-		// to be deleted
-		if (!sessionUser.getUsername().equals(user.getUsername())) {
+		if (!isBlank(request.getUsername()) && !sessionUser.getUsername().equals(request.getUsername().trim())) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Username mismatch.");
 		}
 
 		// Authenticate the user's password before deletion
-		if (!passwordEncoder.matches(user.getPassword(), sessionUser.getPassword())) {
+		if (!passwordEncoder.matches(request.getPassword(), sessionUser.getPassword())) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Incorrect password.");
 		}
 
@@ -265,36 +306,68 @@ public class UserController {
 	}
 
 	@PostMapping("/save")
-	public ResponseEntity<String> saveUser(@RequestBody User user) {
-		// Debugging: Log the received user object
-		log.info("Received user to save: {}", user);
+	public ResponseEntity<String> saveUser(@RequestBody UserRegistrationRequest request) {
+		if (request == null) {
+			return ResponseEntity.badRequest().body("Invalid request body.");
+		}
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+
+		String username = trimRequired(request.getUsername(), "Username");
+		String fullName = trimRequired(request.getFullName(), "Full name");
+		String email = normalizeEmail(request.getEmail());
+		String description = trimToNull(request.getDescription());
+		if (email == null) {
+			return ResponseEntity.badRequest().body("Email is required.");
+		}
+		if (username.length() > 24 || fullName.length() > 200 || email.length() > 50
+				|| (description != null && description.length() > 350)) {
+			return ResponseEntity.badRequest().body("Registration data is too long.");
+		}
+		if (!isPasswordStrong(request.getPassword())) {
+			return ResponseEntity.badRequest().body("Password does not meet the required strength.");
+		}
+		if (!isBlank(request.getConfirmPass()) && !request.getPassword().equals(request.getConfirmPass())) {
+			return ResponseEntity.badRequest().body("Passwords do not match.");
+		}
+
+		log.info("Received registration for username: {}", username);
 
 		try {
 			// Check if the username already exists
-			User existingUserByUsername = userMapper.findByUsername(user.getUsername());
+			User existingUserByUsername = userMapper.findByUsername(username);
 			if (existingUserByUsername != null) {
-				log.warn("Username already taken: {}", user.getUsername());
+				log.warn("Username already taken: {}", username);
 				return ResponseEntity.badRequest().body("Username is already taken.");
 			}
 
 			// Check if the email already exists
-			User existingUserByEmail = userMapper.findByEmail(user.getEmail());
+			User existingUserByEmail = userMapper.findByEmail(email);
 			if (existingUserByEmail != null) {
-				log.warn("Email already in use: {}", user.getEmail());
+				log.warn("Email already in use: {}", email);
 				return ResponseEntity.badRequest().body("Email is already in use.");
 			}
 
+			User user = new User();
+			user.setFullName(fullName);
+			user.setUsername(username);
+			user.setEmail(email);
+			user.setDescription(description);
+
 			// Hash the password before saving
-			String hashedPassword = passwordEncoder.encode(user.getPassword());
+			String hashedPassword = passwordEncoder.encode(request.getPassword());
 			user.setPassword(hashedPassword);
 
 			// Save the user to the database
 			Integer result = userMapper.saveUser(user);
 			if (result > 0) {
-				log.info("User successfully saved: {}", user.getUsername());
+				log.info("User successfully saved: {}", username);
 				return ResponseEntity.ok("success");
 			} else {
-				log.error("Failed to save user: {}", user.getUsername());
+				log.error("Failed to save user: {}", username);
 				return ResponseEntity.badRequest().body("Registration failure");
 			}
 		} catch (Exception e) {
@@ -305,11 +378,43 @@ public class UserController {
 	}
 
 	@PostMapping("/update")
-	public ResponseEntity<String> updateUser(User user, HttpSession session) {
+	public ResponseEntity<String> updateUser(AdminUserUpdateRequest request, HttpSession session) {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
 		}
-		// System.out.println(user);
+
+		if (request == null) {
+			return ResponseEntity.badRequest().body("Invalid request body.");
+		}
+		if (request.getId() == null) {
+			return ResponseEntity.badRequest().body("User id is required.");
+		}
+
+		User user = userMapper.findById(request.getId());
+		if (user == null) {
+			return ResponseEntity.badRequest().body("User not found.");
+		}
+
+		String username = trimRequired(request.getUsername(), "Username");
+		if (username.length() > 24) {
+			return ResponseEntity.badRequest().body("Username is too long.");
+		}
+
+		User existingUserByUsername = userMapper.findByUsername(username);
+		if (existingUserByUsername != null && !existingUserByUsername.getId().equals(user.getId())) {
+			return ResponseEntity.badRequest().body("Username is already taken.");
+		}
+
+		user.setUsername(username);
+		user.setDescription(trimToNull(request.getDescription()));
+
+		if (!isBlank(request.getPassword())) {
+			if (!isPasswordStrong(request.getPassword())) {
+				return ResponseEntity.badRequest().body("Password does not meet the required strength.");
+			}
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
+
 		if (userMapper.updateUser(user) > 0) {
 			return ResponseEntity.ok("success");
 		}
@@ -340,11 +445,14 @@ public class UserController {
 	 * @return void
 	 */
 	@GetMapping("/selectByUser")
-	public ResponseEntity<?> getUserWhere(User user, HttpSession session) throws IOException {
+	public ResponseEntity<?> getUserWhere(UserSearchRequest request, HttpSession session) throws IOException {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
 		}
-		return ResponseEntity.ok(userMapper.getListByUser(user));
+		User user = new User();
+		user.setUsername(trimToNull(request.getUsername()));
+		user.setFullName(trimToNull(request.getFullName()));
+		return ResponseEntity.ok(toUserResponses(userMapper.getListByUser(user)));
 	}
 	
 	@GetMapping("/countUsers")
@@ -411,6 +519,50 @@ public class UserController {
 				put("message", "Email is available.");
 			}
 		});
+	}
+
+	private void validateNoUnsupportedFields(Map<String, Object> unsupportedFields) {
+		if (!unsupportedFields.isEmpty()) {
+			String fieldName = unsupportedFields.keySet().iterator().next();
+			throw new IllegalArgumentException("Unsupported user field: " + fieldName);
+		}
+	}
+
+	private List<UserResponse> toUserResponses(List<User> users) {
+		return users.stream()
+				.map(UserResponse::from)
+				.toList();
+	}
+
+	private String trimRequired(String value, String fieldName) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
+			throw new IllegalArgumentException(fieldName + " is required.");
+		}
+		return trimmed;
+	}
+
+	private String trimToNull(String value) {
+		if (value == null || value.trim().isEmpty()) {
+			return null;
+		}
+		return value.trim();
+	}
+
+	private String normalizeEmail(String email) {
+		String normalized = trimToNull(email);
+		if (normalized == null) {
+			return null;
+		}
+		normalized = normalized.toLowerCase(Locale.ROOT);
+		if (!normalized.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+			return null;
+		}
+		return normalized;
+	}
+
+	private boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
 	}
 
 	private boolean isAdmin(HttpSession session) {
