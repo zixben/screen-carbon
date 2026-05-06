@@ -12,3 +12,7 @@ mybatis:
   mapper-locations: classpath:mybatis/mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+app:
+  tmdb:
+    bearer-token: ${TMDB_BEARER_TOKEN:}

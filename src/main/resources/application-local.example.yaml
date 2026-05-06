@@ -17,3 +17,7 @@ spring:
           auth: false
           starttls:
             enable: true
+
+app:
+  tmdb:
+    bearer-token: ${TMDB_BEARER_TOKEN:}

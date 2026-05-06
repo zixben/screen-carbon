@@ -38,6 +38,7 @@ public class SecurityConfig {
                     "/finish-rating", "/about", "/privacy-notice", "/signup", "/login", "/reset-password**",
                     "/update-password", "/logout",
                     "/assets/**", "/css/**", "/js/**", "/plugins/**", "/table/**",
+                    "/tmdb/**",
                     "/user/getCode", "/user/login", "/user/save", "/user/check-username", "/user/check-email",
                     "/user/password-recovery", "/user/update-password",
                     "/score/add", "/score/getAvgFraction", "/score/getOrderAvg",
