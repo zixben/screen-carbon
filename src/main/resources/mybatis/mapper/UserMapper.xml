@@ -11,10 +11,10 @@
         select * from t_user
         <where>
             <if test="username != null and username != ''">
-                username like  '%${username}%'
+                username like CONCAT('%', #{username}, '%')
             </if>
             <if test="fullName != null and fullName != ''">
-                and fullName like '%${fullName}%'
+                and fullName like CONCAT('%', #{fullName}, '%')
             </if>
         </where>
     </select>

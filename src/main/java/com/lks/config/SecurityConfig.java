@@ -16,18 +16,27 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             //.csrf().disable() // Disable CSRF protection for simplicity, but consider enabling it in production
-        	//.csrf().and()
-        .headers(headers -> headers
+            //.csrf().and()
+            .headers(headers -> headers
                 .frameOptions(frameOptions -> 
                     frameOptions.sameOrigin() // Allow embedding only from the same origin
                 )
             )
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(
-                		"/", "/search-results", "/movies", "/movie", "/tv-shows", "/tv", "/details", "/rate", "/finish-rating"
-                		, "about", "privacy-notice", "/user/getCode", "/signup", "/user/login", "/user-settings", "/user-ratings", "/user/save", "/user/check-username", "/user/check-email", "/user/delete", "/assets/**", "/css/**", "/js/**", "/plugins/**", "/table/**"
-                		, "/score/**", "/user/password-recovery", "/reset-password**", "/user/update-password", "/update-password", "/user/**", "/admin", "/logout", "/1", "/2-2"
-                		).permitAll() // Allow access to these endpoints without authentication
+                    "/", "/search-results", "/movies", "/movie", "/tv-shows", "/tv", "/details", "/rate",
+                    "/finish-rating", "/about", "/privacy-notice", "/signup", "/login", "/reset-password**",
+                    "/update-password", "/logout", "/admin", "/1", "/2-2", "/user-settings", "/user-ratings",
+                    "/assets/**", "/css/**", "/js/**", "/plugins/**", "/table/**",
+                    "/user/getCode", "/user/login", "/user/save", "/user/check-username", "/user/check-email",
+                    "/user/password-recovery", "/user/update-password", "/user/delete",
+                    "/user/all", "/user/update", "/user/selectByUser", "/user/countUsers",
+                    "/score/add", "/score/getScoreList/**", "/score/getAvgFraction", "/score/getOrderAvg",
+                    "/score/getMovieAvgDesc", "/score/getMovieAvgAsc", "/score/getTVAvgDesc", "/score/getTVAvgAsc",
+                    "/score/getMovieScoreCountDesc", "/score/getMovieScoreCountAsc",
+                    "/score/getTVScoreCountDesc", "/score/getTVScoreCountAsc", "/score/getScoreAvg/**",
+                    "/score/getCountFraction", "/score/getTotalRated", "/score/getTop20Popularity"
+                ).permitAll()
                 .anyRequest().authenticated() // Require authentication for any other requests
             )
             .formLogin(form -> form

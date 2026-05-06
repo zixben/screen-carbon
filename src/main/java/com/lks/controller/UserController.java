@@ -123,12 +123,16 @@ public class UserController {
 				break;
 			}
 		}
-		// Fetch the associated user using the valid token's user ID
-		User user = userMapper.findById(validToken.getUserId());
-
 		// Validate the token: check if it exists, is not expired, and has not been used
 		if (validToken == null || validToken.getExpiresAt().before(new Date()) || validToken.isUsed()) {
 			log.warn("Invalid, expired, or already used token.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
+		}
+
+		// Fetch the associated user using the valid token's user ID
+		User user = userMapper.findById(validToken.getUserId());
+		if (user == null) {
+			log.warn("Recovery token references a missing user.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
 		}
 
@@ -188,9 +192,11 @@ public class UserController {
 	}
 
 	@RequestMapping("/all")
-	public List<User> getUserList() {
-		List<User> users = userMapper.userList();
-		return users;
+	public ResponseEntity<?> getUserList(HttpSession session) {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
+		}
+		return ResponseEntity.ok(userMapper.userList());
 	}
 
 	@RequestMapping("/login")
@@ -299,12 +305,15 @@ public class UserController {
 	}
 
 	@RequestMapping("/update")
-	public String updateUser(User user) {
+	public ResponseEntity<String> updateUser(User user, HttpSession session) {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
+		}
 		// System.out.println(user);
 		if (userMapper.updateUser(user) > 0) {
-			return "success";
+			return ResponseEntity.ok("success");
 		}
-		return "fail";
+		return ResponseEntity.badRequest().body("fail");
 	}
 
 	/**
@@ -320,7 +329,6 @@ public class UserController {
 		ValidateCode vCode = new ValidateCode(140, 40, 5, 50);
 		HttpSession session = req.getSession();
 		session.setAttribute("vcode", vCode.getCode());
-		log.info("Verification Code:" + vCode.getCode());
 		ServletOutputStream sos = resp.getOutputStream();
 		vCode.write(sos);
 	}
@@ -332,13 +340,18 @@ public class UserController {
 	 * @return void
 	 */
 	@RequestMapping("/selectByUser")
-	public List<User> getUserWhere(User user) throws IOException {
-		List<User> listByUser = userMapper.getListByUser(user);
-		return listByUser;
+	public ResponseEntity<?> getUserWhere(User user, HttpSession session) throws IOException {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
+		}
+		return ResponseEntity.ok(userMapper.getListByUser(user));
 	}
 	
 	@GetMapping("/countUsers")
-    public ResponseEntity<Long> getTotalUserCount() {
+    public ResponseEntity<?> getTotalUserCount(HttpSession session) {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
+		}
         long count = userMapper.getTotalUserCount();
         return ResponseEntity.ok(count);
     }
@@ -398,5 +411,10 @@ public class UserController {
 				put("message", "Email is available.");
 			}
 		});
+	}
+
+	private boolean isAdmin(HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		return loggedInUser != null && "ADMIN".equalsIgnoreCase(loggedInUser.getRole());
 	}
 }

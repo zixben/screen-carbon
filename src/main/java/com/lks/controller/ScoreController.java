@@ -8,6 +8,7 @@ import com.lks.service.ScoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -192,7 +193,14 @@ public class ScoreController {
 	}
 
 	@GetMapping("/getScoreList/{uid}")
-	public ResponseEntity<List<Score>> getScoreList(@PathVariable("uid") String uid) {
+	public ResponseEntity<?> getScoreList(@PathVariable("uid") String uid,
+			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
+		if (loggedInUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required."));
+		}
+		if (!isAdmin(loggedInUser) && !String.valueOf(loggedInUser.getId()).equals(uid)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Cannot view another user's scores."));
+		}
 
 		return ResponseEntity.ok(scoreServiceImpl.getScoreByUId(uid));
 	}
@@ -218,7 +226,11 @@ public class ScoreController {
 	 */
 
 	@PutMapping("/update")
-	public ResponseEntity<Score> edit(Score score) {
+	public ResponseEntity<?> edit(Score score,
+			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
+		if (!isAdmin(loggedInUser)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
+		}
 		return ResponseEntity.ok(scoreServiceImpl.update(score));
 	}
 
@@ -229,7 +241,15 @@ public class ScoreController {
 	 * @return
 	 */
 	@DeleteMapping("/delete")
-	public ResponseEntity<Boolean> deleteById(Integer id) {
+	public ResponseEntity<?> deleteById(Integer id,
+			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
+		if (!isAdmin(loggedInUser)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
+		}
 		return ResponseEntity.ok(scoreServiceImpl.deleteById(id));
+	}
+
+	private boolean isAdmin(User user) {
+		return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
 	}
 }
