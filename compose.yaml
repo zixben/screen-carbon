@@ -12,6 +12,16 @@ services:
       - "3307:3306"
     volumes:
       - screen_carbon_mariadb:/var/lib/mysql
-
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: screen-carbon-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8082:80"
+    depends_on:
+      - db
 volumes:
   screen_carbon_mariadb:
