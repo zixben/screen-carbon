@@ -23,6 +23,8 @@ public class ScoreController {
 	@Autowired
 	private ScoreService scoreServiceImpl;
 
+	private final ScoreListRequestValidator scoreListRequestValidator = new ScoreListRequestValidator();
+
 //	@GetMapping("/getAvgFraction")
 //	public ResponseEntity<Map> getAverageFraction() {
 //		List<String> averageFractionX = scoreServiceImpl.getAverageFractionX();
@@ -72,8 +74,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getMovieAvgDesc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> avgMovieScoreListDesc = scoreServiceImpl.getMovieAvgScoreListDesc(limit, offset, country, genre,
-				year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> avgMovieScoreListDesc = scoreServiceImpl.getMovieAvgScoreListDesc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(avgMovieScoreListDesc);
 	}
 
@@ -81,8 +85,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getMovieAvgAsc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> avgMovieScoreListAsc = scoreServiceImpl.getMovieAvgScoreListAsc(limit, offset, country, genre,
-				year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> avgMovieScoreListAsc = scoreServiceImpl.getMovieAvgScoreListAsc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(avgMovieScoreListAsc);
 	}
 
@@ -90,7 +96,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getTVAvgDesc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> avgTVScoreListDesc = scoreServiceImpl.getTVAvgScoreListDesc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> avgTVScoreListDesc = scoreServiceImpl.getTVAvgScoreListDesc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(avgTVScoreListDesc);
 	}
 
@@ -98,7 +107,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getTVAvgAsc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> avgTVScoreListAsc = scoreServiceImpl.getTVAvgScoreListAsc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> avgTVScoreListAsc = scoreServiceImpl.getTVAvgScoreListAsc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(avgTVScoreListAsc);
 	}
 
@@ -106,7 +118,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getMovieScoreCountDesc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> movieScoreCountDesc = scoreServiceImpl.getMovieScoresCountDesc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> movieScoreCountDesc = scoreServiceImpl.getMovieScoresCountDesc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(movieScoreCountDesc);
 	}
 
@@ -114,7 +129,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getMovieScoreCountAsc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> movieScoreCountAsc = scoreServiceImpl.getMovieScoresCountAsc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> movieScoreCountAsc = scoreServiceImpl.getMovieScoresCountAsc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(movieScoreCountAsc);
 	}
 
@@ -122,7 +140,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getTVScoreCountDesc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> tvScoreCountDesc = scoreServiceImpl.getTVScoresCountDesc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> tvScoreCountDesc = scoreServiceImpl.getTVScoresCountDesc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(tvScoreCountDesc);
 	}
 
@@ -130,7 +151,10 @@ public class ScoreController {
 	public ResponseEntity<List<Score>> getTVScoreCountAsc(@RequestParam int limit, @RequestParam int offset,
 			@RequestParam(required = false) String country, @RequestParam(required = false) String genre,
 			@RequestParam(required = false) String year) {
-		List<Score> tvScoreCountAsc = scoreServiceImpl.getTVScoresCountAsc(limit, offset, country, genre, year);
+		ScoreListRequestValidator.ScoreListFilters filters = scoreListRequestValidator.validate(limit, offset, country,
+				genre, year);
+		List<Score> tvScoreCountAsc = scoreServiceImpl.getTVScoresCountAsc(filters.limit(), filters.offset(),
+				filters.country(), filters.genre(), filters.year());
 		return ResponseEntity.ok(tvScoreCountAsc);
 	}
 
