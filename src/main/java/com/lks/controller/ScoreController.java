@@ -1,6 +1,8 @@
 package com.lks.controller;
 
 import com.lks.bean.Score;
+import com.lks.bean.User;
+import com.lks.dto.ScoreSubmissionRequest;
 import com.lks.service.ScoreService;
 //import com.mysql.cj.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,22 +204,10 @@ public class ScoreController {
 	 * @return
 	 */
 	@PostMapping("/add")
-	public ResponseEntity<Score> add(@RequestBody Score score) {
-		
-		// Handle popularity in the popularity table
-	    boolean popularityUpdated = scoreServiceImpl.updateOrInsertPopularity(
-	        score.getvId(),
-	        score.getVideoType(),
-	        score.getPopularity()
-	    );
-
-	    if (popularityUpdated) {
-	        System.out.println("Popularity was updated or inserted.");
-	    } else {
-	        System.out.println("Popularity was not changed.");
-	    }
-		System.out.println(score);
-		return ResponseEntity.ok(scoreServiceImpl.insert(score));
+	public ResponseEntity<Score> add(@RequestBody ScoreSubmissionRequest request,
+			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
+		Integer authenticatedUserId = loggedInUser != null ? loggedInUser.getId() : null;
+		return ResponseEntity.ok(scoreServiceImpl.submit(request, authenticatedUserId));
 	}
 
 	/**

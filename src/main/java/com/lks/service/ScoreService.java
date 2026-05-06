@@ -3,6 +3,7 @@ package com.lks.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import com.lks.bean.Score;
+import com.lks.dto.ScoreSubmissionRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,6 +50,8 @@ public interface ScoreService {
 	Score queryById(Integer id);
 
 	Page<Score> paginQuery(Score score, PageRequest pageRequest);
+
+	Score submit(ScoreSubmissionRequest request, Integer authenticatedUserId);
 
 	Score insert(Score score);
 

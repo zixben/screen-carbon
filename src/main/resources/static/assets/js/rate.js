@@ -15,66 +15,50 @@ let page = document.querySelector(".page")
 
 let status = 1;
 
-let score1 = 0;
-let score2 = 0;
-let score3 = 0;
+let selectedAnswers = [];
+let releaseYear = null;
+let genreIds = [];
+let countryShortNames = [];
 // CSRF token setup for AJAX requests
 var csrfToken = $('input[name="_csrf"]').val();
 
 page.addEventListener("click", () => {
 	if (status == 1) {
-		let data = $(".questionGroup1Form1").serializeArray();
+		let answers = collectAnswerOptions(1, 5);
 
-		if (data.length != 5) {
+		if (answers.length != 5) {
 			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
-		data.forEach(element => {
-			score1 += Number(element.value);
-		});
+		selectedAnswers = answers;
 		questionGroup1.style.display = "none";
 		questionGroup2.style.display = "block";
 		questionGroup3.style.display = "none";
 	} else if (status == 2) {
-		let data = $(".questionGroup2Form2").serializeArray();
-		if (data.length != 5) {
+		let answers = collectAnswerOptions(6, 10);
+		if (answers.length != 5) {
 			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
 
-		data.forEach(element => {
-			score2 += Number(element.value);
-		});
+		selectedAnswers = selectedAnswers.slice(0, 5).concat(answers);
 		questionGroup1.style.display = "none";
 		questionGroup2.style.display = "none";
 		questionGroup3.style.display = "block";
 		page.innerText = "Finish"
 	} else if (status == 3) {
-		let data = $(".questionGroup3Form3").serializeArray();
+		let answers = collectAnswerOptions(11, 15);
 
-		if (data.length != 5) {
+		if (answers.length != 5) {
 			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
-		data.forEach(element => {
-			score3 += Number(element.value);
-		});
-		let scoreSum = score1 + score2 + score3;
-		let score;
-		if (scoreSum === 60) {
-			score = 10;
+		selectedAnswers = selectedAnswers.slice(0, 10).concat(answers);
 
-		} else if (scoreSum === 30) {
-			score = 5;
-		} else {
-			score = scoreSum * 0.1666;
-		}
-
-
-		submitScore(score, type)
+		submitScore(type, selectedAnswers)
 	}
 
 	// Scroll to the "Question:" part
@@ -84,6 +68,22 @@ page.addEventListener("click", () => {
 
 	status += 1;
 })
+
+function collectAnswerOptions(startQuestion, endQuestion) {
+	let answers = [];
+	for (let questionNumber = startQuestion; questionNumber <= endQuestion; questionNumber++) {
+		let selected = document.querySelector(`input[name="question${questionNumber}"]:checked`);
+		if (selected == null) {
+			return [];
+		}
+		let match = selected.id.match(/Option([1-5])$/);
+		if (match == null) {
+			return [];
+		}
+		answers.push(Number(match[1]));
+	}
+	return answers;
+}
 
 
 // Determine which menu item should be active and add the 'active' class
@@ -98,8 +98,6 @@ let url = "https://api.themoviedb.org/3/movie/" + id
 if (type == 'tv') {
 	url = "https://api.themoviedb.org/3/tv/" + id
 }
-
-let popularityValue = null; 
 
 $.ajax({
 	url: url,
@@ -119,18 +117,16 @@ $.ajax({
 		$("#overview").html(resp.overview);
 		imgPath = imgServer + resp.poster_path;
 		vType = type;
-		
-		popularityValue = resp.popularity;
-		
+
 		if (type == 'movie') {
-			release_year = resp.release_date.substring(0, 4);
+			releaseYear = Number(resp.release_date.substring(0, 4));
 		} else {
-			release_year = resp.first_air_date.substring(0, 4);
+			releaseYear = Number(resp.first_air_date.substring(0, 4));
 		}
 		let genres = resp.genres;
 
 		// Extract the ids into an array
-		genre_ids = genres.map(function(genre) {
+		genreIds = genres.map(function(genre) {
 			return genre.id;
 		});
 
@@ -138,7 +134,7 @@ $.ajax({
 		let countries = resp.production_countries;
 
 		// Extract the ids into an array
-		countries_shortNames = countries.map(function(country) {
+		countryShortNames = countries.map(function(country) {
 			return country.iso_3166_1;
 		});
 
@@ -198,32 +194,17 @@ function determineIconPath(vote_average) {
 	else return 'assets/images/ranking_icons/ICONS_0004_Grey.png';
 }
 
-function submitScore(score, vType) {
-
-	let user = window.localStorage.getItem("user");
-
-
-	let userId = null;
-
-
-	if (user !== null) {
-		userId = JSON.parse(user).id;
-
-	}
-
-
+function submitScore(vType, answers) {
 	let title = $("#title").text();
 	let obj = JSON.stringify({
-		uId: userId,
-		vId: id,
+		vId: Number(id),
 		vImg: imgPath,
 		videoType: vType,
 		videoName: title,
-		score: score,
-		releaseYear: release_year,
-		genres: genre_ids,
-		countries: countries_shortNames,
-		popularity: popularityValue
+		releaseYear: releaseYear,
+		genres: genreIds,
+		countries: countryShortNames,
+		answers: answers
 	});
 
 
@@ -237,10 +218,12 @@ function submitScore(score, vType) {
 			'X-CSRF-TOKEN': csrfToken
 		},
 		success: (resp) => {
-			window.location.href = server + "/finish-rating?id=" + id + "&score=" + score + "&type=" + type;
+			window.location.href = server + "/finish-rating?id=" + id + "&score=" + resp.score + "&type=" + type;
 		},
 		error: function(error) {
 			console.error("Error inserting data", error);
+			let message = error.responseJSON && error.responseJSON.message ? error.responseJSON.message : "Unable to submit rating.";
+			alert(message);
 		}
 	});
 }

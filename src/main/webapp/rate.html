@@ -639,61 +639,59 @@
 
     let status = 1;
 
-    let score1 = 0;
-    let score2 = 0;
-    let score3 = 0;
+    let selectedAnswers = [];
+    let releaseYear = null;
+    let genreIds = [];
+    let countryShortNames = [];
     page.addEventListener("click", () => {
         if (status == 1) {
-            let data = $(".questionGroup1Form1").serializeArray();
-             console.log(data);
-            if (data.length != 5) {
+            let answers = collectAnswerOptions(1, 5);
+            if (answers.length != 5) {
                 //alert("Please enter");
                 alert("You have unselected options");
                 return;
             }
-            data.forEach(element => {
-                score1 += Number(element.value);
-            });
+            selectedAnswers = answers;
             questionGroup1.style.display = "none";
             questionGroup2.style.display = "block";
             questionGroup3.style.display = "none";
         } else if (status == 2) {
-            let data = $(".questionGroup2Form2").serializeArray();
-            if (data.length != 5) {
+            let answers = collectAnswerOptions(6, 10);
+            if (answers.length != 5) {
                 //alert("Please enter");
                 alert("You have unselected options");
                 return;
             }
-            console.log(data);
-            data.forEach(element => {
-                score2 += Number(element.value);
-            });
+            selectedAnswers = selectedAnswers.slice(0, 5).concat(answers);
             questionGroup1.style.display = "none";
             questionGroup2.style.display = "none";
             questionGroup3.style.display = "block";
             page.innerText = "Finish"
         } else if (status == 3) {
-            let data = $(".questionGroup3Form3").serializeArray();
-            console.log(data);
-            if (data.length != 5) {
+            let answers = collectAnswerOptions(11, 15);
+            if (answers.length != 5) {
                 //alert("Please enter");
                 alert("You have unselected options");
                 return;
             }
-            data.forEach(element => {
-                score3 += Number(element.value);
-            });
-            let scoreSum = score1 + score2 + score3;
-            let score = scoreSum * 0.1333;
-            console.log(score);
-            console.log(score1);
-            console.log(score2);
-            console.log(score3);
-            alert("Your score is："+score)
-            submitScore(score)
+            selectedAnswers = selectedAnswers.slice(0, 10).concat(answers);
+            submitScore(type, selectedAnswers)
         }
         status += 1;
     })
+
+    function collectAnswerOptions(startQuestion, endQuestion) {
+        let answers = [];
+        for (let questionNumber = startQuestion; questionNumber <= endQuestion; questionNumber++) {
+            let options = Array.from(document.querySelectorAll(`input[name="question${questionNumber}"]`));
+            let selectedIndex = options.findIndex(option => option.checked);
+            if (selectedIndex < 0) {
+                return [];
+            }
+            answers.push(selectedIndex + 1);
+        }
+        return answers;
+    }
 
     var queryString = decodeURIComponent(window.location.search);
     var params = new URLSearchParams(queryString);
@@ -716,32 +714,35 @@
         },
         success: function (resp) {
             console.log(resp)
-            $("#title").html(resp.title);
+            $("#title").html(type == 'tv' ? resp.name : resp.title);
             $("#overview").html(resp.overview)
             imgPath = imgServer + resp.poster_path
-            // vType =
+            if (type == 'tv') {
+                releaseYear = Number(resp.first_air_date.substring(0, 4));
+            } else {
+                releaseYear = Number(resp.release_date.substring(0, 4));
+            }
+            genreIds = (resp.genres || []).map(function (genre) {
+                return genre.id;
+            });
+            countryShortNames = (resp.production_countries || []).map(function (country) {
+                return country.iso_3166_1;
+            });
             $("#poster_path").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>")
         }
     })
 
-    function submitScore(score) {
-		console.log(window.localStorage);
-        let user = window.localStorage.getItem("user");
-        console.log(user);
-        if (user == null) {
-            alert("The user is not logged in. Please try again！！！！")
-            return;
-        }
-        let userId = JSON.parse(user).id;
-        console.log(userId);        
+    function submitScore(vType, answers) {
         let title = $("#title").text();
         let obj = JSON.stringify({
-            uId: userId,
-            vId: id,
+            vId: Number(id),
             vImg: imgPath,
-            // vType:
+            videoType: vType,
             videoName: title,
-            score: score
+            releaseYear: releaseYear,
+            genres: genreIds,
+            countries: countryShortNames,
+            answers: answers
         });
         console.log(obj);
         $.ajax({
@@ -753,7 +754,12 @@
                     "Content-Type": "application/json"
                 },
                 success: (resp) => {
-                    window.location.href = server + "/finish-rating.html?id=" + id + "&score=" + score;
+                    window.location.href = server + "/finish-rating.html?id=" + id + "&score=" + resp.score;
+                },
+                error: (error) => {
+                    console.error("Error inserting data", error);
+                    let message = error.responseJSON && error.responseJSON.message ? error.responseJSON.message : "Unable to submit rating.";
+                    alert(message);
                 }
             }
         )
