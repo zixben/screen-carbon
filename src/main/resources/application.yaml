@@ -7,6 +7,25 @@ spring:
       - optional:file:.env[.properties]
       - optional:file:src/main/resources/application-local.yaml
 
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.mariadb.jdbc.Driver}
+
+  mail:
+    host: ${SPRING_MAIL_HOST:mail-relay.gla.ac.uk}
+    port: ${SPRING_MAIL_PORT:25}
+    username: ${SPRING_MAIL_USERNAME:screencarbontest@glasgow.ac.uk}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE:true}
+
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
@@ -17,6 +36,8 @@ mybatis:
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:8081}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:}
   email:
     enabled: ${APP_EMAIL_ENABLED:true}
   password-recovery:
