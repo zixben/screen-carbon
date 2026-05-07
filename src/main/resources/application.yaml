@@ -24,3 +24,8 @@ app:
     log-link: ${PASSWORD_RECOVERY_LOG_LINK:false}
   tmdb:
     bearer-token: ${TMDB_BEARER_TOKEN:}
+  analytics:
+    geo:
+      enabled: ${APP_ANALYTICS_GEO_ENABLED:true}
+      country-header: ${APP_ANALYTICS_COUNTRY_HEADER:CF-IPCountry}
+      region-header: ${APP_ANALYTICS_REGION_HEADER:X-App-Region}
