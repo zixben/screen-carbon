@@ -14,10 +14,10 @@ $(document).ready(function() {
 	$(".moveInput").on("keyup", function(e) {
 		const inputValue = $(this).val().trim();
 		if (e.key === "Enter" && inputValue.length > 0) {
-			window.location.href = server + "/search-results?value=" + inputValue;
+			redirectToSearch(inputValue);
 		} else if (e.key === "Enter") {
 			// If the Enter key was pressed but the input is empty, show an alert
-			alert("The input is empty!");
+			redirectToSearch(inputValue);
 		}
 	});
 
@@ -87,104 +87,94 @@ $(document).ready(function() {
 
 	// Function to update the carousel with fetched movies
 	function updateCarousel(carouselInner, movies, isCustomData) {
+		if (!carouselInner) {
+			return;
+		}
+
+		carouselInner.textContent = "";
 		let firstItem = true;
 		movies.forEach((movie, index) => {
 			// Process movie data depending on the source
-			let id, media_type, title, vote_average, poster_path;//, borderColor, iconPath;
+			let id, media_type, title, vote_average, poster_path;
 			if (isCustomData) {
 				// Handling custom server data
-				id = movie.vId;
-				title = movie.videoName;
-				vote_average = movie.score;
-				voteAveragePercentage = (vote_average * 10).toString();
+				id = safePositiveInteger(movie.vId);
+				title = movie.videoName || "";
+				vote_average = Number(movie.score);
 				poster_path = movie.vImg;
-				media_type = movie.videoType
+				media_type = safeVideoType(movie.videoType);
 
 			} else {
 				// Handling TMDb API data
-				({ id, media_type, title, name, vote_average, poster_path } = movie);
-				title = title || name; // Handling different name conventions
-				//voteAverageTMDB = vote_average
-				//voteAveragePercentageTMDB = (vote_average * 10).toString();
+				id = safePositiveInteger(movie.id);
+				media_type = movie.media_type === "tv" ? "tv" : movie.media_type === "movie" ? "movie" : "person";
+				title = movie.title || movie.name || "";
+				vote_average = Number(movie.vote_average);
+				poster_path = movie.poster_path;
 
 			}
 
-			// Determine border color based on rating
-			//borderColor = determineBorderColor(vote_average);
-			//iconPath = determineIconPath(vote_average);
-
-			let itemHTML;
+			if (id === null || !media_type) {
+				return;
+			}
 
 			// Determine border color and icon path
-			if (isCustomData || climateMovies.some(m => (m.vId === id && m.videoName === title))) {
+			const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === id && m.videoName === title));
+			if (matchedClimateMovie) {
+				vote_average = Number(matchedClimateMovie.score);
+			}
+			const isRated = (isCustomData || Boolean(matchedClimateMovie)) && Number.isFinite(vote_average);
+			const voteAveragePercentage = isRated ? (vote_average * 10).toFixed(1).replace(/\.0$/, "") : "";
+			const posterUrl = isCustomData ? safeTmdbStoredImageUrl(poster_path) : safeTmdbImageUrl(poster_path);
 
-				climateMovies.forEach((item) => {
-					if (item.vId === id && item.videoName === title) {
-						vote_average = item.score;
-						voteAveragePercentage = (vote_average * 10).toString();
-					}
-				})
-				borderColor = determineBorderColor(vote_average);
-				iconPath = determineIconPath(vote_average);
+			const carouselItem = document.createElement("div");
+			carouselItem.className = "carousel-item" + (firstItem ? " active" : "");
+			const column = document.createElement("div");
+			column.className = "col-md-3";
+			const card = document.createElement("div");
+			card.className = "card";
+			card.dataset.id = String(id);
+			card.dataset.type = media_type;
+			card.dataset.name = title;
 
-				itemHTML = `
-                    <div class="carousel-item ${firstItem ? 'active' : ''}">
-                        <div class="col-md-3">
-                            <div class="card" data-id="${id}" data-type="${media_type}" data-name="${title}">
-                                <div class="card-img" style="border-color: ${borderColor};">
-                                    <img src="${imgServer + poster_path}" class="img-fluid" alt="movie-img">
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text"><img class="card-icon" src="${iconPath}">${voteAveragePercentage.substring(0, 5)}%</p>
-                                    <h5 class="card-title">${title}</h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
+			const cardImage = document.createElement("div");
+			cardImage.className = "card-img";
+			if (isRated) {
+				cardImage.style.borderColor = determineBorderColor(vote_average);
 			} else {
-
-				//borderColor = '#ddd'; // Default border color
-				//borderColor = 'white';
-				//<div class="card-img" style="border-color: ${borderColor};">
-				borderImageStyle = "style='border: 2px solid black; padding: 10px; background-color: white;'"
-				itemHTML = `
-                    <div class="carousel-item ${firstItem ? 'active' : ''}">
-                        <div class="col-md-3">
-                            <div class="card" data-id="${id}" data-type="${media_type}" data-name="${title}">
-                                <div class="card-img" ${borderImageStyle}>
-                                    <img src="${imgServer + poster_path}" class="img-fluid" alt="movie-img">
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">Not yet rated</p>
-                                    <h5 class="card-title">${title}</h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+				cardImage.style.border = "2px solid black";
+				cardImage.style.padding = "10px";
+				cardImage.style.backgroundColor = "white";
+			}
+			const image = createImageElement(posterUrl, "movie-img", { className: "img-fluid" });
+			if (image) {
+				cardImage.appendChild(image);
 			}
 
-			// Add movie details to carousel
-			/*let itemHTML = `
-					<div class="carousel-item ${firstItem ? 'active' : ''}">
-						<div class="col-md-3">
-							<div class="card" data-id="${id}" data-type="${media_type}" data-name="${title}">
-								<div class="card-img" style="border-color: ${borderColor};">
-									<img src="${imgServer + poster_path}" class="img-fluid" alt="movie-img">
-								</div>
-								<div class="card-body">
-									<p class="card-text"><img src="${iconPath}" style="width: 50px; height: 50px; margin-right: 10px;">${voteAveragePercentage.substring(0, 5)}%</p>
-									<h5 class="card-title">${title}</h5>
-								</div>
-							</div>
-						</div>
-					</div>
-				`; */
+			const cardBody = document.createElement("div");
+			cardBody.className = "card-body";
+			const ratingText = document.createElement("p");
+			ratingText.className = "card-text";
+			if (isRated) {
+				const icon = createImageElement(determineIconPath(vote_average), "rating icon", { className: "card-icon" });
+				if (icon) {
+					ratingText.appendChild(icon);
+				}
+				ratingText.appendChild(document.createTextNode(voteAveragePercentage + "%"));
+			} else {
+				ratingText.textContent = "Not yet rated";
+			}
+			const titleElement = document.createElement("h5");
+			titleElement.className = "card-title";
+			titleElement.textContent = title;
 
-
-			carouselInner.innerHTML += itemHTML;
+			cardBody.appendChild(ratingText);
+			cardBody.appendChild(titleElement);
+			card.appendChild(cardImage);
+			card.appendChild(cardBody);
+			column.appendChild(card);
+			carouselItem.appendChild(column);
+			carouselInner.appendChild(carouselItem);
 			firstItem = false;
 		});
 
@@ -267,9 +257,13 @@ $(document).ready(function() {
 	// Delegate click event from .carousel-inner to each carousel-item
 	$('.carousel-inner').on('click', '.card', function() {
 
-		let id = $(this).data('id');
+		let id = safePositiveInteger($(this).data('id'));
 		//let name = $(this).data('name');
 		let type = $(this).data('type');
+
+		if (id === null) {
+			return;
+		}
 
 		if (type === "tv") {
 			window.location.href = server + `/tv?id=${id}&type=tv`;

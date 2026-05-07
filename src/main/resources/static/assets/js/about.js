@@ -1,12 +1,13 @@
 		fetchCurrentUser()
 			.done(function() {
-				let str = "    <li onclick = 'logout()'><a href=\"#\" >Logout</a></li>\n" +
-					"     <li><a href=\"/user-ratings\">User</a></li>"
-				$(".sub__menu").html(str)
+				const $menu = $(".sub__menu").empty();
+				$menu.append($("<li>").on("click", logout).append($("<a>").attr("href", "#").text("Logout")));
+				$menu.append($("<li>").append($("<a>").attr("href", "/user-ratings").text("User")));
 			})
 			.fail(function() {
-				let str = "      <li><a href=\"/login\">Login</a></li> <li><a href=\"/signup\">Register</a></li>"
-				$(".sub__menu").html(str)
+				const $menu = $(".sub__menu").empty();
+				$menu.append($("<li>").append($("<a>").attr("href", "/login").text("Login")));
+				$menu.append($("<li>").append($("<a>").attr("href", "/signup").text("Register")));
 			});
 
 		function logout() {

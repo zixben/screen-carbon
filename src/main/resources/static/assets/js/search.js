@@ -1,7 +1,7 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var value = params.get('value');
-var videoType = params.get('type'); 
+var videoType = safeVideoType(params.get('type'));
 
 function setActiveTab(button) {
 	// Remove active class from all buttons
@@ -60,7 +60,8 @@ function fetchMovies(value, page, climateVideo) {
 
 function renderMovies(data) {
 	const { resp, climateVideo } = data;
-	let htmlEle = "";
+	const $items = $(".items").empty();
+	let renderedAny = false;
 	for (const respElement of resp.results || []) {
 		if (respElement.media_type != window.sessionStorage.getItem("where")) {
 			continue;
@@ -71,8 +72,8 @@ function renderMovies(data) {
 			continue;
 		}
 
-		let title = escapeHtml(respElement.title || respElement.name || "");
-		let overview = escapeHtml(String(respElement.overview || "").substring(0, 200) + "...");
+		let title = respElement.title || respElement.name || "";
+		let overview = String(respElement.overview || "").substring(0, 200) + "...";
 		let score = "Not yet rated";
 		let color;
 		let iconPath;
@@ -82,7 +83,7 @@ function renderMovies(data) {
 			climateVideo.forEach((item) => {
 				if (item.vId === respElement.id && item.videoType === respElement.media_type) {
 					let climateVoteAverage = item.score;
-					score = escapeHtml((climateVoteAverage * 10).toString().substring(0, 5) + "%");
+					score = (climateVoteAverage * 10).toString().substring(0, 5) + "%";
 					color = determineBorderColor(climateVoteAverage);
 					iconPath = determineIconPath(climateVoteAverage);
 					iconClass = 'card-icon';
@@ -96,23 +97,47 @@ function renderMovies(data) {
 		let poster = respElement.poster_path || respElement.profile_path;
 		let posterUrl = safeTmdbImageUrl(poster);
 
-		let scoreHTMLElement = mediaType === 3 ? '' : 
-			"<div onclick='toRate(" + resultId + "," + mediaType + ")' class=\"item_sore\">\n" +
-			"    <p><span><img class='" + iconClass + "' src='" + iconPath + "'></span>\n" +
-			"    <span style='color:" + color + ";'>" + score + "</span>\n" +
-			"    </p>\n" +
-			"</div>\n";
+		const $item = $("<div>").addClass("item");
+		const $image = $("<div>").addClass("item_image").on("click", function() {
+			toDesc(resultId, mediaType);
+		});
+		const posterImage = createImageElement(posterUrl, "no image");
+		if (posterImage) {
+			$image.append(posterImage);
+		}
 
-		htmlEle += "<div class=\"item\">\n" +
-			"    <div onclick='toDesc(" + resultId + "," + mediaType + ")' class=\"item_image\"><img alt='no image' src='" + posterUrl + "'></div>\n" +
-			"    <div onclick='toDesc(" + resultId + "," + mediaType + ")' class=\"item_info\">\n" +
-			"        <h5>" + title + "</h5>\n" +
-			"        <p>" + overview + "</p>\n" +
-			"    </div>\n" +
-			scoreHTMLElement +
-			"</div>";
+		const $info = $("<div>").addClass("item_info").on("click", function() {
+			toDesc(resultId, mediaType);
+		});
+		$info.append($("<h5>").text(title));
+		$info.append($("<p>").text(overview));
+		$item.append($image).append($info);
+
+		if (mediaType !== 3) {
+			const $score = $("<div>").addClass("item_sore").on("click", function() {
+				toRate(resultId, mediaType);
+			});
+			const $scoreText = $("<span>").text(score);
+			if (color) {
+				$scoreText.css("color", color);
+			}
+			const $scoreParagraph = $("<p>");
+			const scoreIcon = createImageElement(iconPath, "rating icon", { className: iconClass });
+			if (scoreIcon) {
+				$scoreParagraph.append($("<span>").append(scoreIcon));
+			}
+			$scoreParagraph.append($scoreText);
+			$score.append($scoreParagraph);
+			$item.append($score);
+		}
+
+		$items.append($item);
+		renderedAny = true;
 	}
-	$(".items").html(htmlEle);
+
+	if (!renderedAny) {
+		showTextMessage(".items", "No results found");
+	}
 }
 
 function movies(where, page) {

@@ -1,12 +1,15 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
-var type = params.get('type');
+var type = safeVideoType(params.get('type'));
 var imgPath = "";
 var vType = "";
 
 if (id === null) {
 	throw new Error("Invalid video id.");
+}
+if (!type) {
+	throw new Error("Invalid video type.");
 }
 
 let questionGroup1 = document.querySelector(".questionGroup1");
@@ -124,11 +127,11 @@ $.ajax({
 		vType = type;
 
 		if (type == 'movie') {
-			releaseYear = Number(resp.release_date.substring(0, 4));
+			releaseYear = Number(String(resp.release_date || "").substring(0, 4));
 		} else {
-			releaseYear = Number(resp.first_air_date.substring(0, 4));
+			releaseYear = Number(String(resp.first_air_date || "").substring(0, 4));
 		}
-		let genres = resp.genres;
+		let genres = resp.genres || [];
 
 		// Extract the ids into an array
 		genreIds = genres.map(function(genre) {
@@ -136,7 +139,7 @@ $.ajax({
 		});
 
 
-		let countries = resp.production_countries;
+		let countries = resp.production_countries || [];
 
 		// Extract the ids into an array
 		countryShortNames = countries.map(function(country) {
@@ -144,7 +147,7 @@ $.ajax({
 		});
 
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		$("#poster_path").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "")
+		setImageContent("#poster_path", posterUrl, "img");
 	}
 })
 
@@ -166,14 +169,14 @@ $.ajax({
 				iconPath = determineIconPath(vote_average);
 
 				$("#poster_path").css("border-color", borderColor);
-				$("#icon-path").html("<img style=\"width: 45px; height: 45px;\" src='" + server + iconPath + "' alt='img'>")
+				setRatingIcon("#icon-path", iconPath, 45);
 
 				let avgScorePercentage = (avgScore * 10).toString();
 
 				$("#currentRatingPerc").text(Math.round(avgScorePercentage) + "%");
 			} else {
 				$("#poster_path").css("border-color", "none");
-				$(".rating-layout").html("<h1>No rated yet.</h1>");
+				$(".rating-layout").empty().append($("<h1>").text("No rated yet."));
 			}
 		});
 	},

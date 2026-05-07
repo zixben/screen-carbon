@@ -26,7 +26,7 @@ $(document).ready(function() {
 
 					renderVideos(response);
 				} else {
-					$("#tv-shows").html('<p>No results found</p>');
+					showTextMessage("#tv-shows", "No results found");
 				}
 				updatePageNumber(page);
 			},
@@ -37,7 +37,7 @@ $(document).ready(function() {
 	}
 
 	function renderVideos(videos) {
-		let html = '';
+		const $tvShows = $("#tv-shows").empty();
 		videos.forEach(function(video) {
 			const videoId = Number(video.vId);
 			if (!Number.isInteger(videoId) || videoId <= 0) {
@@ -48,25 +48,27 @@ $(document).ready(function() {
 			const borderColor = determineBorderColor(score);
 			const iconPath = determineIconPath(score);
 			const voteAveragePercentage = (score * 10).toFixed(1);
-			const title = escapeHtml(video.videoName);
-			const posterUrl = escapeHtmlAttribute(video.vImg);
+			const title = video.videoName || "";
+			const posterUrl = safeTmdbStoredImageUrl(video.vImg);
 
-			html += `
-                <div onclick='toDesc(${videoId})' class="videoCar">
-                    <div class="VideoImage" style="border-color: ${borderColor};">
-                        <img alt='image' src='${posterUrl}'>
-                    </div>
-                    <div>
-                        <p>
-                            <span><img class="card-icon" src='${iconPath}'></span>
-                            <span>${voteAveragePercentage}%</span>
-                        </p>
-                        <h5>${title}</h5>
-                    </div>
-                </div>`;
+			const $card = $("<div>").addClass("videoCar").on("click", function() {
+				toDesc(videoId);
+			});
+			const $imageWrapper = $("<div>").addClass("VideoImage").css("border-color", borderColor);
+			const image = createImageElement(posterUrl, "image");
+			if (image) {
+				$imageWrapper.append(image);
+			}
+			const icon = createImageElement(iconPath, "rating icon", { className: "card-icon" });
+			const $rating = $("<p>");
+			if (icon) {
+				$rating.append($("<span>").append(icon));
+			}
+			$rating.append($("<span>").text(voteAveragePercentage + "%"));
+
+			$card.append($imageWrapper).append($("<div>").append($rating).append($("<h5>").text(title)));
+			$tvShows.append($card);
 		});
-
-		$("#tv-shows").html(html);
 	}
 
 	function determineBorderColor(vote_average) {
@@ -192,7 +194,10 @@ $(document).ready(function() {
 });
 
 function toDesc(id) {
-	window.location.href = server + "/tv?id=" + id + "&type=tv";
+	const videoId = safePositiveInteger(id);
+	if (videoId !== null) {
+		window.location.href = server + "/tv?id=" + videoId + "&type=tv";
+	}
 }
 
 $(".moveInput").on("keyup", function(e) {
@@ -200,10 +205,10 @@ $(".moveInput").on("keyup", function(e) {
 	const videoType = "tv";
 
 	if (e.key === "Enter" && inputValue.length > 0) {
-		window.location.href = server + "/search-results?value=" + inputValue + "&type=" + videoType;
+		redirectToSearch(inputValue, videoType);
 	} else if (e.key === "Enter") {
 		// If the Enter key was pressed but the input is empty, show an alert
-		alert("The input is empty!");
+		redirectToSearch(inputValue, videoType);
 	}
 });
 

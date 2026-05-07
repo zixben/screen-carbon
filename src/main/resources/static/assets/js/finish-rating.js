@@ -1,7 +1,7 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
-var type = params.get('type');
+var type = safeVideoType(params.get('type'));
 
 if (id === null) {
 	throw new Error("Invalid video id.");
@@ -56,7 +56,7 @@ $.ajax({
 
 		$("#overview").text(resp.overview || "");
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		$(".finish-image").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "");
+		setImageContent(".finish-image", posterUrl, "img");
 
 	}
 })
@@ -87,7 +87,7 @@ function displaySubmittedScore(rawScore) {
 
 	$("#score").text(formatScore(score) + "/10");
 	$("#scorePerc").text("(" + formatPercent(score) + ")");
-	$("#submittedScoreIcon").html("<img style=\"width: 30px; height: 30px;\" src='" + server + determineIconPath(score) + "' alt='img'>");
+	setRatingIcon("#submittedScoreIcon", determineIconPath(score), 30);
 }
 
 function displayUnavailableSubmittedScore() {
@@ -110,7 +110,7 @@ function fetchAndDisplayAverageScore() {
 			}
 
 			$("#poster_path").css("border-color", determineBorderColor(avgScore));
-			$("#averageScoreIcon").html("<img style=\"width: 30px; height: 30px;\" src='" + server + determineIconPath(avgScore) + "' alt='img'>");
+			setRatingIcon("#averageScoreIcon", determineIconPath(avgScore), 30);
 			$("#averageScorePerc").text(formatPercent(avgScore));
 		},
 		error: function(xhr, textStatus, errorThrown) {
@@ -153,9 +153,9 @@ function determineIconPath(vote_average) {
 $(".moveInput").on("keyup", function(e) {
 	const inputValue = $(this).val().trim();
 	if (e.key === "Enter" && inputValue.length > 0) {
-		window.location.href = server + "/search-results?value=" + inputValue;
+		redirectToSearch(inputValue);
 	} else if (e.key === "Enter") {
 		// If the Enter key was pressed but the input is empty, show an alert
-		alert("The input is empty!");
+		redirectToSearch(inputValue);
 	}
 });

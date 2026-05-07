@@ -30,7 +30,7 @@ function loadUserRatings(userId) {
 			'X-CSRF-TOKEN': csrfToken
 		},
 		success: function(resp) {
-			let htmlStr = "";
+			const $menuDesc = $(".menuDesc").empty();
 
 			for (const respElement of resp) {
 				const videoId = Number(respElement.vId);
@@ -39,48 +39,36 @@ function loadUserRatings(userId) {
 					continue;
 				}
 
-				const imageUrl = escapeHtmlAttribute(respElement.vImg);
-				const videoName = escapeHtml(String(respElement.videoName || "").substring(0, 20));
-				const score = escapeHtml(String(respElement.score || "").substring(0, 4));
+				const imageUrl = safeTmdbStoredImageUrl(respElement.vImg);
+				const videoName = String(respElement.videoName || "").substring(0, 20);
+				const score = String(respElement.score || "").substring(0, 4);
 
-				htmlStr += " <div onclick='toDesc2(" + videoId + ", \"" + videoType + "\")' class=\"ratings\">\n" +
-					"                    <img src=\"" + imageUrl + "\" alt=\"img\">\n" +
-					"                    <div class=\"ratingInfo\">\n" +
-					"                        <h4 id=\"title\">" + videoName + "</h4>\n" +
-					"                        <h5>Your rating</h5>\n" +
-					"                        <button type=\"button\" class=\"btn btn-info\">" + score + "/10</button>\n" +
-					"                    </div>\n" +
-					"                </div>"
+				const $rating = $("<div>").addClass("ratings").on("click", function() {
+					toDesc2(videoId, videoType);
+				});
+				const image = createImageElement(imageUrl, "img");
+				if (image) {
+					$rating.append(image);
+				}
+				const $ratingInfo = $("<div>").addClass("ratingInfo")
+					.append($("<h4>").attr("id", "title").text(videoName))
+					.append($("<h5>").text("Your rating"))
+					.append($("<button>").attr("type", "button").addClass("btn btn-info").text(score + "/10"));
+
+				$rating.append($ratingInfo);
+				$menuDesc.append($rating);
 			}
-			$(".menuDesc").html(htmlStr);
 		}
 	});
 }
 
 
 function toDesc2(vId, vType) {
-
-	let url = "https://api.themoviedb.org/3/movie/" + vId
-	if (vType == 'tv') {
-		url = "https://api.themoviedb.org/3/tv/" + vId
+	const videoId = safePositiveInteger(vId);
+	const videoType = safeVideoType(vType);
+	if (videoId === null || !videoType) {
+		return;
 	}
 
-	$.ajax({
-		url: url,
-		method: "get",
-		headers: {
-			"Authorization": jwt,
-			"accept": "application/json"
-		},
-		success: function(resp) {
-			window.location.href = server + `/${vType}?id=${resp.id}&type=${vType}`;
-
-
-
-		},
-		error: function(xhr, status, error) {
-			console.error("An error occurred: " + status + ", " + error + ", " + xhr);
-		}
-	})
-
+	window.location.href = server + `/${videoType}?id=${videoId}&type=${videoType}`;
 }

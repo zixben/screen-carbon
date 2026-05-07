@@ -1,10 +1,13 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
-var videoType = params.get('type');
+var videoType = safeVideoType(params.get('type'));
 
 if (id === null) {
 	throw new Error("Invalid movie id.");
+}
+if (videoType !== "movie") {
+	throw new Error("Invalid video type.");
 }
 
 $.ajax({
@@ -25,7 +28,7 @@ $.ajax({
 				iconPath = determineIconPath(vote_average);
 
 				$("#poster_path").css("border-color", borderColor);
-				$("#icon-path").html("<img style=\"width: 30px; height: 30px;\" src='" + server + iconPath + "' alt='img'>");
+				setRatingIcon("#icon-path", iconPath, 30);
 
 				let avgScorePercentage = (avgScore * 10).toString();
 
@@ -45,7 +48,7 @@ $.ajax({
 					success: function(resp) {
 						scoreTMDB = resp.vote_average;
 
-						$(".rating-layout").html("<h3 class='rating'>Not yet rated</h3>");
+						$(".rating-layout").empty().append($("<h3>").addClass("rating").text("Not yet rated"));
 					},
 					error: function(xhr, status, error) {
 						console.error("An error occurred: " + status + ", " + error + ", " + xhr);
@@ -71,19 +74,18 @@ $.ajax({
 
 
 		$("#title").text(resp.title || "");
-		$("#release_date").html("<span class='movieInfo'> " + escapeHtml(resp.release_date || "") + "</span>");
-		$("#runtime").html("<span class='movieInfo'> " + escapeHtml(resp.runtime || "") + "</span>");
+		$("#release_date").empty().append($("<span>").addClass("movieInfo").text(" " + (resp.release_date || "")));
+		$("#runtime").empty().append($("<span>").addClass("movieInfo").text(" " + (resp.runtime || "")));
 
-		let genres = "";
+		const $genre = $("#genre").empty();
 		(resp.genres || []).forEach((genre, index) => {
 
 			let genreName = genre.name;
 			if (genreName === "Science Fiction") {
 				genreName = "Sci-Fi";
 			}
-			genres += `<div class="xinzhuang">${escapeHtml(genreName)}</div>`
+			$("<div>").addClass("xinzhuang").text(genreName || "").appendTo($genre);
 		})
-		$("#genre").html(genres);
 
 		$("#adult").text(String(resp.adult || ""));
 		$("#overview").text(resp.overview || "");
@@ -110,7 +112,7 @@ $.ajax({
 			: "");
 
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		$(".movieImage").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "");
+		setImageContent(".movieImage", posterUrl, "img");
 
 	}
 })
@@ -141,22 +143,14 @@ $.ajax({
 				break;
 			}
 		}
-		let castStr = "";
+		const $actorImage = $(".actor_image").empty();
 		for (const respElement of (resp.crew || []).slice(0, 5)) {
 			const personId = safePositiveInteger(respElement.id);
 			if (personId === null) {
 				continue;
 			}
 			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
-			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\"  class='actorImageItem'>\n" +
-				"          <div class=\"image\">\n" +
-				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
-				"          </div>\n" +
-				"          <div class=\"actorText\">\n" +
-				"            <h4>" + escapeHtml(respElement.name || "") + "</h4>\n" +
-				"            <p>" + escapeHtml(respElement.job || "") + "</p>\n" +
-				"          </div>\n" +
-				"        </div>"
+			appendActorCard($actorImage, personId, profileUrl, respElement.name || "", respElement.job || "");
 		}
 		for (const respElement of (resp.cast || []).slice(0, 5)) {
 			const personId = safePositiveInteger(respElement.id);
@@ -164,19 +158,28 @@ $.ajax({
 				continue;
 			}
 			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
-			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\" class='actorImageItem'>\n" +
-				"          <div class=\"image\">\n" +
-				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
-				"          </div>\n" +
-				"          <div class=\"actorText\">\n" +
-				"            <h4>" + escapeHtml(String(respElement.name || "").slice(0, 15)) + "</h4>\n" +
-				"            <p>" + escapeHtml(respElement.known_for_department || "") + "</p>\n" +
-				"          </div>\n" +
-				"        </div>"
+			appendActorCard($actorImage, personId, profileUrl, String(respElement.name || "").slice(0, 15), respElement.known_for_department || "");
 		}
-		$(".actor_image").html(castStr)
 	}
 })
+
+function appendActorCard($container, personId, profileUrl, name, role) {
+	const $item = $("<div>").addClass("actorImageItem").on("click", function() {
+		toPersonPage(personId);
+	});
+	const $image = $("<div>").addClass("image");
+	const image = createImageElement(profileUrl, "profile");
+	if (image) {
+		image.setAttribute("srcset", "");
+		$image.append(image);
+	}
+	const $text = $("<div>").addClass("actorText")
+		.append($("<h4>").text(name || ""))
+		.append($("<p>").text(role || ""));
+
+	$item.append($image).append($text);
+	$container.append($item);
+}
 
 function toRatePage() {
 

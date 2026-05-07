@@ -43,7 +43,7 @@ $(document).ready(function() {
 		if (num < 1) {
 			return;
 		}
-		$("#pageNum").html(num)
+		$("#pageNum").text(num)
 
 
 		var climateMovies = [];
@@ -75,53 +75,62 @@ $(document).ready(function() {
 			},
 			success: function(resp) {
 				if (resp.results.length) {
-					
+					const $movies = $("#movies").empty();
 
-				let html = "";
-
-				for (const respElement of resp.results) {
-					let title = respElement.title || respElement.name;
-					if (climateMovies.some(m => (m.vId === respElement.id && m.videoName === title))) {
-
-						climateMovies.forEach((item) => {
-							if (item.vId === respElement.id && item.videoName === title) {
-								vote_average = item.score;
-								voteAveragePercentage = (vote_average * 10).toString().substring(0, 5);
-							}
-						})
-						borderColor = determineBorderColor(vote_average);
-						iconPath = determineIconPath(vote_average);
-
-						html += "   <div onclick = 'toDesc(" + respElement.id + ")' class=\"videoCar\">\n" +
-							"                <div class=\"VideoImage\" style='border-color: " + borderColor + ";'>\n" +
-							"                    <img alt='image' src='" + imgServer + respElement.poster_path + "'>\n" +
-							"                </div>\n" +
-							"                <div><p><span><img class=\"card-icon\" src='" + iconPath + "'></span>\n" +
-							"                    <span>" + voteAveragePercentage + "%</span>\n" +
-							"                </p>\n" +
-							"                <h5>" + title + "</h5></div>\n" +
-							"            </div>"
-					} else {
-						//borderColor = "none";
-						html += "   <div onclick = 'toDesc(" + respElement.id + ")' class=\"videoCar\">\n" +
-							"                <div class=\"VideoImage\"style='border: none'>\n" +
-							"                    <img alt='image' src='" + imgServer + respElement.poster_path + "'>\n" +
-							"                </div>\n" +
-							"                <div><p>Not yet rated" +
-							"                </p>\n" +
-							"                <h5>" + respElement.title + "</h5></div>\n" +
-							"            </div>"
+					for (const respElement of resp.results) {
+						appendTmdbMovieCard($movies, respElement, climateMovies);
 					}
-				}
-
-
-
-				$("#movies").html(html)
 				} else {
-					$("#movies").html('<p>No results found</p>');
+					showTextMessage("#movies", "No results found");
 				}
 			}
 		})
+	}
+
+	function appendTmdbMovieCard($container, respElement, climateMovies) {
+		const resultId = safePositiveInteger(respElement.id);
+		if (resultId === null) {
+			return;
+		}
+
+		const title = respElement.title || respElement.name || "";
+		const posterUrl = safeTmdbImageUrl(respElement.poster_path);
+		const matchedClimateMovie = climateMovies.find(m => (m.vId === resultId && m.videoName === title));
+		const score = matchedClimateMovie ? Number(matchedClimateMovie.score) : null;
+		const isRated = Number.isFinite(score);
+		const borderColor = isRated ? determineBorderColor(score) : "";
+		const iconPath = isRated ? determineIconPath(score) : "";
+		const voteAveragePercentage = isRated ? (score * 10).toFixed(1).replace(/\.0$/, "") : "";
+
+		const $card = $("<div>").addClass("videoCar").on("click", function() {
+			toDesc(resultId);
+		});
+		const $imageWrapper = $("<div>").addClass("VideoImage");
+		if (isRated) {
+			$imageWrapper.css("border-color", borderColor);
+		} else {
+			$imageWrapper.css("border", "none");
+		}
+		const image = createImageElement(posterUrl, "image");
+		if (image) {
+			$imageWrapper.append(image);
+		}
+
+		const $info = $("<div>");
+		const $rating = $("<p>");
+		if (isRated) {
+			const icon = createImageElement(iconPath, "rating icon", { className: "card-icon" });
+			if (icon) {
+				$rating.append($("<span>").append(icon));
+			}
+			$rating.append($("<span>").text(voteAveragePercentage + "%"));
+		} else {
+			$rating.text("Not yet rated");
+		}
+
+		$info.append($rating).append($("<h5>").text(title));
+		$card.append($imageWrapper).append($info);
+		$container.append($card);
 	}
 
 	
@@ -147,10 +156,10 @@ $(document).ready(function() {
 	$(".moveInput").on("keyup", function(e) {
 		const inputValue = $(this).val().trim();
 		if (e.key === "Enter" && inputValue.length > 0) {
-			window.location.href = server + "/search-results?value=" + inputValue;
+			redirectToSearch(inputValue);
 		} else if (e.key === "Enter") {
 			// If the Enter key was pressed but the input is empty, show an alert
-			alert("The input is empty!");
+			redirectToSearch(inputValue);
 		}
 	});
 
@@ -164,8 +173,11 @@ $(document).ready(function() {
 	});
 });
 function toDesc(id) {
-		window.location.href = server + "/movie?id=" + id + "&type=movie";
+	const resultId = safePositiveInteger(id);
+	if (resultId !== null) {
+		window.location.href = server + "/movie?id=" + resultId + "&type=movie";
 	}
+}
 	
 function loadTMDBOptions() {
     let tmdbOptions = `

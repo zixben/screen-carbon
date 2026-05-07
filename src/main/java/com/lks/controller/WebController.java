@@ -298,7 +298,7 @@ public class WebController {
 		model.addAttribute("title", "About Us");
 		model.addAttribute("activePage", "about");
 		model.addAttribute("styles", "/assets/css/about.css");
-		model.addAttribute("scripts", "/assets/js/tv-shows.js");
+		model.addAttribute("scripts", "/assets/js/about.js");
 
 		return "about";
 	}

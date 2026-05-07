@@ -20,7 +20,7 @@ $.ajax({
 		$("#Birthplace").text(resp.place_of_birth || "")
 		$("#Introduction").text(String(resp.biography || "").slice(0, 600) + "...")
 		const profileUrl = safeTmdbImageUrl(resp.profile_path);
-		$(".image").html(profileUrl ? "<img src='" + profileUrl + "' alt='image'>" : "")
+		setImageContent(".image", profileUrl, "image");
 	}
 })
 
@@ -35,7 +35,7 @@ $.ajax({
 	success: function(resp) {
 
 
-		let castStr = "";
+		const $known = $(".known").empty();
 		for (const respElement of (resp.crew || []).slice(0, 5)) {
 			const itemId = safePositiveInteger(respElement.id);
 			const mediaType = respElement.media_type === "tv" ? "tv" : respElement.media_type === "movie" ? "movie" : "";
@@ -43,15 +43,7 @@ $.ajax({
 				continue;
 			}
 			const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-			castStr += "    <div onclick='toDesc(" + itemId + ",\"" + mediaType + "\")' class=\"knownItem flex-item\">\n" +
-				"                 <div class=\"VideoImage\">\n" +
-				"                         <img src='" + posterUrl + "' alt='not availble'>\n" +
-				"                    </div>\n" +
-				"                    <p><span><i class=\"bi bi-star-fill\"></i></span>\n" +
-				"                          <span>" + escapeHtml(respElement.vote_average || "") + "</span>\n" +
-				"                    </p>\n" +
-				"                  <h5>" + escapeHtml(respElement.title || respElement.name || "") + "</h5>\n" +
-				"    </div>"
+			appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
 		}
 		for (const respElement of (resp.cast || []).slice(0, 5)) {
 			const itemId = safePositiveInteger(respElement.id);
@@ -60,19 +52,30 @@ $.ajax({
 				continue;
 			}
 			const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-			castStr += "    <div onclick='toDesc(" + itemId + ",\"" + mediaType + "\")' class=\"knownItem flex-item\">\n" +
-				"                 <div class=\"VideoImage\">\n" +
-				"                         <img alt='not availble'  src='" + posterUrl + "' >\n" +
-				"                    </div>\n" +
-				"                    <p><span><i class=\"bi bi-star-fill\"></i></span>\n" +
-				"                          <span>" + escapeHtml(respElement.vote_average || "") + "</span>\n" +
-				"                    </p>\n" +
-				"                  <h5>" + escapeHtml(respElement.title || respElement.name || "") + "</h5>\n" +
-				"    </div>"
+			appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
 		}
-		$(".known").html(castStr)
 	}
 })
+
+function appendKnownItem($container, itemId, mediaType, posterUrl, voteAverage, title) {
+	const $item = $("<div>").addClass("knownItem flex-item").on("click", function() {
+		toDesc(itemId, mediaType);
+	});
+	const $imageWrapper = $("<div>").addClass("VideoImage");
+	const image = createImageElement(posterUrl, "not available");
+	if (image) {
+		$imageWrapper.append(image);
+	}
+
+	const $rating = $("<p>")
+		.append($("<span>").append($("<i>").addClass("bi bi-star-fill")))
+		.append($("<span>").text(voteAverage || ""));
+
+	$item.append($imageWrapper)
+		.append($rating)
+		.append($("<h5>").text(title || ""));
+	$container.append($item);
+}
 
 function toDesc(id, type) {
 	const itemId = safePositiveInteger(id);
@@ -80,8 +83,8 @@ function toDesc(id, type) {
 		return;
 	}
 	if (type == "tv") {
-		window.location.href = server + "/tv?id=" + itemId
+		window.location.href = server + "/tv?id=" + itemId + "&type=tv";
 	} else if (type == "movie") {
-		window.location.href = server + "/movie?id=" + itemId
+		window.location.href = server + "/movie?id=" + itemId + "&type=movie";
 	}
 }
