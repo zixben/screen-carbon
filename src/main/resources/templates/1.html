@@ -43,8 +43,8 @@
     <div id="main"></div>
     <div id="main2"></div>
     <div class="scoreResult">
-        <p>The Highest Average Rating of Top 10 Movies: <span id="supreme">Loading...</span></p>
-        <p>The Most Popular Movie: <span id="hot">Loading...</span></p>
+        <p>The Highest Average Rating: <span id="supreme">Loading...</span></p>
+        <p>The Most Popular Movie/Show: <span id="hot">Loading...</span></p>
         <p>Total Distinct Rated Movies/Shows: <span id="total">Loading...</span></p>
     </div>
 
@@ -83,7 +83,9 @@
             // Fetch Average Rating Data
             avgData = await fetchData(avgDataUrl);
             if (avgData) {
-                document.getElementById("supreme").innerText = avgData.avgX[0];
+                const avgLabels = Array.isArray(avgData.avgX) ? avgData.avgX : [];
+                const avgValues = Array.isArray(avgData.avgY) ? avgData.avgY : [];
+                document.getElementById("supreme").innerText = avgLabels[0] || "No data";
 
                 const avgOptions = {
                     title: { text: "Average Rating (%)" },
@@ -93,7 +95,7 @@
             				return `${params[0].name}: ${params[0].value}%`; // Multiply value by 10
         				}
         			},
-                    xAxis: { type: "category", data: avgData.avgX, name: "Movie" },
+                    xAxis: { type: "category", data: avgLabels, name: "Movie/Show" },
                     yAxis: { 
 						type: "value", 
 						name: "Average Rating (%)", 
@@ -104,7 +106,7 @@
                     series: [{
                         name: "Highest Rating (%)",
                         type: "line",
-                        data: avgData.avgY.map(y => y ? (y * 10).toFixed(2) : 0), // Multiply by 10 and handle nulls
+                        data: avgValues.map(y => y ? (y * 10).toFixed(2) : 0), // Multiply by 10 and handle nulls
                         smooth: true,
                         markPoint: { data: [{ type: "max", name: "Highest" }, { type: "min", name: "Lowest" }] },
                         markLine: { data: [{ type: "average", name: "Average" }] }
@@ -116,16 +118,18 @@
             // Fetch Popularity Data
             countData = await fetchData(countDataUrl);
             if (countData) {
-                document.getElementById("hot").innerText = countData.countX[0];
+                const countLabels = Array.isArray(countData.countX) ? countData.countX : [];
+                const countValues = Array.isArray(countData.countY) ? countData.countY : [];
+                document.getElementById("hot").innerText = countLabels[0] || "No data";
                 const countOptions = {
                     title: { text: "Popularity (Count)" },
                     tooltip: { trigger: "axis" },
-                    xAxis: { type: "category", data: countData.countX, name: "Movie" },
+                    xAxis: { type: "category", data: countLabels, name: "Movie/Show" },
                     yAxis: { type: "value", name: "Number of Ratings" },
                     series: [{
                         name: "Number of Ratings",
                         type: "bar",
-                        data: countData.countY,
+                        data: countValues,
                         markPoint: { data: [{ type: "max", name: "Most Popular" }, { type: "min", name: "Least Popular" }] },
                         markLine: { data: [{ type: "average", name: "Average" }] }
                     }]

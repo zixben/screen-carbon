@@ -28,7 +28,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/admin", "/1", "/2-2",
                     "/user/all", "/user/update", "/user/selectByUser", "/user/countUsers",
-                    "/score/update", "/score/delete"
+                    "/score/update", "/score/delete", "/score/getAvgFraction", "/score/getCountFraction",
+                    "/score/getTotalRated"
                 ).hasRole("ADMIN")
                 .requestMatchers(
                     "/user-settings", "/user-ratings", "/user/delete", "/score/getScoreList/**"
@@ -41,11 +42,11 @@ public class SecurityConfig {
                     "/tmdb/**",
                     "/user/me", "/user/getCode", "/user/login", "/user/save", "/user/check-username", "/user/check-email",
                     "/user/password-recovery", "/user/update-password",
-                    "/score/add", "/score/last-submission", "/score/getAvgFraction", "/score/getOrderAvg",
+                    "/score/add", "/score/last-submission", "/score/getOrderAvg",
                     "/score/getMovieAvgDesc", "/score/getMovieAvgAsc", "/score/getTVAvgDesc", "/score/getTVAvgAsc",
                     "/score/getMovieScoreCountDesc", "/score/getMovieScoreCountAsc",
                     "/score/getTVScoreCountDesc", "/score/getTVScoreCountAsc", "/score/getScoreAvg/**",
-                    "/score/getCountFraction", "/score/getTotalRated", "/score/getTop20Popularity"
+                    "/score/getTop20Popularity"
                 ).permitAll()
                 .anyRequest().denyAll()
             )

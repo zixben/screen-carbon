@@ -34,19 +34,33 @@ public interface ScoreMapper {
      */
     List<Score> queryAllByLimit(Score score, Pageable pageable);
 
-    @Select("SELECT video_name, v_id FROM score GROUP BY video_name, v_id ORDER BY SUM(score)/COUNT(score) DESC")
+    @Select("SELECT CONCAT(video_name, ' (', video_type, ')') "
+            + "FROM score "
+            + "GROUP BY v_id, video_type, video_name "
+            + "ORDER BY AVG(CAST(score AS DECIMAL(10, 4))) DESC")
     List<String> getAverageFractionX();
 
-    @Select("SELECT (SUM(score)/COUNT(score)) AS avgPercentage FROM score GROUP BY video_name ORDER BY avgPercentage DESC")
+    @Select("SELECT ROUND(AVG(CAST(score AS DECIMAL(10, 4))), 4) AS avgPercentage "
+            + "FROM score "
+            + "GROUP BY v_id, video_type, video_name "
+            + "ORDER BY avgPercentage DESC")
     List<Double> getAverageFractionY();
 
-    @Select("SELECT video_name FROM score GROUP BY video_name ORDER BY COUNT(score) DESC LIMIT 10")
+    @Select("SELECT CONCAT(video_name, ' (', video_type, ')') "
+            + "FROM score "
+            + "GROUP BY v_id, video_type, video_name "
+            + "ORDER BY COUNT(*) DESC "
+            + "LIMIT 10")
     List<String> getCountX();
 
-    @Select("SELECT COUNT(score) AS total FROM score GROUP BY video_name ORDER BY COUNT(score) DESC LIMIT 10")
+    @Select("SELECT COUNT(*) AS total "
+            + "FROM score "
+            + "GROUP BY v_id, video_type, video_name "
+            + "ORDER BY total DESC "
+            + "LIMIT 10")
     List<Integer> getCountY();
 
-    @Select("SELECT COUNT(DISTINCT video_name) FROM score")
+    @Select("SELECT COUNT(*) FROM (SELECT v_id, video_type FROM score GROUP BY v_id, video_type) rated_titles")
     int getTotalRatedMovies();
 //	List<Score> queryAllByLimit(Score score, @Param("pageable") Pageable pageable);
 //
