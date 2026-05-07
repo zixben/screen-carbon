@@ -3,12 +3,14 @@ package com.lks.controller;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
+import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
 import com.lks.mapper.UserMapper;
 import com.lks.service.EmailService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -81,6 +83,39 @@ class UserControllerTest {
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		verify(userMapper).clearAllRecoveryTokensForUser(42);
 		verify(emailService).sendEmail(any(String.class), any(String.class), any(String.class));
+	}
+
+	@Test
+	void currentUserReturnsSessionBackedUserResponse() {
+		UserController controller = new UserController();
+		MockHttpSession session = new MockHttpSession();
+		User user = new User();
+		user.setId(42);
+		user.setUsername("session-user");
+		user.setFullName("Session User");
+		user.setEmail("session@example.com");
+		user.setRole("USER");
+		session.setAttribute("loggedInUser", user);
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setSession(session);
+
+		ResponseEntity<?> response = controller.currentUser(request);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		UserResponse body = (UserResponse) response.getBody();
+		assertEquals(42, body.id());
+		assertEquals("session-user", body.username());
+		assertEquals("USER", body.role());
+	}
+
+	@Test
+	void currentUserRejectsMissingSessionUser() {
+		UserController controller = new UserController();
+		MockHttpServletRequest request = new MockHttpServletRequest();
+
+		ResponseEntity<?> response = controller.currentUser(request);
+
+		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 	}
 
 	@Test

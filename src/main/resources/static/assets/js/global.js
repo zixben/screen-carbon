@@ -35,6 +35,20 @@ function safeTmdbImageUrl(path) {
     return safePath ? escapeHtmlAttribute(imgServer + safePath) : "";
 }
 
+function fetchCurrentUser() {
+    return $.ajax({
+        url: server + "/user/me",
+        method: "GET",
+        headers: {
+            "accept": "application/json"
+        }
+    });
+}
+
+function redirectToLogin() {
+    window.location.href = server + "/login";
+}
+
     /*********************************
     /*  Scroll Top Bar
     *********************************/

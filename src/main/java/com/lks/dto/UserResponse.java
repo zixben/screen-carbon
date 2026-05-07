@@ -2,8 +2,6 @@ package com.lks.dto;
 
 import com.lks.bean.User;
 
-import java.sql.Timestamp;
-
 public record UserResponse(
         Integer id,
         String fullName,
@@ -11,7 +9,6 @@ public record UserResponse(
         String email,
         Boolean valid,
         String description,
-        Timestamp lockTime,
         String role
 ) {
     public static UserResponse from(User user) {
@@ -22,7 +19,6 @@ public record UserResponse(
                 user.getEmail(),
                 user.getValid(),
                 user.getDescription(),
-                user.getLockTime(),
                 user.getRole()
         );
     }

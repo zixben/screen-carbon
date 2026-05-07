@@ -4,7 +4,14 @@ import com.lks.bean.Score;
 import com.lks.dto.ScoreSubmissionRequest;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -14,6 +21,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ScoreServiceImplTest {
 
     private final ScoreServiceImpl service = new ScoreServiceImpl();
+    private static final int[][] EXPECTED_QUESTION_OPTION_SCORES = {
+            { 4, 3, 2, 1, 0 },
+            { 0, 1, 2, 3, 4 },
+            { 4, 3, 2, 1, 0 },
+            { 4, 3, 2, 1, 0 },
+            { 0, 1, 2, 3, 4 },
+            { 0, 1, 2, 3, 4 },
+            { 4, 3, 2, 1, 0 },
+            { 4, 3, 2, 1, 0 },
+            { 0, 1, 2, 3, 4 },
+            { 0, 1, 2, 3, 4 },
+            { 4, 3, 2, 1, 0 },
+            { 0, 1, 2, 3, 4 },
+            { 4, 3, 2, 1, 0 },
+            { 4, 3, 2, 1, 0 },
+            { 4, 3, 2, 1, 0 }
+    };
 
     @Test
     void buildScoreFromSubmissionCalculatesScoreAndUsesAuthenticatedUser() {
@@ -35,6 +59,57 @@ class ScoreServiceImplTest {
 
         assertNull(score.getuId());
         assertEquals("5", score.getScore());
+    }
+
+    @Test
+    void buildScoreFromSubmissionCalculatesMinimumScore() {
+        Score score = service.buildScoreFromSubmission(validRequest(minimumScoreAnswers()), null);
+
+        assertEquals("0", score.getScore());
+    }
+
+    @Test
+    void buildScoreFromSubmissionUsesPublishedQuestionOptionScoringMatrix() {
+        for (int questionIndex = 0; questionIndex < EXPECTED_QUESTION_OPTION_SCORES.length; questionIndex++) {
+            for (int option = 1; option <= 5; option++) {
+                List<Integer> answers = neutralAnswers();
+                answers.set(questionIndex, option);
+
+                Score score = service.buildScoreFromSubmission(validRequest(answers), null);
+                int expectedPointTotal = 30 - 2 + EXPECTED_QUESTION_OPTION_SCORES[questionIndex][option - 1];
+
+                assertEquals(scoreFromPointTotal(expectedPointTotal), score.getScore(),
+                        "Question " + (questionIndex + 1) + " option " + option + " score changed");
+            }
+        }
+    }
+
+    @Test
+    void buildScoreFromSubmissionRoundsRepeatingDecimalScoresToFourPlaces() {
+        List<Integer> answers = minimumScoreAnswers();
+        answers.set(0, 4);
+
+        Score score = service.buildScoreFromSubmission(validRequest(answers), null);
+
+        assertEquals("0.1667", score.getScore());
+    }
+
+    @Test
+    void rateTemplateOptionValuesMatchBackendScoringMatrix() throws Exception {
+        String rateTemplate = Files.readString(Path.of("src/main/resources/templates/rate.html"));
+
+        for (int question = 1; question <= EXPECTED_QUESTION_OPTION_SCORES.length; question++) {
+            for (int option = 1; option <= 5; option++) {
+                Pattern inputPattern = Pattern.compile(
+                        "<input[^>]*id=\"question" + question + "Option" + option + "\"[^>]*value=\"(\\d)\"",
+                        Pattern.DOTALL);
+                Matcher matcher = inputPattern.matcher(rateTemplate);
+
+                assertTrue(matcher.find(), "Missing input for question " + question + " option " + option);
+                assertEquals(String.valueOf(EXPECTED_QUESTION_OPTION_SCORES[question - 1][option - 1]),
+                        matcher.group(1), "Template value mismatch for question " + question + " option " + option);
+            }
+        }
     }
 
     @Test
@@ -105,5 +180,20 @@ class ScoreServiceImplTest {
 
     private List<Integer> maximumScoreAnswers() {
         return List.of(1, 5, 1, 1, 5, 5, 1, 1, 5, 5, 1, 5, 1, 1, 1);
+    }
+
+    private List<Integer> minimumScoreAnswers() {
+        return new ArrayList<>(List.of(5, 1, 5, 5, 1, 1, 5, 5, 1, 1, 5, 1, 5, 5, 5));
+    }
+
+    private List<Integer> neutralAnswers() {
+        return new ArrayList<>(List.of(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3));
+    }
+
+    private String scoreFromPointTotal(int pointTotal) {
+        return BigDecimal.valueOf(pointTotal)
+                .divide(BigDecimal.valueOf(6), 4, RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString();
     }
 }

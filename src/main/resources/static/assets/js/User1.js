@@ -1,9 +1,13 @@
 // CSRF token setup for AJAX requests
 var csrfToken = $('input[name="_csrf"]').val();
 
-let user = JSON.parse(window.localStorage.getItem("user"));
-$("#userName").html(escapeHtml(user ? user.username : ""));
-//console.log(user.username);
+fetchCurrentUser()
+	.done(function(user) {
+		$("#userName").text(user.username || "");
+	})
+	.fail(function() {
+		redirectToLogin();
+	});
 
 $("#toAccountSettings").on("click", function() {
 	window.location.href = '/user-settings';
@@ -18,9 +22,6 @@ function deleteFuntion() {
 		return;
 	}
 
-	let user = JSON.parse(window.localStorage.getItem("user"));
-
-
 	var formDataArray = $('#deleteForm').serializeArray();
 
 
@@ -28,10 +29,6 @@ function deleteFuntion() {
 	formDataArray.forEach(function(field) {
 		formDataObj[field.name] = field.value;
 	});
-
-	formDataObj.username = user.username;
-
-
 
 	// Convert form data object to JSON string
 	var formDataJson = JSON.stringify(formDataObj);
@@ -47,7 +44,7 @@ function deleteFuntion() {
 		},
 		success: function(response) {
 			alert("Success: " + response);
-			window.localStorage.clear();
+			window.localStorage.removeItem("user");
 			window.location.href = server + "/logout";
 
 		},

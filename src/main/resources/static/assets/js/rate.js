@@ -224,7 +224,7 @@ function submitScore(vType, answers) {
 			'X-CSRF-TOKEN': csrfToken
 		},
 		success: (resp) => {
-			window.location.href = server + "/finish-rating?id=" + id + "&score=" + resp.score + "&type=" + type;
+			window.location.href = server + "/finish-rating?id=" + id + "&type=" + type;
 		},
 		error: function(error) {
 			console.error("Error inserting data", error);

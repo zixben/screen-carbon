@@ -1,4 +1,4 @@
     function logout() {
-        window.localStorage.clear();
+        window.localStorage.removeItem("user");
         //window.location.href = server + "/index.html"
     }

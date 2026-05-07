@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lks.bean.User;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +25,7 @@ class UserResponseTest {
         user.setPassword("$2a$10$sensitiveHash");
         user.setRecoveryToken("sensitiveToken");
         user.setCode("12345");
+        user.setLockTime(Timestamp.from(Instant.now()));
         user.setRole("USER");
 
         String json = objectMapper.writeValueAsString(UserResponse.from(user));
@@ -31,6 +35,7 @@ class UserResponseTest {
         assertFalse(json.contains("sensitiveHash"));
         assertFalse(json.contains("recoveryToken"));
         assertFalse(json.contains("sensitiveToken"));
+        assertFalse(json.contains("lockTime"));
         assertFalse(json.contains("\"code\""));
     }
 

@@ -262,6 +262,19 @@ public class UserController {
 		return ResponseEntity.ok(toUserResponses(userMapper.userList()));
 	}
 
+	@GetMapping("/me")
+	public ResponseEntity<?> currentUser(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required."));
+		}
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required."));
+		}
+		return ResponseEntity.ok(UserResponse.from(loggedInUser));
+	}
+
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserLoginRequest request, HttpServletRequest req) {
 		HttpSession session = req.getSession();

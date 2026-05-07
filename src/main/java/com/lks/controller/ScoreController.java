@@ -2,6 +2,7 @@ package com.lks.controller;
 
 import com.lks.bean.Score;
 import com.lks.bean.User;
+import com.lks.dto.ScoreResultResponse;
 import com.lks.dto.ScoreSubmissionRequest;
 import com.lks.service.ScoreService;
 //import com.mysql.cj.log.Log;
@@ -16,9 +17,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 @RestController
 @RequestMapping("/score")
 public class ScoreController {
+	private static final String LAST_SUBMITTED_SCORE_ATTRIBUTE = "lastSubmittedScore";
 
 	@Autowired
 	private ScoreService scoreServiceImpl;
@@ -229,6 +234,19 @@ public class ScoreController {
 		return ResponseEntity.ok(scoreServiceImpl.getScoreByUId(uid));
 	}
 
+	@GetMapping("/last-submission")
+	public ResponseEntity<?> getLastSubmittedScore(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No recent score submission."));
+		}
+		Object scoreResult = session.getAttribute(LAST_SUBMITTED_SCORE_ATTRIBUTE);
+		if (!(scoreResult instanceof ScoreResultResponse response)) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No recent score submission."));
+		}
+		return ResponseEntity.ok(response);
+	}
+
 	/**
 	 * 
 	 *
@@ -236,10 +254,14 @@ public class ScoreController {
 	 * @return
 	 */
 	@PostMapping("/add")
-	public ResponseEntity<Score> add(@RequestBody ScoreSubmissionRequest request,
-			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
+	public ResponseEntity<ScoreResultResponse> add(@RequestBody ScoreSubmissionRequest request,
+			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser,
+			HttpSession session) {
 		Integer authenticatedUserId = loggedInUser != null ? loggedInUser.getId() : null;
-		return ResponseEntity.ok(scoreServiceImpl.submit(request, authenticatedUserId));
+		Score savedScore = scoreServiceImpl.submit(request, authenticatedUserId);
+		ScoreResultResponse response = ScoreResultResponse.from(savedScore);
+		session.setAttribute(LAST_SUBMITTED_SCORE_ATTRIBUTE, response);
+		return ResponseEntity.ok(response);
 	}
 
 	/**

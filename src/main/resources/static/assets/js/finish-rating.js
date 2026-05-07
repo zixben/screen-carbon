@@ -1,11 +1,13 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
-var score = Number(params.get("score"));
 var type = params.get('type');
 
 if (id === null) {
 	throw new Error("Invalid video id.");
+}
+if (type !== "movie" && type !== "tv") {
+	throw new Error("Invalid video type.");
 }
 
 // Determine which menu item should be active and add the 'active' class
@@ -18,24 +20,19 @@ if (type === 'movie') {
 $(document).ready(function() {
 	$('.btn-dark').click(function() {
 		switch (type) {
-			case 'movie':
+			case "movie":
 				window.location.href = '/movies';
 				break;
-			case 'tv':
+			case "tv":
 				window.location.href = '/tv-shows';
 				break;
 			default:
-				console.log('Type not recognized');
+				alert("Type not recognized");
 		}
 	});
 });
 
-if (!Number.isFinite(score) || score < 0 || score > 10) {
-	score = 0;
-}
-
-$("#score").text(String(score).substring(0, 4) + "/10")
-$("#scorePerc").text("(" + String(score * 10).substring(0, 4) + "%)")
+loadSubmittedScore();
 
 let url = "https://api.themoviedb.org/3/movie/" + id;
 if (type == 'tv') {
@@ -55,8 +52,7 @@ $.ajax({
 		var titleText = type == 'movie' ? resp.title : resp.name;
 		$("#title").text(titleText || ""); // Set the title in the HTML
 
-		// Now fetch and display the average score for this title
-		fetchAndDisplayAverageScore(titleText); // Call the function defined below
+		fetchAndDisplayAverageScore();
 
 		$("#overview").text(resp.overview || "");
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
@@ -65,37 +61,75 @@ $.ajax({
 	}
 })
 
-// Function to fetch and display the average score
-function fetchAndDisplayAverageScore(currentPageTitle) {
-	currentPageTitle = currentPageTitle || "";
+function loadSubmittedScore() {
 	$.ajax({
-		url: server + "/score/getAvgFraction",
+		url: server + "/score/last-submission",
 		method: "GET",
 		success: function(response) {
-
-			// Find the index of the current title in the avgX array
-			var index = response.avgX.findIndex(title => title.trim() === currentPageTitle.trim());
-			if (index !== -1) {
-				// If found, get the corresponding score
-				var avgScore = response.avgY[index];
-
-				// Determine border color based on rating
-				borderColor = determineBorderColor(avgScore);
-				iconPath = determineIconPath(avgScore);
-
-				// Update the HTML element with the new data
-				$("#poster_path").css("border-color", borderColor);
-				$(".icon-path").html("<img style=\"width: 30px; height: 30px;\" src='" + server + iconPath + "' alt='img'>");
-				$("tr").eq(1).find("h3 > span").last().text(`${String(Math.round(avgScore * 10)).substring(0, 4)}%`);
-			} else {
-				$("#poster_path").css("border", "none");
-
+			if (Number(response.vId) !== id || response.videoType !== type) {
+				displayUnavailableSubmittedScore();
+				return;
 			}
+			displaySubmittedScore(response.score);
+		},
+		error: function() {
+			displayUnavailableSubmittedScore();
+		}
+	});
+}
+
+function displaySubmittedScore(rawScore) {
+	const score = normalizedScore(rawScore);
+	if (score === null) {
+		displayUnavailableSubmittedScore();
+		return;
+	}
+
+	$("#score").text(formatScore(score) + "/10");
+	$("#scorePerc").text("(" + formatPercent(score) + ")");
+	$("#submittedScoreIcon").html("<img style=\"width: 30px; height: 30px;\" src='" + server + determineIconPath(score) + "' alt='img'>");
+}
+
+function displayUnavailableSubmittedScore() {
+	$("#score").text("Unavailable");
+	$("#scorePerc").text("");
+	$("#submittedScoreIcon").empty();
+}
+
+function fetchAndDisplayAverageScore() {
+	$.ajax({
+		url: server + "/score/getScoreAvg/" + id + "/" + type,
+		method: "GET",
+		success: function(response) {
+			const avgScore = Array.isArray(response) && response.length > 0 ? normalizedScore(response[0]) : null;
+			if (avgScore === null) {
+				$("#poster_path").css("border", "none");
+				$("#averageScoreIcon").empty();
+				$("#averageScorePerc").text("Unavailable");
+				return;
+			}
+
+			$("#poster_path").css("border-color", determineBorderColor(avgScore));
+			$("#averageScoreIcon").html("<img style=\"width: 30px; height: 30px;\" src='" + server + determineIconPath(avgScore) + "' alt='img'>");
+			$("#averageScorePerc").text(formatPercent(avgScore));
 		},
 		error: function(xhr, textStatus, errorThrown) {
 			console.error("AJAX Error:", textStatus, errorThrown, "Response:", xhr.responseText);
 		}
 	});
+}
+
+function normalizedScore(rawScore) {
+	const score = Number(rawScore);
+	return Number.isFinite(score) && score >= 0 && score <= 10 ? score : null;
+}
+
+function formatScore(score) {
+	return score.toFixed(2).replace(/\.?0+$/, "");
+}
+
+function formatPercent(score) {
+	return (score * 10).toFixed(1).replace(/\.0$/, "") + "%";
 }
 
 // Function to determine border color based on rating

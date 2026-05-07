@@ -212,7 +212,7 @@
 					},
 					success: function (resp) {
 						//console.log(resp);
-						window.localStorage.setItem("user", JSON.stringify(resp));
+						window.localStorage.removeItem("user");
 						//if (resp && resp.username === "admin") {
 						if (resp.role === "ADMIN") {
 							//alert("Login successful, redirecting to the admin page!");
