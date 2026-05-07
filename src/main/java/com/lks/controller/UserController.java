@@ -15,6 +15,7 @@ import com.lks.service.EmailService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,6 +55,16 @@ public class UserController {
 	@Autowired
 	private EmailService emailService;
 
+	@Value("${app.base-url:http://localhost:8081}")
+	private String appBaseUrl;
+
+	@Value("${app.email.enabled:true}")
+	private boolean emailEnabled;
+
+	@Value("${app.password-recovery.log-link:false}")
+	private boolean logRecoveryLink;
+
+	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
 	private static final Logger log = LoggerFactory.getLogger(UserController.class); // FK 2023
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // Create an instance of the password
 
@@ -71,33 +84,36 @@ public class UserController {
 			return ResponseEntity.badRequest().body(Map.of("message", "Email is required."));
 		}
 
-		log.info("Password recovery requested for email: {}", email);
+		log.info("Password recovery requested.");
 
 		// Find the user by email
 		User user = userMapper.findByEmail(email);
 		if (user != null && !isAccountLocked(user)) {
+			if (userMapper.countRecentRecoveryAttempts(user.getId()) >= MAX_RECOVERY_ATTEMPTS_PER_WINDOW) {
+				log.warn("Password recovery request throttled for user ID {}.", user.getId());
+				return ResponseEntity
+						.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
+			}
+
 			try {
 				// Generate a secure, time-limited token
 				String rawToken = generateSecureToken();
 				String tokenHash = passwordEncoder.encode(rawToken);
 				Timestamp expiresAt = Timestamp.from(Instant.now().plus(Duration.ofMinutes(30)));
-
-				// Create the recovery link
-				// Development Link
-				// String recoveryLink = "http://localhost:8081/reset-password?token=" + rawToken;
-//				String link = "http://localhost:8081/reset-password?token=" + rawToken;
-//				String recoveryLink = "<a href=\"" + link + "\">Reset your password</a>";
-				
-
-				// Production Link
-				// String recoveryLink =
-				// "https://screencarbontest.gla.ac.uk/reset-password?token=" + rawToken;
-				String link = "https://screencarbontest.gla.ac.uk/reset-password?token=" + rawToken;
+				String link = buildRecoveryLink(rawToken);
 				String recoveryLink = "<a href=\"" + link + "\">Reset your password</a>";
 
-				// Try sending the recovery email
-				emailService.sendEmail(email, "Password Recovery",
-						"Click the link to reset your password: " + recoveryLink);
+				if (emailEnabled) {
+					emailService.sendEmail(email, "Password Recovery",
+							"Click the link to reset your password: " + recoveryLink);
+				} else if (logRecoveryLink) {
+					log.warn("Password recovery email is disabled. Local recovery link for user ID {}: {}", user.getId(),
+							link);
+				} else {
+					log.error("Password recovery email is disabled and recovery link logging is off.");
+					return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+							.body(Map.of("message", "Password recovery email is not configured."));
+				}
 
 				// If email sent successfully, insert the recovery token into the database
 				userMapper.insertRecoveryToken(user.getId(), tokenHash, expiresAt);
@@ -110,14 +126,23 @@ public class UserController {
 			} catch (Exception e) {
 
 				// Handle email sending error, don't insert the token if email fails to send
-				log.error("Failed to send recovery email to {}: {}", email, e.getMessage());
+				log.error("Failed to send recovery email for user ID {}: {}", user.getId(), e.getMessage());
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("message", "Failed to send recovery email. Please try again later."));
 			}
 		} else {
-			log.warn("Password recovery attempt for non-existent or locked email: {}", email);
+			log.warn("Password recovery attempt for non-existent or locked account.");
 			return ResponseEntity.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
 		}
+	}
+
+	String buildRecoveryLink(String rawToken) {
+		String baseUrl = trimToNull(appBaseUrl);
+		if (baseUrl == null) {
+			baseUrl = "http://localhost:8081";
+		}
+		baseUrl = baseUrl.replaceAll("/+$", "");
+		return baseUrl + "/reset-password?token=" + URLEncoder.encode(rawToken, StandardCharsets.UTF_8);
 	}
 
 	private String generateSecureToken() {
@@ -183,9 +208,7 @@ public class UserController {
 			// Clear all unnecessary recovery data related to this user
 			userMapper.clearAllRecoveryTokensForUser(user.getId());
 
-			// Send a notification email after password reset
-			emailService.sendEmail(user.getEmail(), "Password Changed",
-					"Your password has been changed. If you did not initiate this change, please contact support immediately.");
+			sendPasswordChangedNotification(user);
 
 			log.info("Password successfully updated for user ID: {}", user.getId());
 			return ResponseEntity.ok(Map.of("message", "Password successfully updated. You can now log in."));
@@ -197,6 +220,21 @@ public class UserController {
 			userMapper.markTokenAsUsed(validToken.getId());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("message", "Failed to update password. Please try again."));
+		}
+	}
+
+	private void sendPasswordChangedNotification(User user) {
+		if (!emailEnabled) {
+			log.info("Password change notification email is disabled for user ID {}.", user.getId());
+			return;
+		}
+
+		try {
+			emailService.sendEmail(user.getEmail(), "Password Changed",
+					"Your password has been changed. If you did not initiate this change, please contact support immediately.");
+		} catch (Exception e) {
+			log.warn("Password was changed for user ID {}, but notification email failed: {}", user.getId(),
+					e.getMessage());
 		}
 	}
 

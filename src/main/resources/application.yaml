@@ -17,5 +17,10 @@ mybatis:
     map-underscore-to-camel-case: true
 
 app:
+  base-url: ${APP_BASE_URL:http://localhost:8081}
+  email:
+    enabled: ${APP_EMAIL_ENABLED:true}
+  password-recovery:
+    log-link: ${PASSWORD_RECOVERY_LOG_LINK:false}
   tmdb:
     bearer-token: ${TMDB_BEARER_TOKEN:}
