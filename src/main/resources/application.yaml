@@ -3,10 +3,9 @@ server:
 
 spring:
   config:
-    import: optional:file:.env[.properties]
-
-  profiles:
-    active: local
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:src/main/resources/application-local.yaml
 
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
