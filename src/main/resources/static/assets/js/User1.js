@@ -2,7 +2,7 @@
 var csrfToken = $('input[name="_csrf"]').val();
 
 let user = JSON.parse(window.localStorage.getItem("user"));
-$("#userName").html(user.username);
+$("#userName").html(escapeHtml(user ? user.username : ""));
 //console.log(user.username);
 
 $("#toAccountSettings").on("click", function() {

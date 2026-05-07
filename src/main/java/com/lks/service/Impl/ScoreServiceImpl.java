@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ public class ScoreServiceImpl implements ScoreService {
 	private static final int MAX_GENRES = 30;
 	private static final int MAX_COUNTRIES = 50;
 	private static final Set<String> VALID_VIDEO_TYPES = Set.of("movie", "tv");
+	private static final Set<String> ALLOWED_IMAGE_HOSTS = Set.of("image.tmdb.org");
 	private static final int[][] QUESTION_OPTION_SCORES = {
 			{ 4, 3, 2, 1, 0 },
 			{ 0, 1, 2, 3, 4 },
@@ -289,17 +291,44 @@ public class ScoreServiceImpl implements ScoreService {
 		if (isBlank(request.getVideoType()) || !VALID_VIDEO_TYPES.contains(request.getVideoType().trim().toLowerCase())) {
 			throw new IllegalArgumentException("Video type must be movie or tv.");
 		}
-		if (isBlank(request.getVideoName()) || request.getVideoName().trim().length() > MAX_VIDEO_NAME_LENGTH) {
-			throw new IllegalArgumentException("Video name is required.");
-		}
-		if (request.getvImg() != null && request.getvImg().trim().length() > MAX_IMAGE_URL_LENGTH) {
-			throw new IllegalArgumentException("Video image URL is too long.");
-		}
+		validateVideoName(request.getVideoName());
+		validateImageUrl(request.getvImg());
 		validateReleaseYear(request.getReleaseYear());
 		List<Integer> answers = validateAnswers(request.getAnswers());
 		validateGenres(request.getGenres());
 		validateCountries(request.getCountries());
 		return answers;
+	}
+
+	private void validateVideoName(String videoName) {
+		if (isBlank(videoName) || videoName.trim().length() > MAX_VIDEO_NAME_LENGTH) {
+			throw new IllegalArgumentException("Video name is required.");
+		}
+		if (containsHtmlBoundary(videoName) || containsControlCharacter(videoName)) {
+			throw new IllegalArgumentException("Video name contains invalid characters.");
+		}
+	}
+
+	private void validateImageUrl(String imageUrl) {
+		String normalizedImageUrl = trimToNull(imageUrl);
+		if (normalizedImageUrl == null) {
+			return;
+		}
+		if (normalizedImageUrl.length() > MAX_IMAGE_URL_LENGTH) {
+			throw new IllegalArgumentException("Video image URL is too long.");
+		}
+
+		URI uri;
+		try {
+			uri = URI.create(normalizedImageUrl);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Video image URL is invalid.");
+		}
+
+		if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
+				|| !ALLOWED_IMAGE_HOSTS.contains(uri.getHost().toLowerCase())) {
+			throw new IllegalArgumentException("Video image URL is invalid.");
+		}
 	}
 
 	private void validateReleaseYear(Integer releaseYear) {
@@ -378,6 +407,19 @@ public class ScoreServiceImpl implements ScoreService {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private boolean containsHtmlBoundary(String value) {
+		return value.indexOf('<') >= 0 || value.indexOf('>') >= 0;
+	}
+
+	private boolean containsControlCharacter(String value) {
+		for (int i = 0; i < value.length(); i++) {
+			if (Character.isISOControl(value.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isBlank(String value) {

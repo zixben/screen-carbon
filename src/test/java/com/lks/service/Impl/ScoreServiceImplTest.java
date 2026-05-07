@@ -68,6 +68,28 @@ class ScoreServiceImplTest {
         assertEquals("Answer 15 is invalid.", exception.getMessage());
     }
 
+    @Test
+    void buildScoreFromSubmissionRejectsHtmlInVideoName() {
+        ScoreSubmissionRequest request = validRequest(maximumScoreAnswers());
+        request.setVideoName("<img src=x onerror=alert(1)>");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> service.buildScoreFromSubmission(request, 42));
+
+        assertEquals("Video name contains invalid characters.", exception.getMessage());
+    }
+
+    @Test
+    void buildScoreFromSubmissionRejectsNonTmdbImageUrl() {
+        ScoreSubmissionRequest request = validRequest(maximumScoreAnswers());
+        request.setvImg("https://example.com/poster.jpg");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> service.buildScoreFromSubmission(request, 42));
+
+        assertEquals("Video image URL is invalid.", exception.getMessage());
+    }
+
     private ScoreSubmissionRequest validRequest(List<?> answers) {
         ScoreSubmissionRequest request = new ScoreSubmissionRequest();
         request.setvId(123);

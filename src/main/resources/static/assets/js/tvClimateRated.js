@@ -39,15 +39,22 @@ $(document).ready(function() {
 	function renderVideos(videos) {
 		let html = '';
 		videos.forEach(function(video) {
-			const borderColor = determineBorderColor(video.score);
-			const iconPath = determineIconPath(video.score);
-			const voteAveragePercentage = (video.score * 10).toFixed(1);
-			const title = video.videoName;
+			const videoId = Number(video.vId);
+			if (!Number.isInteger(videoId) || videoId <= 0) {
+				return;
+			}
+
+			const score = Number(video.score) || 0;
+			const borderColor = determineBorderColor(score);
+			const iconPath = determineIconPath(score);
+			const voteAveragePercentage = (score * 10).toFixed(1);
+			const title = escapeHtml(video.videoName);
+			const posterUrl = escapeHtmlAttribute(video.vImg);
 
 			html += `
-                <div onclick='toDesc(${video.vId})' class="videoCar">
+                <div onclick='toDesc(${videoId})' class="videoCar">
                     <div class="VideoImage" style="border-color: ${borderColor};">
-                        <img alt='image' src='${video.vImg}'>
+                        <img alt='image' src='${posterUrl}'>
                     </div>
                     <div>
                         <p>

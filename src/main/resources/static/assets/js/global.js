@@ -1,3 +1,23 @@
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value).replace(/[&<>"']/g, function (character) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[character];
+    });
+}
+
+function escapeHtmlAttribute(value) {
+    return escapeHtml(value);
+}
+
     /*********************************
     /*  Scroll Top Bar
     *********************************/

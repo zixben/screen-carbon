@@ -6,7 +6,7 @@ let user = JSON.parse(window.localStorage.getItem("user"))
 // Existing scripts can remain below or above this script
 console.log(user ? user.username : "No user logged in");
 
-$("#userName").html(user.username);
+$("#userName").html(escapeHtml(user ? user.username : ""));
 
 $("#toAccountSettings").on("click", function() {
 	window.location.href = '/user-settings';
@@ -27,13 +27,22 @@ $.ajax({
 
 
 		for (const respElement of resp) {
+			const videoId = Number(respElement.vId);
+			const videoType = respElement.videoType === "tv" ? "tv" : "movie";
+			if (!Number.isInteger(videoId) || videoId <= 0) {
+				continue;
+			}
 
-			htmlStr += " <div   onclick='toDesc2(" + respElement.vId + ", \"" + respElement.videoType + "\")' class=\"ratings\">\n" +
-				"                    <img src=\"" + respElement.vImg + "\" alt=\"img\">\n" +
+			const imageUrl = escapeHtmlAttribute(respElement.vImg);
+			const videoName = escapeHtml(String(respElement.videoName || "").substring(0, 20));
+			const score = escapeHtml(String(respElement.score || "").substring(0, 4));
+
+			htmlStr += " <div   onclick='toDesc2(" + videoId + ", \"" + videoType + "\")' class=\"ratings\">\n" +
+				"                    <img src=\"" + imageUrl + "\" alt=\"img\">\n" +
 				"                    <div class=\"ratingInfo\">\n" +
-				"                        <h4 id=\"title\">" + respElement.videoName.substring(0, 20) + "</h4>\n" +
+				"                        <h4 id=\"title\">" + videoName + "</h4>\n" +
 				"                        <h5>Your rating</h5>\n" +
-				"                        <button type=\"button\" class=\"btn btn-info\">" + respElement.score.substring(0, 4) + "/10</button>\n" +
+				"                        <button type=\"button\" class=\"btn btn-info\">" + score + "/10</button>\n" +
 				"                    </div>\n" +
 				"                </div>"
 		}
