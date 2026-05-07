@@ -64,6 +64,11 @@ public class UserController {
 	@Value("${app.password-recovery.log-link:false}")
 	private boolean logRecoveryLink;
 
+	private static final int MAX_USERNAME_LENGTH = 24;
+	private static final int MAX_FULL_NAME_LENGTH = 200;
+	private static final int MAX_EMAIL_LENGTH = 50;
+	private static final int MAX_DESCRIPTION_LENGTH = 350;
+	private static final int MAX_USER_SEARCH_TERM_LENGTH = 50;
 	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
 	private static final Logger log = LoggerFactory.getLogger(UserController.class); // FK 2023
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // Create an instance of the password
@@ -354,15 +359,14 @@ public class UserController {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 
-		String username = trimRequired(request.getUsername(), "Username");
-		String fullName = trimRequired(request.getFullName(), "Full name");
+		String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
+		String fullName = validateUserText(request.getFullName(), "Full name", MAX_FULL_NAME_LENGTH, true);
 		String email = normalizeEmail(request.getEmail());
-		String description = trimToNull(request.getDescription());
+		String description = validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false);
 		if (email == null) {
 			return ResponseEntity.badRequest().body("Email is required.");
 		}
-		if (username.length() > 24 || fullName.length() > 200 || email.length() > 50
-				|| (description != null && description.length() > 350)) {
+		if (email.length() > MAX_EMAIL_LENGTH) {
 			return ResponseEntity.badRequest().body("Registration data is too long.");
 		}
 		if (!isPasswordStrong(request.getPassword())) {
@@ -424,7 +428,7 @@ public class UserController {
 		if (request == null) {
 			return ResponseEntity.badRequest().body("Invalid request body.");
 		}
-		if (request.getId() == null) {
+		if (request.getId() == null || request.getId() <= 0) {
 			return ResponseEntity.badRequest().body("User id is required.");
 		}
 
@@ -433,10 +437,7 @@ public class UserController {
 			return ResponseEntity.badRequest().body("User not found.");
 		}
 
-		String username = trimRequired(request.getUsername(), "Username");
-		if (username.length() > 24) {
-			return ResponseEntity.badRequest().body("Username is too long.");
-		}
+		String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
 
 		User existingUserByUsername = userMapper.findByUsername(username);
 		if (existingUserByUsername != null && !existingUserByUsername.getId().equals(user.getId())) {
@@ -444,7 +445,7 @@ public class UserController {
 		}
 
 		user.setUsername(username);
-		user.setDescription(trimToNull(request.getDescription()));
+		user.setDescription(validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false));
 
 		if (!isBlank(request.getPassword())) {
 			if (!isPasswordStrong(request.getPassword())) {
@@ -488,8 +489,8 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Admin access required."));
 		}
 		User user = new User();
-		user.setUsername(trimToNull(request.getUsername()));
-		user.setFullName(trimToNull(request.getFullName()));
+		user.setUsername(validateUserSearchTerm(request.getUsername(), "Username"));
+		user.setFullName(validateUserSearchTerm(request.getFullName(), "Full name"));
 		return ResponseEntity.ok(toUserResponses(userMapper.getListByUser(user)));
 	}
 	
@@ -572,10 +573,23 @@ public class UserController {
 				.toList();
 	}
 
-	private String trimRequired(String value, String fieldName) {
+	private String validateUserSearchTerm(String value, String fieldName) {
+		return validateUserText(value, fieldName, MAX_USER_SEARCH_TERM_LENGTH, false);
+	}
+
+	private String validateUserText(String value, String fieldName, int maxLength, boolean required) {
 		String trimmed = trimToNull(value);
 		if (trimmed == null) {
-			throw new IllegalArgumentException(fieldName + " is required.");
+			if (required) {
+				throw new IllegalArgumentException(fieldName + " is required.");
+			}
+			return null;
+		}
+		if (trimmed.length() > maxLength) {
+			throw new IllegalArgumentException(fieldName + " is too long.");
+		}
+		if (containsHtmlBoundary(trimmed) || containsControlCharacter(trimmed)) {
+			throw new IllegalArgumentException(fieldName + " contains invalid characters.");
 		}
 		return trimmed;
 	}
@@ -585,6 +599,19 @@ public class UserController {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private boolean containsHtmlBoundary(String value) {
+		return value.indexOf('<') >= 0 || value.indexOf('>') >= 0;
+	}
+
+	private boolean containsControlCharacter(String value) {
+		for (int i = 0; i < value.length(); i++) {
+			if (Character.isISOControl(value.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private String normalizeEmail(String email) {
