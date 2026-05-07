@@ -18,11 +18,25 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/tmdb")
 public class TmdbProxyController {
     private static final String TMDB_API_BASE = "https://api.themoviedb.org/3";
+    private static final int MAX_QUERY_STRING_LENGTH = 600;
+    private static final Pattern SAFE_PATH_PATTERN = Pattern.compile("^/[A-Za-z0-9_./-]+$");
+    private static final Pattern MEDIA_DETAIL_PATH = Pattern.compile("^/(movie|tv)/\\d+$");
+    private static final Pattern MEDIA_CREDITS_PATH = Pattern.compile("^/(movie|tv)/\\d+/credits$");
+    private static final Pattern PERSON_DETAIL_PATH = Pattern.compile("^/person/\\d+$");
+    private static final Pattern PERSON_CREDITS_PATH = Pattern.compile("^/person/\\d+/combined_credits$");
+    private static final Set<String> ALLOWED_FIXED_PATHS = Set.of(
+            "/discover/movie",
+            "/discover/tv",
+            "/search/multi",
+            "/trending/all/day"
+    );
 
     private final String bearerToken;
     private final HttpClient httpClient;
@@ -76,7 +90,7 @@ public class TmdbProxyController {
         }
     }
 
-    private URI buildUpstreamUri(HttpServletRequest request) {
+    URI buildUpstreamUri(HttpServletRequest request) {
         String requestPrefix = request.getContextPath() + "/tmdb";
         String requestUri = request.getRequestURI();
         if (!requestUri.startsWith(requestPrefix)) {
@@ -84,12 +98,39 @@ public class TmdbProxyController {
         }
 
         String path = requestUri.substring(requestPrefix.length());
-        if (path.isBlank() || path.contains("..") || path.contains("\\") || path.startsWith("//")) {
+        if (path.isBlank() || path.contains("..") || path.contains("\\") || path.startsWith("//")
+                || !SAFE_PATH_PATTERN.matcher(path).matches()) {
             throw new IllegalArgumentException("Invalid TMDB proxy path.");
+        }
+        if (!isAllowedPath(path)) {
+            throw new IllegalArgumentException("TMDB proxy path is not allowed.");
         }
 
         String queryString = request.getQueryString();
+        validateQueryString(queryString);
         return URI.create(TMDB_API_BASE + path + (queryString == null ? "" : "?" + queryString));
+    }
+
+    private boolean isAllowedPath(String path) {
+        return ALLOWED_FIXED_PATHS.contains(path)
+                || MEDIA_DETAIL_PATH.matcher(path).matches()
+                || MEDIA_CREDITS_PATH.matcher(path).matches()
+                || PERSON_DETAIL_PATH.matcher(path).matches()
+                || PERSON_CREDITS_PATH.matcher(path).matches();
+    }
+
+    private void validateQueryString(String queryString) {
+        if (queryString == null) {
+            return;
+        }
+        if (queryString.length() > MAX_QUERY_STRING_LENGTH) {
+            throw new IllegalArgumentException("TMDB proxy query is too long.");
+        }
+        for (int i = 0; i < queryString.length(); i++) {
+            if (Character.isISOControl(queryString.charAt(i))) {
+                throw new IllegalArgumentException("Invalid TMDB proxy query.");
+            }
+        }
     }
 
     private String normalizeBearerToken(String token) {

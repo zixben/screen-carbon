@@ -35,6 +35,7 @@ target*/
 # Local environment files
 .env
 .env.*
+!.env.example
 application-local.yaml
 application-local.yml
 
