@@ -18,6 +18,23 @@ function escapeHtmlAttribute(value) {
     return escapeHtml(value);
 }
 
+function safePositiveInteger(value) {
+    const parsedValue = Number(value);
+    return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : null;
+}
+
+function safeTmdbImagePath(path) {
+    if (typeof path !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(path)) {
+        return "";
+    }
+    return path;
+}
+
+function safeTmdbImageUrl(path) {
+    const safePath = safeTmdbImagePath(path);
+    return safePath ? escapeHtmlAttribute(imgServer + safePath) : "";
+}
+
     /*********************************
     /*  Scroll Top Bar
     *********************************/

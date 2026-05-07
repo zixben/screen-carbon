@@ -1,7 +1,11 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
-var id = params.get('id');
+var id = safePositiveInteger(params.get('id'));
 var videoType = params.get('type');
+
+if (id === null) {
+	throw new Error("Invalid movie id.");
+}
 
 $.ajax({
 	url: server + "/score/getScoreAvg/" + id + "/" + videoType,
@@ -25,7 +29,7 @@ $.ajax({
 
 				let avgScorePercentage = (avgScore * 10).toString();
 
-				$("#currentRatingPerc").html(Math.round(avgScorePercentage) + "%");
+				$("#currentRatingPerc").text(Math.round(avgScorePercentage) + "%");
 
 			} else {
 
@@ -66,27 +70,27 @@ $.ajax({
 	success: function(resp) {
 
 
-		$("#title").html(resp.title);
-		$("#release_date").html("<span class='movieInfo'> " + resp.release_date + "</span>");
-		$("#runtime").html("<span class='movieInfo'> " + resp.runtime + "</span>");
+		$("#title").text(resp.title || "");
+		$("#release_date").html("<span class='movieInfo'> " + escapeHtml(resp.release_date || "") + "</span>");
+		$("#runtime").html("<span class='movieInfo'> " + escapeHtml(resp.runtime || "") + "</span>");
 
 		let genres = "";
-		(resp.genres).forEach((genre, index) => {
+		(resp.genres || []).forEach((genre, index) => {
 
 			let genreName = genre.name;
 			if (genreName === "Science Fiction") {
 				genreName = "Sci-Fi";
 			}
-			genres += `<div class="xinzhuang">${genreName}</div>`
+			genres += `<div class="xinzhuang">${escapeHtml(genreName)}</div>`
 		})
 		$("#genre").html(genres);
 
-		$("#adult").html(resp.adult);
-		$("#overview").html(resp.overview);
+		$("#adult").text(String(resp.adult || ""));
+		$("#overview").text(resp.overview || "");
 
 
 		let productionCountries = "";
-		for (let i = 0; i < resp.production_countries.length; i++) {
+		for (let i = 0; i < (resp.production_countries || []).length; i++) {
 			if (i > 0) {
 				productionCountries += ", ";
 			}
@@ -99,11 +103,14 @@ $.ajax({
 
 		}
 
-		$("#production_countries").html(productionCountries);
+		$("#production_countries").text(productionCountries);
 
-		$("#spoken_languages").html(resp.spoken_languages[0].english_name);
+		$("#spoken_languages").text((resp.spoken_languages && resp.spoken_languages[0])
+			? resp.spoken_languages[0].english_name
+			: "");
 
-		$(".movieImage").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>");
+		const posterUrl = safeTmdbImageUrl(resp.poster_path);
+		$(".movieImage").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "");
 
 	}
 })
@@ -117,43 +124,53 @@ $.ajax({
 	},
 	success: function(resp) {
 
-		$("#cast").html(resp.cast[0].name)
+		$("#cast").text(resp.cast && resp.cast[0] ? resp.cast[0].name : "");
 
-		for (const respElement of resp.crew) {
+		for (const respElement of resp.crew || []) {
 
 			if (respElement.known_for_department == "Directing") {
 
-				$("#director").html(respElement.name);
+				$("#director").text(respElement.name || "");
 				break;
 			}
 		}
-		for (const respElement of resp.crew) {
+		for (const respElement of resp.crew || []) {
 			if (respElement.known_for_department == "Writing") {
 
-				$("#writer").html(respElement.name);
+				$("#writer").text(respElement.name || "");
 				break;
 			}
 		}
 		let castStr = "";
-		for (const respElement of resp.crew.slice(0, 5)) {
-			castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\"  class='actorImageItem'>\n" +
+		for (const respElement of (resp.crew || []).slice(0, 5)) {
+			const personId = safePositiveInteger(respElement.id);
+			if (personId === null) {
+				continue;
+			}
+			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\"  class='actorImageItem'>\n" +
 				"          <div class=\"image\">\n" +
-				"            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
 				"          </div>\n" +
 				"          <div class=\"actorText\">\n" +
-				"            <h4>" + respElement.name + "</h4>\n" +
-				"            <p>" + respElement.job + "</p>\n" +
+				"            <h4>" + escapeHtml(respElement.name || "") + "</h4>\n" +
+				"            <p>" + escapeHtml(respElement.job || "") + "</p>\n" +
 				"          </div>\n" +
 				"        </div>"
 		}
-		for (const respElement of resp.cast.slice(0, 5)) {
-			castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\" class='actorImageItem'>\n" +
+		for (const respElement of (resp.cast || []).slice(0, 5)) {
+			const personId = safePositiveInteger(respElement.id);
+			if (personId === null) {
+				continue;
+			}
+			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\" class='actorImageItem'>\n" +
 				"          <div class=\"image\">\n" +
-				"            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
 				"          </div>\n" +
 				"          <div class=\"actorText\">\n" +
-				"            <h4>" + respElement.name.slice(0, 15) + "</h4>\n" +
-				"            <p>" + respElement.known_for_department + "</p>\n" +
+				"            <h4>" + escapeHtml(String(respElement.name || "").slice(0, 15)) + "</h4>\n" +
+				"            <p>" + escapeHtml(respElement.known_for_department || "") + "</p>\n" +
 				"          </div>\n" +
 				"        </div>"
 		}
@@ -169,7 +186,10 @@ function toRatePage() {
 }
 
 function toPersonPage(uId) {
-	window.location.href = server + "/details?id=" + uId
+	const personId = safePositiveInteger(uId);
+	if (personId !== null) {
+		window.location.href = server + "/details?id=" + personId
+	}
 }
 
 // Function to determine border color based on rating

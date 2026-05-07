@@ -41,7 +41,7 @@ function fetchClimateVideo() {
 function fetchMovies(value, page, climateVideo) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: "https://api.themoviedb.org/3/search/multi?query=" + value + "&include_adult=false&language=en-US&page=" + page,
+			url: "https://api.themoviedb.org/3/search/multi?query=" + encodeURIComponent(value || "") + "&include_adult=false&language=en-US&page=" + page,
 			method: "get",
 			headers: {
 				"Authorization": jwt,
@@ -61,13 +61,18 @@ function fetchMovies(value, page, climateVideo) {
 function renderMovies(data) {
 	const { resp, climateVideo } = data;
 	let htmlEle = "";
-	for (const respElement of resp.results) {
+	for (const respElement of resp.results || []) {
 		if (respElement.media_type != window.sessionStorage.getItem("where")) {
 			continue;
 		}
 
-		let title = respElement.title || respElement.name;
-		let overview = String(respElement.overview).substring(0, 200) + "...";
+		const resultId = safePositiveInteger(respElement.id);
+		if (resultId === null) {
+			continue;
+		}
+
+		let title = escapeHtml(respElement.title || respElement.name || "");
+		let overview = escapeHtml(String(respElement.overview || "").substring(0, 200) + "...");
 		let score = "Not yet rated";
 		let color;
 		let iconPath;
@@ -77,7 +82,7 @@ function renderMovies(data) {
 			climateVideo.forEach((item) => {
 				if (item.vId === respElement.id && item.videoType === respElement.media_type) {
 					let climateVoteAverage = item.score;
-					score = (climateVoteAverage * 10).toString().substring(0, 5) + "%";
+					score = escapeHtml((climateVoteAverage * 10).toString().substring(0, 5) + "%");
 					color = determineBorderColor(climateVoteAverage);
 					iconPath = determineIconPath(climateVoteAverage);
 					iconClass = 'card-icon';
@@ -89,17 +94,18 @@ function renderMovies(data) {
 
 		let mediaType = respElement.media_type === "person" ? 3 : (respElement.media_type === "movie" ? 1 : 0);
 		let poster = respElement.poster_path || respElement.profile_path;
+		let posterUrl = safeTmdbImageUrl(poster);
 
 		let scoreHTMLElement = mediaType === 3 ? '' : 
-			"<div onclick='toRate(" + respElement.id + "," + mediaType + ")' class=\"item_sore\">\n" +
+			"<div onclick='toRate(" + resultId + "," + mediaType + ")' class=\"item_sore\">\n" +
 			"    <p><span><img class='" + iconClass + "' src='" + iconPath + "'></span>\n" +
 			"    <span style='color:" + color + ";'>" + score + "</span>\n" +
 			"    </p>\n" +
 			"</div>\n";
 
 		htmlEle += "<div class=\"item\">\n" +
-			"    <div onclick='toDesc(" + respElement.id + "," + mediaType + ")' class=\"item_image\"><img alt='no image' src='" + imgServer + poster + "'></div>\n" +
-			"    <div onclick='toDesc(" + respElement.id + "," + mediaType + ")' class=\"item_info\">\n" +
+			"    <div onclick='toDesc(" + resultId + "," + mediaType + ")' class=\"item_image\"><img alt='no image' src='" + posterUrl + "'></div>\n" +
+			"    <div onclick='toDesc(" + resultId + "," + mediaType + ")' class=\"item_info\">\n" +
 			"        <h5>" + title + "</h5>\n" +
 			"        <p>" + overview + "</p>\n" +
 			"    </div>\n" +
@@ -120,23 +126,31 @@ function movies(where, page) {
 }
 
 function toRate(id, type) {
+	const resultId = safePositiveInteger(id);
+	if (resultId === null) {
+		return false;
+	}
 	if (type == 3) {
-		window.location.href = server + "/details?id=" + id;
+		window.location.href = server + "/details?id=" + resultId;
 	} else if (type == 1) {
-		window.location.href = server + "/rate?id=" + id + "&type=movie";
+		window.location.href = server + "/rate?id=" + resultId + "&type=movie";
 	} else {
-		window.location.href = server + "/rate?id=" + id + "&type=tv";
+		window.location.href = server + "/rate?id=" + resultId + "&type=tv";
 	}
 	return false;
 }
 
 function toDesc(id, type) {
+	const resultId = safePositiveInteger(id);
+	if (resultId === null) {
+		return;
+	}
 	if (type == 3) {
-		window.location.href = server + "/details?id=" + id;
+		window.location.href = server + "/details?id=" + resultId;
 	} else if (type == 1) {
-		window.location.href = server + "/movie?id=" + id + "&type=movie";
+		window.location.href = server + "/movie?id=" + resultId + "&type=movie";
 	} else {
-		window.location.href = server + "/tv?id=" + id + "&type=tv";
+		window.location.href = server + "/tv?id=" + resultId + "&type=tv";
 	}
 }
 
@@ -157,7 +171,7 @@ function determineIconPath(vote_average) {
 }
 
 $(document).ready(function() {
-	$(".searchValue").html(value);
+	$(".searchValue").text(value || "");
 	// Determine which tab to activate based on the 'type' parameter
 	if (videoType === 'tv') {
 		setActiveTab($('.btn-group .btn')[1]); // TV shows tab

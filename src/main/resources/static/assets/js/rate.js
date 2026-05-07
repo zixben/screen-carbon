@@ -1,9 +1,13 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
-var id = params.get('id');
+var id = safePositiveInteger(params.get('id'));
 var type = params.get('type');
 var imgPath = "";
 var vType = "";
+
+if (id === null) {
+	throw new Error("Invalid video id.");
+}
 
 let questionGroup1 = document.querySelector(".questionGroup1");
 let questionGroup2 = document.querySelector(".questionGroup2");
@@ -109,13 +113,14 @@ $.ajax({
 	success: function(resp) {
 
 		if (type == 'movie') {
-			$("#title").html(resp.title);
+			$("#title").text(resp.title || "");
 		} else {
-			$("#title").html(resp.name);
+			$("#title").text(resp.name || "");
 		}
 		
-		$("#overview").html(resp.overview);
-		imgPath = imgServer + resp.poster_path;
+		$("#overview").text(resp.overview || "");
+		const safePosterPath = safeTmdbImagePath(resp.poster_path);
+		imgPath = safePosterPath ? imgServer + safePosterPath : "";
 		vType = type;
 
 		if (type == 'movie') {
@@ -138,7 +143,8 @@ $.ajax({
 			return country.iso_3166_1;
 		});
 
-		$("#poster_path").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>")
+		const posterUrl = safeTmdbImageUrl(resp.poster_path);
+		$("#poster_path").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "")
 	}
 })
 
@@ -164,7 +170,7 @@ $.ajax({
 
 				let avgScorePercentage = (avgScore * 10).toString();
 
-				$("#currentRatingPerc").html(Math.round(avgScorePercentage) + "%");
+				$("#currentRatingPerc").text(Math.round(avgScorePercentage) + "%");
 			} else {
 				$("#poster_path").css("border-color", "none");
 				$(".rating-layout").html("<h1>No rated yet.</h1>");

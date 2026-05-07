@@ -1,8 +1,12 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
-var id = params.get('id');
-var score = params.get("score");
+var id = safePositiveInteger(params.get('id'));
+var score = Number(params.get("score"));
 var type = params.get('type');
+
+if (id === null) {
+	throw new Error("Invalid video id.");
+}
 
 // Determine which menu item should be active and add the 'active' class
 if (type === 'movie') {
@@ -26,8 +30,12 @@ $(document).ready(function() {
 	});
 });
 
-$("#score").html(String(score).substring(0, 4) + "/10")
-$("#scorePerc").html("(" + String(score * 10).substring(0, 4) + "%)")
+if (!Number.isFinite(score) || score < 0 || score > 10) {
+	score = 0;
+}
+
+$("#score").text(String(score).substring(0, 4) + "/10")
+$("#scorePerc").text("(" + String(score * 10).substring(0, 4) + "%)")
 
 let url = "https://api.themoviedb.org/3/movie/" + id;
 if (type == 'tv') {
@@ -45,19 +53,21 @@ $.ajax({
 
 		// Set the title based on the type
 		var titleText = type == 'movie' ? resp.title : resp.name;
-		$("#title").html(titleText); // Set the title in the HTML
+		$("#title").text(titleText || ""); // Set the title in the HTML
 
 		// Now fetch and display the average score for this title
 		fetchAndDisplayAverageScore(titleText); // Call the function defined below
 
-		$("#overview").html(resp.overview);
-		$(".finish-image").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>");
+		$("#overview").text(resp.overview || "");
+		const posterUrl = safeTmdbImageUrl(resp.poster_path);
+		$(".finish-image").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "");
 
 	}
 })
 
 // Function to fetch and display the average score
 function fetchAndDisplayAverageScore(currentPageTitle) {
+	currentPageTitle = currentPageTitle || "";
 	$.ajax({
 		url: server + "/score/getAvgFraction",
 		method: "GET",

@@ -1,7 +1,11 @@
 var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
-var id = params.get('id');
+var id = safePositiveInteger(params.get('id'));
 var videoType = params.get('type');
+
+if (id === null) {
+	throw new Error("Invalid TV id.");
+}
 
 //console.log(params);
 	
@@ -28,7 +32,7 @@ $.ajax({
 
 				let avgScorePercentage = (vote_average * 10).toString();
 				//console.log(avgScorePercentage.substring(0, 5));
-				$("#currentRatingPerc").html(Math.round(avgScorePercentage) + "%");
+				$("#currentRatingPerc").text(Math.round(avgScorePercentage) + "%");
 
 			} else {
 
@@ -69,26 +73,26 @@ $.ajax({
 	success: function(resp) {
 		// console.log(resp);
 		// console.log("Release date: " + resp.first_air_date);
-		$("#title").html(resp.name);
-		$("#release_date").html(resp.first_air_date);
-		$("#runtime").html(resp.runtime);
+		$("#title").text(resp.name || "");
+		$("#release_date").text(resp.first_air_date || "");
+		$("#runtime").text(resp.runtime || "");
 		
 		let genres = "";
-		(resp.genres).forEach((genre, index) => {
+		(resp.genres || []).forEach((genre, index) => {
 			//console.log(`${index + 1}st genre: ${genre.name}`);
 			let genreName = genre.name;
 			if (genreName === "Science Fiction") {
 				genreName = "Sci-Fi";
 			}
-			genres += `<div class="xinzhuang">${genreName}</div>`
+			genres += `<div class="xinzhuang">${escapeHtml(genreName)}</div>`
 		})
 		$("#genre").html(genres);
 		
-		$("#adult").html(resp.adult);
-		$("#overview").html(resp.overview);
+		$("#adult").text(String(resp.adult || ""));
+		$("#overview").text(resp.overview || "");
 		
 		let productionCountries = "";
-		for (let i = 0; i < resp.production_countries.length; i++) {
+		for (let i = 0; i < (resp.production_countries || []).length; i++) {
     		if (i > 0) {
         		productionCountries += ", ";
     		}
@@ -100,12 +104,15 @@ $.ajax({
     		//productionCountries += `${resp.production_countries[i].iso_3166_1}`;
 		}
 
-		$("#production_countries").html(productionCountries);
+		$("#production_countries").text(productionCountries);
 		//$("#production_countries").html(`${resp.production_countries[0].iso_3166_1});
 		
-		$("#spoken_languages").html(resp.spoken_languages[0].english_name);
+		$("#spoken_languages").text((resp.spoken_languages && resp.spoken_languages[0])
+			? resp.spoken_languages[0].english_name
+			: "");
 
-		$(".movieImage").html("<img src='" + imgServer + resp.poster_path + "' alt='img'>");
+		const posterUrl = safeTmdbImageUrl(resp.poster_path);
+		$(".movieImage").html(posterUrl ? "<img src='" + posterUrl + "' alt='img'>" : "");
 	}
 })
 
@@ -118,42 +125,52 @@ $.ajax({
 	},
 	success: function(resp) {
 		// console.log(resp);
-		$("#cast").html(resp.cast[0].name);
-		for (const respElement of resp.crew) {
+		$("#cast").text(resp.cast && resp.cast[0] ? resp.cast[0].name : "");
+		for (const respElement of resp.crew || []) {
 				//console.log('Known Department: ' + respElement.known_for_department + '' + ' | Name: ' + respElement.name);
 			//if (respElement.known_for_department == "Creator") {
 			if (respElement.known_for_department == "Directing") {
 				//console.log(respElement.name);
-				$("#director").html(respElement.name);
+				$("#director").text(respElement.name || "");
 				break;
 			} 
 		}
-		for (const respElement of resp.crew) {
+		for (const respElement of resp.crew || []) {
 			if (respElement.known_for_department == "Writing") {
-				$("#writer").html(respElement.name);
+				$("#writer").text(respElement.name || "");
 				break;
 			}
 		}
 		let castStr = "";
-		for (const respElement of resp.crew.slice(0, 5)) {
-			castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\"  class='actorImageItem'>\n" +
+		for (const respElement of (resp.crew || []).slice(0, 5)) {
+			const personId = safePositiveInteger(respElement.id);
+			if (personId === null) {
+				continue;
+			}
+			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\"  class='actorImageItem'>\n" +
 				"          <div class=\"image\">\n" +
-				"            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
 				"          </div>\n" +
 				"          <div class=\"actorText\">\n" +
-				"            <h4>" + respElement.name + "</h4>\n" +
-				"            <p>" + respElement.job + "</p>\n" +
+				"            <h4>" + escapeHtml(respElement.name || "") + "</h4>\n" +
+				"            <p>" + escapeHtml(respElement.job || "") + "</p>\n" +
 				"          </div>\n" +
 				"        </div>"
 		}
-		for (const respElement of resp.cast.slice(0, 5)) {
-			castStr += "   <div onclick=\"toPersonPage(" + respElement.id + ")\"  class='actorImageItem'>\n" +
+		for (const respElement of (resp.cast || []).slice(0, 5)) {
+			const personId = safePositiveInteger(respElement.id);
+			if (personId === null) {
+				continue;
+			}
+			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+			castStr += "   <div onclick=\"toPersonPage(" + personId + ")\"  class='actorImageItem'>\n" +
 				"          <div class=\"image\">\n" +
-				"            <img src='" + imgServer + respElement.profile_path + "' alt=\"profile\" srcset=\"\">\n" +
+				"            <img src='" + profileUrl + "' alt=\"profile\" srcset=\"\">\n" +
 				"          </div>\n" +
 				"          <div class=\"actorText\">\n" +
-				"            <h4>" + respElement.name.slice(0, 15) + "</h4>\n" +
-				"            <p>" + respElement.known_for_department + "</p>\n" +
+				"            <h4>" + escapeHtml(String(respElement.name || "").slice(0, 15)) + "</h4>\n" +
+				"            <p>" + escapeHtml(respElement.known_for_department || "") + "</p>\n" +
 				"          </div>\n" +
 				"        </div>"
 		}
@@ -176,7 +193,10 @@ function toRatePage() {
 }
 
 function toPersonPage(uId) {
-	window.location.href = server + "/details?id=" + uId
+	const personId = safePositiveInteger(uId);
+	if (personId !== null) {
+		window.location.href = server + "/details?id=" + personId
+	}
 }
 
 // Function to determine border color based on rating
