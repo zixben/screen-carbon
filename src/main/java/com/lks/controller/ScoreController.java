@@ -7,7 +7,6 @@ import com.lks.dto.ScoreSubmissionRequest;
 import com.lks.exception.RateLimitExceededException;
 import com.lks.service.RequestRateLimiter;
 import com.lks.service.ScoreService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -29,13 +28,14 @@ public class ScoreController {
 	private static final int MAX_SCORE_SUBMISSIONS_PER_WINDOW = 30;
 	private static final Duration SCORE_SUBMISSION_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 
-	@Autowired
-	private ScoreService scoreServiceImpl;
-
-	@Autowired
-	private RequestRateLimiter requestRateLimiter = new RequestRateLimiter();
-
+	private final ScoreService scoreServiceImpl;
+	private final RequestRateLimiter requestRateLimiter;
 	private final ScoreListRequestValidator scoreListRequestValidator = new ScoreListRequestValidator();
+
+	public ScoreController(ScoreService scoreServiceImpl, RequestRateLimiter requestRateLimiter) {
+		this.scoreServiceImpl = scoreServiceImpl;
+		this.requestRateLimiter = requestRateLimiter;
+	}
 
 	@GetMapping("/getAvgFraction")
 	public ResponseEntity<Map<String, Object>> getAverageFraction() {

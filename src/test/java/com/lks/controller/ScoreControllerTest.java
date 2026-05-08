@@ -5,13 +5,13 @@ import com.lks.bean.User;
 import com.lks.dto.ScoreResultResponse;
 import com.lks.dto.ScoreSubmissionRequest;
 import com.lks.exception.RateLimitExceededException;
+import com.lks.service.RequestRateLimiter;
 import com.lks.service.ScoreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,8 +25,7 @@ class ScoreControllerTest {
     @Test
     void addStoresSafeScoreResultInSession() {
         ScoreService scoreService = mock(ScoreService.class);
-        ScoreController controller = new ScoreController();
-        ReflectionTestUtils.setField(controller, "scoreServiceImpl", scoreService);
+        ScoreController controller = new ScoreController(scoreService, new RequestRateLimiter());
         ScoreSubmissionRequest request = new ScoreSubmissionRequest();
         User user = new User();
         user.setId(42);
@@ -44,7 +43,7 @@ class ScoreControllerTest {
 
     @Test
     void getLastSubmittedScoreReturnsSessionResult() {
-        ScoreController controller = new ScoreController();
+        ScoreController controller = new ScoreController(mock(ScoreService.class), new RequestRateLimiter());
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpSession session = new MockHttpSession();
         ScoreResultResponse scoreResult = new ScoreResultResponse(99, 123, "movie", "8.3333");
@@ -59,7 +58,7 @@ class ScoreControllerTest {
 
     @Test
     void getLastSubmittedScoreReturnsNotFoundWithoutSessionResult() {
-        ScoreController controller = new ScoreController();
+        ScoreController controller = new ScoreController(mock(ScoreService.class), new RequestRateLimiter());
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ResponseEntity<?> response = controller.getLastSubmittedScore(request);
@@ -70,8 +69,7 @@ class ScoreControllerTest {
     @Test
     void addRateLimitsRepeatedScoreSubmissionsInSameSession() {
         ScoreService scoreService = mock(ScoreService.class);
-        ScoreController controller = new ScoreController();
-        ReflectionTestUtils.setField(controller, "scoreServiceImpl", scoreService);
+        ScoreController controller = new ScoreController(scoreService, new RequestRateLimiter());
         ScoreSubmissionRequest request = new ScoreSubmissionRequest();
         MockHttpSession session = new MockHttpSession();
         when(scoreService.submit(any(ScoreSubmissionRequest.class), isNull())).thenReturn(savedScore());

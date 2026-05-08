@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ScoreServiceImplTest {
 
-    private final ScoreServiceImpl service = new ScoreServiceImpl();
+    private final ScoreServiceImpl service = new ScoreServiceImpl(null);
     private static final int[][] EXPECTED_QUESTION_OPTION_SCORES = {
             { 4, 3, 2, 1, 0 },
             { 0, 1, 2, 3, 4 },

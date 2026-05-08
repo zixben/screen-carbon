@@ -4,7 +4,6 @@ import com.lks.bean.Score;
 import com.lks.dto.ScoreSubmissionRequest;
 import com.lks.mapper.ScoreMapper;
 import com.lks.service.ScoreService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -51,8 +50,11 @@ public class ScoreServiceImpl implements ScoreService {
 			{ 4, 3, 2, 1, 0 }
 	};
 
-	@Autowired
-	private ScoreMapper scoreMapper;
+	private final ScoreMapper scoreMapper;
+
+	public ScoreServiceImpl(ScoreMapper scoreMapper) {
+		this.scoreMapper = scoreMapper;
+	}
 
 	@Override
     public List<String> getAverageFractionX() {
