@@ -4,6 +4,7 @@ import com.lks.bean.Score;
 import com.lks.bean.User;
 import com.lks.dto.ScoreResultResponse;
 import com.lks.dto.ScoreSubmissionRequest;
+import com.lks.exception.RateLimitExceededException;
 import com.lks.service.ScoreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,9 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +65,25 @@ class ScoreControllerTest {
         ResponseEntity<?> response = controller.getLastSubmittedScore(request);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void addRateLimitsRepeatedScoreSubmissionsInSameSession() {
+        ScoreService scoreService = mock(ScoreService.class);
+        ScoreController controller = new ScoreController();
+        ReflectionTestUtils.setField(controller, "scoreServiceImpl", scoreService);
+        ScoreSubmissionRequest request = new ScoreSubmissionRequest();
+        MockHttpSession session = new MockHttpSession();
+        when(scoreService.submit(any(ScoreSubmissionRequest.class), isNull())).thenReturn(savedScore());
+
+        for (int i = 0; i < 30; i++) {
+            ResponseEntity<ScoreResultResponse> response = controller.add(request, null, session);
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+        }
+
+        RateLimitExceededException exception = assertThrows(RateLimitExceededException.class,
+                () -> controller.add(request, null, session));
+        assertEquals("Too many score submissions. Please try again later.", exception.getMessage());
     }
 
     private Score savedScore() {

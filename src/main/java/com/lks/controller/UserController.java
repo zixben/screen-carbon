@@ -9,9 +9,11 @@ import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
 import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
+import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.util.ValidateCode;
 import com.lks.service.EmailService;
+import com.lks.service.RequestRateLimiter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,9 @@ public class UserController {
 	@Autowired
 	private EmailService emailService;
 
+	@Autowired
+	private RequestRateLimiter requestRateLimiter = new RequestRateLimiter();
+
 	@Value("${app.base-url:http://localhost:8081}")
 	private String appBaseUrl;
 
@@ -70,11 +75,19 @@ public class UserController {
 	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_USER_SEARCH_TERM_LENGTH = 50;
 	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
+	private static final int MAX_LOGIN_ATTEMPTS_PER_WINDOW = 10;
+	private static final int MAX_SIGNUP_ATTEMPTS_PER_WINDOW = 5;
+	private static final int MAX_PASSWORD_RECOVERY_ATTEMPTS_PER_CLIENT_WINDOW = 5;
+	private static final int MAX_CAPTCHA_REQUESTS_PER_WINDOW = 30;
+	private static final Duration LOGIN_RATE_LIMIT_WINDOW = Duration.ofMinutes(5);
+	private static final Duration SIGNUP_RATE_LIMIT_WINDOW = Duration.ofHours(1);
+	private static final Duration PASSWORD_RECOVERY_RATE_LIMIT_WINDOW = Duration.ofHours(1);
+	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
 	private static final Logger log = LoggerFactory.getLogger(UserController.class); // FK 2023
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // Create an instance of the password
 
 	@PostMapping("/password-recovery")
-	public ResponseEntity<?> recoverPassword(@RequestBody PasswordRecoveryRequest request) {
+	public ResponseEntity<?> recoverPassword(@RequestBody PasswordRecoveryRequest request, HttpServletRequest httpRequest) {
 		if (request == null) {
 			return ResponseEntity.badRequest().body(Map.of("message", "Invalid request body."));
 		}
@@ -88,6 +101,9 @@ public class UserController {
 		if (email == null) {
 			return ResponseEntity.badRequest().body(Map.of("message", "Email is required."));
 		}
+
+		enforceClientRateLimit(httpRequest, "password-recovery", MAX_PASSWORD_RECOVERY_ATTEMPTS_PER_CLIENT_WINDOW,
+				PASSWORD_RECOVERY_RATE_LIMIT_WINDOW, "Too many password recovery requests. Please try again later.");
 
 		log.info("Password recovery requested.");
 
@@ -293,6 +309,9 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 
+		enforceClientRateLimit(req, "login", MAX_LOGIN_ATTEMPTS_PER_WINDOW, LOGIN_RATE_LIMIT_WINDOW,
+				"Too many login attempts. Please try again later.");
+
 		// Verify the code (case-insensitive)
 		if (vcode == null || isBlank(request.getCode()) || !vcode.equalsIgnoreCase(request.getCode().trim())) {
 			response.put("message", "Verification code is incorrect.");
@@ -362,7 +381,7 @@ public class UserController {
 	}
 
 	@PostMapping("/save")
-	public ResponseEntity<String> saveUser(@RequestBody UserRegistrationRequest request) {
+	public ResponseEntity<String> saveUser(@RequestBody UserRegistrationRequest request, HttpServletRequest httpRequest) {
 		if (request == null) {
 			return ResponseEntity.badRequest().body("Invalid request body.");
 		}
@@ -371,6 +390,9 @@ public class UserController {
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
+
+		enforceClientRateLimit(httpRequest, "signup", MAX_SIGNUP_ATTEMPTS_PER_WINDOW, SIGNUP_RATE_LIMIT_WINDOW,
+				"Too many signup attempts. Please try again later.");
 
 		String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
 		String fullName = validateUserText(request.getFullName(), "Full name", MAX_FULL_NAME_LENGTH, true);
@@ -483,6 +505,8 @@ public class UserController {
 	 */
 	@GetMapping("/getCode")
 	public void getCode(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		enforceClientRateLimit(req, "captcha", MAX_CAPTCHA_REQUESTS_PER_WINDOW, CAPTCHA_RATE_LIMIT_WINDOW,
+				"Too many verification code requests. Please try again later.");
 		ValidateCode vCode = new ValidateCode(140, 40, 5, 50);
 		HttpSession session = req.getSession();
 		session.setAttribute("vcode", vCode.getCode());
@@ -571,6 +595,21 @@ public class UserController {
 				put("message", "Email is available.");
 			}
 		});
+	}
+
+	private void enforceClientRateLimit(HttpServletRequest request, String action, int maxRequests, Duration window,
+			String message) {
+		String key = "user:" + action + ":" + clientAddress(request);
+		if (!requestRateLimiter.tryAcquire(key, maxRequests, window)) {
+			throw new RateLimitExceededException(message);
+		}
+	}
+
+	private String clientAddress(HttpServletRequest request) {
+		if (request == null || isBlank(request.getRemoteAddr())) {
+			return "unknown";
+		}
+		return request.getRemoteAddr();
 	}
 
 	private void validateNoUnsupportedFields(Map<String, Object> unsupportedFields) {

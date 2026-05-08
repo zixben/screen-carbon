@@ -4,6 +4,8 @@ import com.lks.bean.Score;
 import com.lks.bean.User;
 import com.lks.dto.ScoreResultResponse;
 import com.lks.dto.ScoreSubmissionRequest;
+import com.lks.exception.RateLimitExceededException;
+import com.lks.service.RequestRateLimiter;
 import com.lks.service.ScoreService;
 //import com.mysql.cj.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +27,14 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/score")
 public class ScoreController {
 	private static final String LAST_SUBMITTED_SCORE_ATTRIBUTE = "lastSubmittedScore";
+	private static final int MAX_SCORE_SUBMISSIONS_PER_WINDOW = 30;
+	private static final Duration SCORE_SUBMISSION_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 
 	@Autowired
 	private ScoreService scoreServiceImpl;
+
+	@Autowired
+	private RequestRateLimiter requestRateLimiter = new RequestRateLimiter();
 
 	private final ScoreListRequestValidator scoreListRequestValidator = new ScoreListRequestValidator();
 
@@ -257,6 +265,7 @@ public class ScoreController {
 	public ResponseEntity<ScoreResultResponse> add(@RequestBody ScoreSubmissionRequest request,
 			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser,
 			HttpSession session) {
+		enforceScoreSubmissionRateLimit(session);
 		Integer authenticatedUserId = loggedInUser != null ? loggedInUser.getId() : null;
 		Score savedScore = scoreServiceImpl.submit(request, authenticatedUserId);
 		ScoreResultResponse response = ScoreResultResponse.from(savedScore);
@@ -297,5 +306,13 @@ public class ScoreController {
 
 	private boolean isAdmin(User user) {
 		return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
+	}
+
+	private void enforceScoreSubmissionRateLimit(HttpSession session) {
+		String sessionId = session == null ? "unknown" : session.getId();
+		String key = "score:add:session:" + sessionId;
+		if (!requestRateLimiter.tryAcquire(key, MAX_SCORE_SUBMISSIONS_PER_WINDOW, SCORE_SUBMISSION_RATE_LIMIT_WINDOW)) {
+			throw new RateLimitExceededException("Too many score submissions. Please try again later.");
+		}
 	}
 }

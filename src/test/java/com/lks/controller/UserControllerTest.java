@@ -3,8 +3,10 @@ package com.lks.controller;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
+import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
+import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.service.EmailService;
 import org.junit.jupiter.api.Test;
@@ -116,6 +118,28 @@ class UserControllerTest {
 		ResponseEntity<?> response = controller.currentUser(request);
 
 		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+	}
+
+	@Test
+	void loginUserRateLimitsRepeatedAttemptsFromSameClient() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+		MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+		httpRequest.setRemoteAddr("203.0.113.10");
+		httpRequest.getSession().setAttribute("vcode", "abcde");
+		UserLoginRequest request = new UserLoginRequest();
+		request.setUsername("limited-user");
+		request.setPassword("wrong-password");
+		request.setCode("abcde");
+
+		for (int i = 0; i < 10; i++) {
+			ResponseEntity<Map<String, String>> response = controller.loginUser(request, httpRequest);
+			assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+		}
+
+		RateLimitExceededException exception = assertThrows(RateLimitExceededException.class,
+				() -> controller.loginUser(request, httpRequest));
+		assertEquals("Too many login attempts. Please try again later.", exception.getMessage());
 	}
 
 	@Test
