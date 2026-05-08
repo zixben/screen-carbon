@@ -6,16 +6,46 @@
 		** <weight>: Use a value from 400 to 900
 		*/
 
-		.playfair-display-sub-heading {
-			font-family: "Playfair Display", serif;
-			font-optical-sizing: auto;
-			font-weight: 400;
-			font-style: normal;
-		}
+			.playfair-display-sub-heading {
+				font-family: "Playfair Display", serif;
+				font-optical-sizing: auto;
+				font-weight: 400;
+				font-style: normal;
+			}
 
-				.search-input {
-					border: 1px solid black;
-					border-radius: 20px;
+			.home-hero {
+				overflow: hidden;
+				background: #111;
+			}
+
+			.home-hero picture {
+				display: block;
+			}
+
+			.home-hero-image {
+				display: block;
+				width: 100%;
+				height: clamp(320px, 48vw, 620px);
+				object-fit: cover;
+				object-position: center;
+			}
+
+			.home-hero-overlay {
+				background: rgba(0, 0, 0, .24);
+				padding: 1rem;
+			}
+
+			.home-hero-title {
+				text-shadow: 2px 2px 4px rgba(0, 0, 0, .7);
+			}
+
+			.home-hero-subtitle {
+				text-shadow: 1px 1px 2px rgba(0, 0, 0, .7);
+			}
+
+					.search-input {
+						border: 1px solid black;
+						border-radius: 20px;
 					background-color: transparent;
 					padding-left: 50px;
 					/* Make room for the magnifier icon inside the input */
@@ -30,10 +60,22 @@
 					pointer-events: none;
 				}
 
-		@media (max-width: 767px) {
-			.carousel-inner .carousel-item>div {
-				display: none;
-			}
+			@media (max-width: 767px) {
+				.home-hero-image {
+					height: 360px;
+				}
+
+				.home-hero-title {
+					font-size: clamp(1.45rem, 7vw, 2rem);
+				}
+
+				.home-hero-subtitle {
+					font-size: 1.1rem !important;
+				}
+
+				.carousel-inner .carousel-item>div {
+					display: none;
+				}
 
 			.carousel-inner .carousel-item>div:first-child {
 				display: block;

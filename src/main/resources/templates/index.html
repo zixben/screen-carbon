@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layouts/default}">
 <head>
-    <title th:text="${title}"></title>
-    
-
+	    <title th:text="${title}"></title>
+	    <link rel="preload" as="image" href="/assets/images/banner/Masthead_V2-1600.webp"
+	          imagesrcset="/assets/images/banner/Masthead_V2-640.webp 640w, /assets/images/banner/Masthead_V2-1000.webp 1000w, /assets/images/banner/Masthead_V2-1600.webp 1600w"
+	          imagesizes="100vw" type="image/webp">
 </head>
 <body>
-    <div layout:fragment="content">
-			<!-- Hero Section -->
-	<section class="position-relative text-center">
-		<img src="assets/images/banner/Masthead_V2.png" alt="Cinema with Earth on fire" class="img-fluid">
-		<div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center"
-			style="background: rgba(0,0,0,.2);">
-			<h1 class="display-5 fw-bold px-4 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">SCREEN CARBON TEST</h1>
-			<h1 class="display-5 fw-bold px-4 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">IS YOUR FAVOURITE FILM OR TV SHOW CLIMATE-FRIENDLY?</h1>
-			<p class="fs-2 text-white playfair-display-sub-heading" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-				Rate the carbon credentials of new screen content</p>
-		</div>
-	</section>
+	    <div layout:fragment="content">
+				<!-- Hero Section -->
+		<section class="home-hero position-relative text-center">
+			<picture>
+				<source type="image/webp"
+					srcset="/assets/images/banner/Masthead_V2-640.webp 640w, /assets/images/banner/Masthead_V2-1000.webp 1000w, /assets/images/banner/Masthead_V2-1600.webp 1600w"
+					sizes="100vw">
+				<img src="/assets/images/banner/Masthead_V2.png" alt="Cinema with Earth on fire"
+					class="home-hero-image" width="1920" height="935" decoding="async" fetchpriority="high">
+			</picture>
+			<div class="home-hero-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+				<h1 class="home-hero-title display-5 fw-bold px-4 text-white">SCREEN CARBON TEST</h1>
+				<h1 class="home-hero-title display-5 fw-bold px-4 text-white">IS YOUR FAVOURITE FILM OR TV SHOW CLIMATE-FRIENDLY?</h1>
+				<p class="home-hero-subtitle fs-2 text-white playfair-display-sub-heading">
+					Rate the carbon credentials of new screen content</p>
+			</div>
+		</section>
 
 
 

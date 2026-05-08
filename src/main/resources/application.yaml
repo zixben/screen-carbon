@@ -26,6 +26,13 @@ spring:
           starttls:
             enable: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE:true}
 
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: ${SPRING_WEB_RESOURCES_CACHE_MAX_AGE:1d}
+          cache-public: true
+
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
