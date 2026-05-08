@@ -10,6 +10,7 @@ import com.lks.dto.UserSearchRequest;
 import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.service.EmailService;
+import com.lks.service.RequestRateLimiter;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ class UserControllerTest {
 
 	@Test
 	void buildRecoveryLinkUsesConfiguredBaseUrlAndEncodesToken() {
-		UserController controller = new UserController();
+		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
 		ReflectionTestUtils.setField(controller, "appBaseUrl", "https://example.test/app/");
 
 		String link = controller.buildRecoveryLink("abc+123/=");
@@ -48,7 +49,7 @@ class UserControllerTest {
 
 	@Test
 	void buildRecoveryLinkFallsBackToLocalhostWhenBaseUrlIsBlank() {
-		UserController controller = new UserController();
+		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
 		ReflectionTestUtils.setField(controller, "appBaseUrl", " ");
 
 		String link = controller.buildRecoveryLink("token");
@@ -116,7 +117,7 @@ class UserControllerTest {
 
 	@Test
 	void currentUserReturnsSessionBackedUserResponse() {
-		UserController controller = new UserController();
+		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
 		MockHttpSession session = new MockHttpSession();
 		User user = new User();
 		user.setId(42);
@@ -139,7 +140,7 @@ class UserControllerTest {
 
 	@Test
 	void currentUserRejectsMissingSessionUser() {
-		UserController controller = new UserController();
+		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
 		MockHttpServletRequest request = new MockHttpServletRequest();
 
 		ResponseEntity<?> response = controller.currentUser(request);
@@ -206,9 +207,8 @@ class UserControllerTest {
 	}
 
 	private UserController controllerWith(UserMapper userMapper, EmailService emailService, boolean emailEnabled) {
-		UserController controller = new UserController();
-		ReflectionTestUtils.setField(controller, "userMapper", userMapper);
-		ReflectionTestUtils.setField(controller, "emailService", emailService);
+		UserController controller = new UserController(userMapper, emailService, new RequestRateLimiter(),
+				new BCryptPasswordEncoder());
 		ReflectionTestUtils.setField(controller, "emailEnabled", emailEnabled);
 		return controller;
 	}

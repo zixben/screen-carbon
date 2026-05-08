@@ -16,13 +16,10 @@ import com.lks.util.ValidateCode;
 import com.lks.service.EmailService;
 import com.lks.service.RequestRateLimiter;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.servlet.*;
@@ -43,18 +40,13 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
-	@Autowired
-	private UserMapper userMapper;
-
-	@Autowired
-	private EmailService emailService;
-
-	@Autowired
-	private RequestRateLimiter requestRateLimiter = new RequestRateLimiter();
+	private final UserMapper userMapper;
+	private final EmailService emailService;
+	private final RequestRateLimiter requestRateLimiter;
+	private final PasswordEncoder passwordEncoder;
 
 	@Value("${app.base-url:http://localhost:8081}")
 	private String appBaseUrl;
@@ -80,7 +72,14 @@ public class UserController {
 	private static final Duration PASSWORD_RECOVERY_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+	public UserController(UserMapper userMapper, EmailService emailService, RequestRateLimiter requestRateLimiter,
+			PasswordEncoder passwordEncoder) {
+		this.userMapper = userMapper;
+		this.emailService = emailService;
+		this.requestRateLimiter = requestRateLimiter;
+		this.passwordEncoder = passwordEncoder;
+	}
 
 	@PostMapping("/password-recovery")
 	public ResponseEntity<?> recoverPassword(@RequestBody PasswordRecoveryRequest request, HttpServletRequest httpRequest) {
