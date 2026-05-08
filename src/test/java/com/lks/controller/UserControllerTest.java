@@ -3,6 +3,7 @@ package com.lks.controller;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
+import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
@@ -63,7 +64,7 @@ class UserControllerTest {
 		stubValidReset(userMapper, "reset-token");
 
 		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword("reset-token", "NewPassword!", "NewPassword!");
+				controller.updatePassword(passwordResetRequest("reset-token", "NewPassword!", "NewPassword!"));
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		verify(userMapper).clearAllRecoveryTokensForUser(42);
@@ -80,11 +81,37 @@ class UserControllerTest {
 				.sendEmail(any(String.class), any(String.class), any(String.class));
 
 		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword("reset-token", "NewPassword!", "NewPassword!");
+				controller.updatePassword(passwordResetRequest("reset-token", "NewPassword!", "NewPassword!"));
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		verify(userMapper).clearAllRecoveryTokensForUser(42);
 		verify(emailService).sendEmail(any(String.class), any(String.class), any(String.class));
+	}
+
+	@Test
+	void updatePasswordRejectsMalformedTokenBeforeLookup() throws Exception {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+
+		ResponseEntity<Map<String, String>> response =
+				controller.updatePassword(passwordResetRequest("x".repeat(201), "NewPassword!", "NewPassword!"));
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		assertEquals("Invalid or expired token.", response.getBody().get("message"));
+		verify(userMapper, never()).findActiveRecoveryTokens();
+	}
+
+	@Test
+	void updatePasswordRejectsMissingPasswordBeforeLookup() throws Exception {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+
+		ResponseEntity<Map<String, String>> response =
+				controller.updatePassword(passwordResetRequest("reset-token", null, "NewPassword!"));
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		assertEquals("Password is required.", response.getBody().get("message"));
+		verify(userMapper, never()).findActiveRecoveryTokens();
 	}
 
 	@Test
@@ -192,6 +219,14 @@ class UserControllerTest {
 		admin.setRole("ADMIN");
 		session.setAttribute("loggedInUser", admin);
 		return session;
+	}
+
+	private PasswordResetRequest passwordResetRequest(String token, String newPassword, String confirmPassword) {
+		PasswordResetRequest request = new PasswordResetRequest();
+		request.setToken(token);
+		request.setNewPassword(newPassword);
+		request.setConfirmPassword(confirmPassword);
+		return request;
 	}
 
 	private void stubValidReset(UserMapper userMapper, String rawToken) {

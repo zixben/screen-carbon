@@ -5,6 +5,7 @@ import com.lks.bean.RecoveryToken;
 import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordRecoveryRequest;
+import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
 import com.lks.dto.UserResponse;
@@ -172,10 +173,21 @@ public class UserController {
 
 	@PostMapping("/update-password")
 	@ResponseBody
-	public ResponseEntity<Map<String, String>> updatePassword(@RequestParam("token") String token,
-			@RequestParam("newPassword") String newPassword, @RequestParam("confirmPassword") String confirmPassword) throws Exception {
+	public ResponseEntity<Map<String, String>> updatePassword(@ModelAttribute PasswordResetRequest request) throws Exception {
+		if (request == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid request body."));
+		}
 
-		log.debug("updatePassword method called with token: {}", token);
+		String token = trimToNull(request.getToken());
+		String newPassword = request.getNewPassword();
+		String confirmPassword = request.getConfirmPassword();
+		if (!isValidRecoveryToken(token)) {
+			log.warn("Password reset rejected because the recovery token was missing or malformed.");
+			return invalidRecoveryTokenResponse();
+		}
+		if (newPassword == null || confirmPassword == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Password is required."));
+		}
 
 		// Retrieve all active recovery tokens that are not expired and not used
 		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
@@ -192,14 +204,14 @@ public class UserController {
 		// Validate the token: check if it exists, is not expired, and has not been used
 		if (validToken == null || validToken.getExpiresAt().before(new Date()) || validToken.isUsed()) {
 			log.warn("Invalid, expired, or already used token.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
+			return invalidRecoveryTokenResponse();
 		}
 
 		// Fetch the associated user using the valid token's user ID
 		User user = userMapper.findById(validToken.getUserId());
 		if (user == null) {
 			log.warn("Recovery token references a missing user.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
+			return invalidRecoveryTokenResponse();
 		}
 
 		// Check if the new password matches the confirm password
@@ -242,6 +254,10 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("message", "Failed to update password. Please try again."));
 		}
+	}
+
+	private ResponseEntity<Map<String, String>> invalidRecoveryTokenResponse() {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
 	}
 
 	private void sendPasswordChangedNotification(User user) {
@@ -651,6 +667,10 @@ public class UserController {
 			return null;
 		}
 		return value.trim();
+	}
+
+	private boolean isValidRecoveryToken(String token) {
+		return token != null && token.length() <= 200 && !containsControlCharacter(token);
 	}
 
 	private boolean containsHtmlBoundary(String value) {
