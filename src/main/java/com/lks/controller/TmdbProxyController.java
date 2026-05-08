@@ -1,6 +1,7 @@
 package com.lks.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,7 @@ public class TmdbProxyController {
     private final String bearerToken;
     private final HttpClient httpClient;
 
+    @Autowired
     public TmdbProxyController(@Value("${app.tmdb.bearer-token:}") String bearerToken) {
         this(bearerToken, HttpClient.newHttpClient());
     }
