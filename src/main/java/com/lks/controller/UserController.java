@@ -1,7 +1,6 @@
 package com.lks.controller;
 
 import com.lks.bean.User;
-import com.lks.bean.RecoveryToken;
 import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordRecoveryRequest;
@@ -13,10 +12,11 @@ import com.lks.dto.UserSearchRequest;
 import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.util.ValidateCode;
-import com.lks.service.EmailService;
 import com.lks.service.RequestRateLimiter;
+import com.lks.service.UserService;
+import com.lks.service.UserServiceResult;
+import com.lks.service.UserServiceStatus;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,17 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,25 +38,15 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/user")
 public class UserController {
 	private final UserMapper userMapper;
-	private final EmailService emailService;
+	private final UserService userService;
 	private final RequestRateLimiter requestRateLimiter;
 	private final PasswordEncoder passwordEncoder;
-
-	@Value("${app.base-url:http://localhost:8081}")
-	private String appBaseUrl;
-
-	@Value("${app.email.enabled:true}")
-	private boolean emailEnabled;
-
-	@Value("${app.password-recovery.log-link:false}")
-	private boolean logRecoveryLink;
 
 	private static final int MAX_USERNAME_LENGTH = 24;
 	private static final int MAX_FULL_NAME_LENGTH = 200;
 	private static final int MAX_EMAIL_LENGTH = 50;
 	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_USER_SEARCH_TERM_LENGTH = 50;
-	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
 	private static final int MAX_LOGIN_ATTEMPTS_PER_WINDOW = 10;
 	private static final int MAX_SIGNUP_ATTEMPTS_PER_WINDOW = 5;
 	private static final int MAX_PASSWORD_RECOVERY_ATTEMPTS_PER_CLIENT_WINDOW = 5;
@@ -73,10 +57,10 @@ public class UserController {
 	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-	public UserController(UserMapper userMapper, EmailService emailService, RequestRateLimiter requestRateLimiter,
+	public UserController(UserMapper userMapper, UserService userService, RequestRateLimiter requestRateLimiter,
 			PasswordEncoder passwordEncoder) {
 		this.userMapper = userMapper;
-		this.emailService = emailService;
+		this.userService = userService;
 		this.requestRateLimiter = requestRateLimiter;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -100,166 +84,18 @@ public class UserController {
 		enforceClientRateLimit(httpRequest, "password-recovery", MAX_PASSWORD_RECOVERY_ATTEMPTS_PER_CLIENT_WINDOW,
 				PASSWORD_RECOVERY_RATE_LIMIT_WINDOW, "Too many password recovery requests. Please try again later.");
 
-		log.info("Password recovery requested.");
-
-		User user = userMapper.findByEmail(email);
-		if (user != null && !isAccountLocked(user)) {
-			if (userMapper.countRecentRecoveryAttempts(user.getId()) >= MAX_RECOVERY_ATTEMPTS_PER_WINDOW) {
-				log.warn("Password recovery request throttled for user ID {}.", user.getId());
-				return ResponseEntity
-						.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
-			}
-
-			try {
-				String rawToken = generateSecureToken();
-				String tokenHash = passwordEncoder.encode(rawToken);
-				Timestamp expiresAt = Timestamp.from(Instant.now().plus(Duration.ofMinutes(30)));
-				String link = buildRecoveryLink(rawToken);
-				String recoveryLink = "<a href=\"" + link + "\">Reset your password</a>";
-
-				if (emailEnabled) {
-					emailService.sendEmail(email, "Password Recovery",
-							"Click the link to reset your password: " + recoveryLink);
-				} else if (logRecoveryLink) {
-					log.warn("Password recovery email is disabled. Local recovery link for user ID {}: {}", user.getId(),
-							link);
-				} else {
-					log.error("Password recovery email is disabled and recovery link logging is off.");
-					return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-							.body(Map.of("message", "Password recovery email is not configured."));
-				}
-
-				userMapper.insertRecoveryToken(user.getId(), tokenHash, expiresAt);
-				log.info("Generated recovery token and sent email for user ID {}.", user.getId());
-
-				return ResponseEntity
-						.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
-
-			} catch (Exception e) {
-
-				log.error("Failed to send recovery email for user ID {}: {}", user.getId(), e.getMessage());
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-						.body(Map.of("message", "Failed to send recovery email. Please try again later."));
-			}
-		} else {
-			log.warn("Password recovery attempt for non-existent or locked account.");
-			return ResponseEntity.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
-		}
-	}
-
-	String buildRecoveryLink(String rawToken) {
-		String baseUrl = trimToNull(appBaseUrl);
-		if (baseUrl == null) {
-			baseUrl = "http://localhost:8081";
-		}
-		baseUrl = baseUrl.replaceAll("/+$", "");
-		return baseUrl + "/reset-password?token=" + URLEncoder.encode(rawToken, StandardCharsets.UTF_8);
-	}
-
-	private String generateSecureToken() {
-		return UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
+		UserServiceResult result = userService.recoverPassword(email);
+		return serviceResponse(result);
 	}
 
 	@PostMapping("/update-password")
 	@ResponseBody
-	public ResponseEntity<Map<String, String>> updatePassword(@ModelAttribute PasswordResetRequest request) throws Exception {
-		if (request == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid request body."));
-		}
-
-		String token = trimToNull(request.getToken());
-		String newPassword = request.getNewPassword();
-		String confirmPassword = request.getConfirmPassword();
-		if (!isValidRecoveryToken(token)) {
-			log.warn("Password reset rejected because the recovery token was missing or malformed.");
-			return invalidRecoveryTokenResponse();
-		}
-		if (newPassword == null || confirmPassword == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Password is required."));
-		}
-
-		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
-
-		RecoveryToken validToken = null;
-
-		for (RecoveryToken rt : recoveryTokens) {
-			if (passwordEncoder.matches(token, rt.getTokenHash())) {
-				validToken = rt;
-				break;
-			}
-		}
-		if (validToken == null || validToken.getExpiresAt().before(new Date()) || validToken.isUsed()) {
-			log.warn("Invalid, expired, or already used token.");
-			return invalidRecoveryTokenResponse();
-		}
-
-		User user = userMapper.findById(validToken.getUserId());
-		if (user == null) {
-			log.warn("Recovery token references a missing user.");
-			return invalidRecoveryTokenResponse();
-		}
-
-		if (!newPassword.equals(confirmPassword)) {
-			log.warn("Passwords do not match.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Passwords do not match."));
-		}
-
-		if (!isPasswordStrong(newPassword)) {
-			log.warn("Password does not meet the required strength.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(Map.of("message", "Password does not meet the required strength."));
-		}
-
-		if (passwordEncoder.matches(newPassword, user.getPassword())) {
-			log.warn("New password must not be the same as the previous password.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(Map.of("message", "New password must not be the same as the previous password."));
-		}
-
-		user.setPassword(passwordEncoder.encode(newPassword));
-		if (userMapper.updateUser(user) > 0) {
-
-			userMapper.clearAllRecoveryTokensForUser(user.getId());
-
-			sendPasswordChangedNotification(user);
-
-			log.info("Password successfully updated for user ID: {}", user.getId());
-			return ResponseEntity.ok(Map.of("message", "Password successfully updated. You can now log in."));
-		} else {
-
-			log.error("Failed to update password for user ID: {}", user.getId());
-
-			userMapper.markTokenAsUsed(validToken.getId());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(Map.of("message", "Failed to update password. Please try again."));
-		}
-	}
-
-	private ResponseEntity<Map<String, String>> invalidRecoveryTokenResponse() {
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid or expired token."));
-	}
-
-	private void sendPasswordChangedNotification(User user) {
-		if (!emailEnabled) {
-			log.info("Password change notification email is disabled for user ID {}.", user.getId());
-			return;
-		}
-
-		try {
-			emailService.sendEmail(user.getEmail(), "Password Changed",
-					"Your password has been changed. If you did not initiate this change, please contact support immediately.");
-		} catch (Exception e) {
-			log.warn("Password was changed for user ID {}, but notification email failed: {}", user.getId(),
-					e.getMessage());
-		}
+	public ResponseEntity<Map<String, String>> updatePassword(@ModelAttribute PasswordResetRequest request) {
+		return serviceResponse(userService.updatePassword(request));
 	}
 
 	private boolean isPasswordStrong(String password) {
-		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*()].*");
-	}
-
-	private boolean isAccountLocked(User user) {
-		return user.getLockTime() != null && user.getLockTime().toInstant().isAfter(Instant.now());
+		return userService.isPasswordStrong(password);
 	}
 
 	@GetMapping("/all")
@@ -559,6 +395,19 @@ public class UserController {
 		}
 	}
 
+	private ResponseEntity<Map<String, String>> serviceResponse(UserServiceResult result) {
+		return ResponseEntity.status(toHttpStatus(result.status())).body(Map.of("message", result.message()));
+	}
+
+	private HttpStatus toHttpStatus(UserServiceStatus status) {
+		return switch (status) {
+			case OK -> HttpStatus.OK;
+			case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+			case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+			case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+		};
+	}
+
 	private String clientAddress(HttpServletRequest request) {
 		if (request == null || isBlank(request.getRemoteAddr())) {
 			return "unknown";
@@ -605,10 +454,6 @@ public class UserController {
 			return null;
 		}
 		return value.trim();
-	}
-
-	private boolean isValidRecoveryToken(String token) {
-		return token != null && token.length() <= 200 && !containsControlCharacter(token);
 	}
 
 	private boolean containsHtmlBoundary(String value) {

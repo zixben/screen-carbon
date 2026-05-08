@@ -1,6 +1,5 @@
 package com.lks.controller;
 
-import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.PasswordResetRequest;
@@ -9,26 +8,21 @@ import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
 import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
-import com.lks.service.EmailService;
 import com.lks.service.RequestRateLimiter;
+import com.lks.service.UserService;
+import com.lks.service.UserServiceResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -38,86 +32,22 @@ import static org.mockito.Mockito.when;
 class UserControllerTest {
 
 	@Test
-	void buildRecoveryLinkUsesConfiguredBaseUrlAndEncodesToken() {
-		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
-		ReflectionTestUtils.setField(controller, "appBaseUrl", "https://example.test/app/");
+	void updatePasswordMapsServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		PasswordResetRequest request = passwordResetRequest("reset-token", "NewPassword!", "NewPassword!");
+		when(userService.updatePassword(request)).thenReturn(UserServiceResult.badRequest("Invalid or expired token."));
 
-		String link = controller.buildRecoveryLink("abc+123/=");
-
-		assertEquals("https://example.test/app/reset-password?token=abc%2B123%2F%3D", link);
-	}
-
-	@Test
-	void buildRecoveryLinkFallsBackToLocalhostWhenBaseUrlIsBlank() {
-		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
-		ReflectionTestUtils.setField(controller, "appBaseUrl", " ");
-
-		String link = controller.buildRecoveryLink("token");
-
-		assertEquals("http://localhost:8081/reset-password?token=token", link);
-	}
-
-	@Test
-	void updatePasswordSkipsNotificationEmailWhenEmailIsDisabled() throws Exception {
-		UserMapper userMapper = mock(UserMapper.class);
-		EmailService emailService = mock(EmailService.class);
-		UserController controller = controllerWith(userMapper, emailService, false);
-		stubValidReset(userMapper, "reset-token");
-
-		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword(passwordResetRequest("reset-token", "NewPassword!", "NewPassword!"));
-
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		verify(userMapper).clearAllRecoveryTokensForUser(42);
-		verifyNoInteractions(emailService);
-	}
-
-	@Test
-	void updatePasswordStillSucceedsWhenNotificationEmailFails() throws Exception {
-		UserMapper userMapper = mock(UserMapper.class);
-		EmailService emailService = mock(EmailService.class);
-		UserController controller = controllerWith(userMapper, emailService, true);
-		stubValidReset(userMapper, "reset-token");
-		doThrow(new Exception("SMTP unavailable")).when(emailService)
-				.sendEmail(any(String.class), any(String.class), any(String.class));
-
-		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword(passwordResetRequest("reset-token", "NewPassword!", "NewPassword!"));
-
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		verify(userMapper).clearAllRecoveryTokensForUser(42);
-		verify(emailService).sendEmail(any(String.class), any(String.class), any(String.class));
-	}
-
-	@Test
-	void updatePasswordRejectsMalformedTokenBeforeLookup() throws Exception {
-		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
-
-		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword(passwordResetRequest("x".repeat(201), "NewPassword!", "NewPassword!"));
+		ResponseEntity<Map<String, String>> response = controller.updatePassword(request);
 
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 		assertEquals("Invalid or expired token.", response.getBody().get("message"));
-		verify(userMapper, never()).findActiveRecoveryTokens();
-	}
-
-	@Test
-	void updatePasswordRejectsMissingPasswordBeforeLookup() throws Exception {
-		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
-
-		ResponseEntity<Map<String, String>> response =
-				controller.updatePassword(passwordResetRequest("reset-token", null, "NewPassword!"));
-
-		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-		assertEquals("Password is required.", response.getBody().get("message"));
-		verify(userMapper, never()).findActiveRecoveryTokens();
+		verify(userService).updatePassword(request);
 	}
 
 	@Test
 	void currentUserReturnsSessionBackedUserResponse() {
-		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
+		UserController controller = controllerWith(mock(UserMapper.class), mock(UserService.class));
 		MockHttpSession session = new MockHttpSession();
 		User user = new User();
 		user.setId(42);
@@ -140,7 +70,7 @@ class UserControllerTest {
 
 	@Test
 	void currentUserRejectsMissingSessionUser() {
-		UserController controller = controllerWith(mock(UserMapper.class), mock(EmailService.class), false);
+		UserController controller = controllerWith(mock(UserMapper.class), mock(UserService.class));
 		MockHttpServletRequest request = new MockHttpServletRequest();
 
 		ResponseEntity<?> response = controller.currentUser(request);
@@ -151,7 +81,7 @@ class UserControllerTest {
 	@Test
 	void loginUserRateLimitsRepeatedAttemptsFromSameClient() {
 		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+		UserController controller = controllerWith(userMapper, mock(UserService.class));
 		MockHttpServletRequest httpRequest = new MockHttpServletRequest();
 		httpRequest.setRemoteAddr("203.0.113.10");
 		httpRequest.getSession().setAttribute("vcode", "abcde");
@@ -173,7 +103,7 @@ class UserControllerTest {
 	@Test
 	void updateUserRejectsHtmlDescriptionBeforePersisting() {
 		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+		UserController controller = controllerWith(userMapper, mock(UserService.class));
 		User user = new User();
 		user.setId(42);
 		user.setUsername("olduser");
@@ -195,7 +125,7 @@ class UserControllerTest {
 	@Test
 	void getUserWhereRejectsOverlongSearchTermBeforeQuerying() {
 		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(EmailService.class), false);
+		UserController controller = controllerWith(userMapper, mock(UserService.class));
 		UserSearchRequest request = new UserSearchRequest();
 		request.setUsername("a".repeat(51));
 
@@ -206,11 +136,8 @@ class UserControllerTest {
 		verifyNoInteractions(userMapper);
 	}
 
-	private UserController controllerWith(UserMapper userMapper, EmailService emailService, boolean emailEnabled) {
-		UserController controller = new UserController(userMapper, emailService, new RequestRateLimiter(),
-				new BCryptPasswordEncoder());
-		ReflectionTestUtils.setField(controller, "emailEnabled", emailEnabled);
-		return controller;
+	private UserController controllerWith(UserMapper userMapper, UserService userService) {
+		return new UserController(userMapper, userService, new RequestRateLimiter(), new BCryptPasswordEncoder());
 	}
 
 	private MockHttpSession adminSession() {
@@ -229,21 +156,4 @@ class UserControllerTest {
 		return request;
 	}
 
-	private void stubValidReset(UserMapper userMapper, String rawToken) {
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		RecoveryToken recoveryToken = new RecoveryToken();
-		recoveryToken.setId(7);
-		recoveryToken.setUserId(42);
-		recoveryToken.setTokenHash(encoder.encode(rawToken));
-		recoveryToken.setExpiresAt(Timestamp.from(Instant.now().plus(Duration.ofMinutes(10))));
-
-		User user = new User();
-		user.setId(42);
-		user.setEmail("test@example.com");
-		user.setPassword(encoder.encode("OldPassword!"));
-
-		when(userMapper.findActiveRecoveryTokens()).thenReturn(List.of(recoveryToken));
-		when(userMapper.findById(42)).thenReturn(user);
-		when(userMapper.updateUser(any(User.class))).thenReturn(1);
-	}
 }
