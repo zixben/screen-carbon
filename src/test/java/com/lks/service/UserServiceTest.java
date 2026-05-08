@@ -3,8 +3,10 @@ package com.lks.service;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.PasswordResetRequest;
+import com.lks.dto.UserRegistrationRequest;
 import com.lks.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -14,7 +16,10 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -25,6 +30,57 @@ import static org.mockito.Mockito.when;
 class UserServiceTest {
 
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+	@Test
+	void registerUserHashesPasswordAndSavesNormalizedFields() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		UserRegistrationRequest request = registrationRequest();
+		when(userMapper.saveUser(any(User.class))).thenReturn(1);
+
+		UserServiceResult result = service.registerUser(request);
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("success", result.message());
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userMapper).saveUser(userCaptor.capture());
+		User savedUser = userCaptor.getValue();
+		assertEquals("newuser", savedUser.getUsername());
+		assertEquals("New User", savedUser.getFullName());
+		assertEquals("new@example.com", savedUser.getEmail());
+		assertEquals("profile", savedUser.getDescription());
+		assertNotEquals("Password!", savedUser.getPassword());
+		assertTrue(passwordEncoder.matches("Password!", savedUser.getPassword()));
+	}
+
+	@Test
+	void registerUserRejectsUnsupportedFieldBeforeQuerying() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		UserRegistrationRequest request = registrationRequest();
+		request.addUnsupportedField("role", "ADMIN");
+
+		UserServiceResult result = service.registerUser(request);
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Unsupported user field: role", result.message());
+		verifyNoInteractions(userMapper);
+	}
+
+	@Test
+	void registerUserRejectsDuplicateEmailBeforeSaving() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		UserRegistrationRequest request = registrationRequest();
+		when(userMapper.findByEmail("new@example.com")).thenReturn(new User());
+
+		UserServiceResult result = service.registerUser(request);
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Email is already in use.", result.message());
+		verify(userMapper).findByUsername(eq("newuser"));
+		verify(userMapper, never()).saveUser(any(User.class));
+	}
 
 	@Test
 	void buildRecoveryLinkUsesConfiguredBaseUrlAndEncodesToken() {
@@ -127,6 +183,17 @@ class UserServiceTest {
 		request.setToken(token);
 		request.setNewPassword(newPassword);
 		request.setConfirmPassword(confirmPassword);
+		return request;
+	}
+
+	private UserRegistrationRequest registrationRequest() {
+		UserRegistrationRequest request = new UserRegistrationRequest();
+		request.setUsername(" newuser ");
+		request.setFullName(" New User ");
+		request.setEmail(" New@Example.com ");
+		request.setDescription(" profile ");
+		request.setPassword("Password!");
+		request.setConfirmPass("Password!");
 		return request;
 	}
 

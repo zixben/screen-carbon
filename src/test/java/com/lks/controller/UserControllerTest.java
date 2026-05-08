@@ -4,6 +4,7 @@ import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
+import com.lks.dto.UserRegistrationRequest;
 import com.lks.dto.UserResponse;
 import com.lks.dto.UserSearchRequest;
 import com.lks.exception.RateLimitExceededException;
@@ -43,6 +44,22 @@ class UserControllerTest {
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 		assertEquals("Invalid or expired token.", response.getBody().get("message"));
 		verify(userService).updatePassword(request);
+	}
+
+	@Test
+	void saveUserMapsServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+		httpRequest.setRemoteAddr("203.0.113.11");
+		UserRegistrationRequest request = new UserRegistrationRequest();
+		when(userService.registerUser(request)).thenReturn(UserServiceResult.badRequest("Email is required."));
+
+		ResponseEntity<String> response = controller.saveUser(request, httpRequest);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		assertEquals("Email is required.", response.getBody());
+		verify(userService).registerUser(request);
 	}
 
 	@Test

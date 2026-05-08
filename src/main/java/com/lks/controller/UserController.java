@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -43,8 +40,6 @@ public class UserController {
 	private final PasswordEncoder passwordEncoder;
 
 	private static final int MAX_USERNAME_LENGTH = 24;
-	private static final int MAX_FULL_NAME_LENGTH = 200;
-	private static final int MAX_EMAIL_LENGTH = 50;
 	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_USER_SEARCH_TERM_LENGTH = 50;
 	private static final int MAX_LOGIN_ATTEMPTS_PER_WINDOW = 10;
@@ -55,7 +50,6 @@ public class UserController {
 	private static final Duration SIGNUP_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration PASSWORD_RECOVERY_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
-	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
 	public UserController(UserMapper userMapper, UserService userService, RequestRateLimiter requestRateLimiter,
 			PasswordEncoder passwordEncoder) {
@@ -200,71 +194,9 @@ public class UserController {
 
 	@PostMapping("/save")
 	public ResponseEntity<String> saveUser(@RequestBody UserRegistrationRequest request, HttpServletRequest httpRequest) {
-		if (request == null) {
-			return ResponseEntity.badRequest().body("Invalid request body.");
-		}
-		try {
-			validateNoUnsupportedFields(request.getUnsupportedFields());
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-
 		enforceClientRateLimit(httpRequest, "signup", MAX_SIGNUP_ATTEMPTS_PER_WINDOW, SIGNUP_RATE_LIMIT_WINDOW,
 				"Too many signup attempts. Please try again later.");
-
-		String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
-		String fullName = validateUserText(request.getFullName(), "Full name", MAX_FULL_NAME_LENGTH, true);
-		String email = normalizeEmail(request.getEmail());
-		String description = validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false);
-		if (email == null) {
-			return ResponseEntity.badRequest().body("Email is required.");
-		}
-		if (email.length() > MAX_EMAIL_LENGTH) {
-			return ResponseEntity.badRequest().body("Registration data is too long.");
-		}
-		if (!isPasswordStrong(request.getPassword())) {
-			return ResponseEntity.badRequest().body("Password does not meet the required strength.");
-		}
-		if (!isBlank(request.getConfirmPass()) && !request.getPassword().equals(request.getConfirmPass())) {
-			return ResponseEntity.badRequest().body("Passwords do not match.");
-		}
-
-		log.info("Received registration for username: {}", username);
-
-		try {
-			User existingUserByUsername = userMapper.findByUsername(username);
-			if (existingUserByUsername != null) {
-				log.warn("Username already taken: {}", username);
-				return ResponseEntity.badRequest().body("Username is already taken.");
-			}
-
-			User existingUserByEmail = userMapper.findByEmail(email);
-			if (existingUserByEmail != null) {
-				log.warn("Email already in use: {}", email);
-				return ResponseEntity.badRequest().body("Email is already in use.");
-			}
-
-			User user = new User();
-			user.setFullName(fullName);
-			user.setUsername(username);
-			user.setEmail(email);
-			user.setDescription(description);
-
-			String hashedPassword = passwordEncoder.encode(request.getPassword());
-			user.setPassword(hashedPassword);
-
-			Integer result = userMapper.saveUser(user);
-			if (result > 0) {
-				log.info("User successfully saved: {}", username);
-				return ResponseEntity.ok("success");
-			} else {
-				log.error("Failed to save user: {}", username);
-				return ResponseEntity.badRequest().body("Registration failure");
-			}
-		} catch (Exception e) {
-			log.error("Error saving user: ", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving user");
-		}
+		return serviceStringResponse(userService.registerUser(request));
 	}
 
 	@PostMapping("/update")
@@ -397,6 +329,10 @@ public class UserController {
 
 	private ResponseEntity<Map<String, String>> serviceResponse(UserServiceResult result) {
 		return ResponseEntity.status(toHttpStatus(result.status())).body(Map.of("message", result.message()));
+	}
+
+	private ResponseEntity<String> serviceStringResponse(UserServiceResult result) {
+		return ResponseEntity.status(toHttpStatus(result.status())).body(result.message());
 	}
 
 	private HttpStatus toHttpStatus(UserServiceStatus status) {

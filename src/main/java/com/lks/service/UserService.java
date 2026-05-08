@@ -3,6 +3,7 @@ package com.lks.service;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.PasswordResetRequest;
+import com.lks.dto.UserRegistrationRequest;
 import com.lks.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,10 @@ import java.util.UUID;
 public class UserService {
 	private static final String GENERIC_RECOVERY_MESSAGE =
 			"A recovery link has been sent if the email is registered.";
+	private static final int MAX_USERNAME_LENGTH = 24;
+	private static final int MAX_FULL_NAME_LENGTH = 200;
+	private static final int MAX_EMAIL_LENGTH = 50;
+	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
@@ -44,6 +49,65 @@ public class UserService {
 		this.appBaseUrl = appBaseUrl;
 		this.emailEnabled = emailEnabled;
 		this.logRecoveryLink = logRecoveryLink;
+	}
+
+	public UserServiceResult registerUser(UserRegistrationRequest request) {
+		if (request == null) {
+			return UserServiceResult.badRequest("Invalid request body.");
+		}
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+			String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
+			String fullName = validateUserText(request.getFullName(), "Full name", MAX_FULL_NAME_LENGTH, true);
+			String email = normalizeEmail(request.getEmail());
+			String description = validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false);
+			if (email == null) {
+				return UserServiceResult.badRequest("Email is required.");
+			}
+			if (email.length() > MAX_EMAIL_LENGTH) {
+				return UserServiceResult.badRequest("Registration data is too long.");
+			}
+			if (!isPasswordStrong(request.getPassword())) {
+				return UserServiceResult.badRequest("Password does not meet the required strength.");
+			}
+			if (!isBlank(request.getConfirmPass()) && !request.getPassword().equals(request.getConfirmPass())) {
+				return UserServiceResult.badRequest("Passwords do not match.");
+			}
+
+			log.info("Received registration for username: {}", username);
+
+			User existingUserByUsername = userMapper.findByUsername(username);
+			if (existingUserByUsername != null) {
+				log.warn("Username already taken: {}", username);
+				return UserServiceResult.badRequest("Username is already taken.");
+			}
+
+			User existingUserByEmail = userMapper.findByEmail(email);
+			if (existingUserByEmail != null) {
+				log.warn("Email already in use: {}", email);
+				return UserServiceResult.badRequest("Email is already in use.");
+			}
+
+			User user = new User();
+			user.setFullName(fullName);
+			user.setUsername(username);
+			user.setEmail(email);
+			user.setDescription(description);
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+			Integer result = userMapper.saveUser(user);
+			if (result > 0) {
+				log.info("User successfully saved: {}", username);
+				return UserServiceResult.ok("success");
+			}
+			log.error("Failed to save user: {}", username);
+			return UserServiceResult.badRequest("Registration failure");
+		} catch (IllegalArgumentException e) {
+			return UserServiceResult.badRequest(e.getMessage());
+		} catch (Exception e) {
+			log.error("Error saving user: ", e);
+			return UserServiceResult.internalError("Error saving user");
+		}
 	}
 
 	public UserServiceResult recoverPassword(String submittedEmail) {
@@ -161,6 +225,30 @@ public class UserService {
 		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*()].*");
 	}
 
+	private void validateNoUnsupportedFields(java.util.Map<String, Object> unsupportedFields) {
+		if (!unsupportedFields.isEmpty()) {
+			String fieldName = unsupportedFields.keySet().iterator().next();
+			throw new IllegalArgumentException("Unsupported user field: " + fieldName);
+		}
+	}
+
+	private String validateUserText(String value, String fieldName, int maxLength, boolean required) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
+			if (required) {
+				throw new IllegalArgumentException(fieldName + " is required.");
+			}
+			return null;
+		}
+		if (trimmed.length() > maxLength) {
+			throw new IllegalArgumentException(fieldName + " is too long.");
+		}
+		if (containsHtmlBoundary(trimmed) || containsControlCharacter(trimmed)) {
+			throw new IllegalArgumentException(fieldName + " contains invalid characters.");
+		}
+		return trimmed;
+	}
+
 	private RecoveryToken findMatchingActiveRecoveryToken(String token) {
 		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
 		for (RecoveryToken rt : recoveryTokens) {
@@ -217,8 +305,16 @@ public class UserService {
 		return value.trim();
 	}
 
+	private boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
+	}
+
 	private boolean isValidRecoveryToken(String token) {
 		return token != null && token.length() <= 200 && !containsControlCharacter(token);
+	}
+
+	private boolean containsHtmlBoundary(String value) {
+		return value.indexOf('<') >= 0 || value.indexOf('>') >= 0;
 	}
 
 	private boolean containsControlCharacter(String value) {
