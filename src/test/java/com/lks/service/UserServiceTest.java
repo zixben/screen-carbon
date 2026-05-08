@@ -3,6 +3,7 @@ package com.lks.service;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.PasswordResetRequest;
+import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
 import com.lks.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,49 @@ import static org.mockito.Mockito.when;
 class UserServiceTest {
 
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+	@Test
+	void loginUserAuthenticatesWithVerificationCodeAndPasswordHash() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = new User();
+		user.setId(42);
+		user.setUsername("newuser");
+		user.setPassword(passwordEncoder.encode("Password!"));
+		when(userMapper.findByUsername("newuser")).thenReturn(user);
+
+		UserLoginResult result = service.loginUser(loginRequest(" newuser ", "Password!", "abcde"), "abcde");
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("Login successful.", result.message());
+		assertEquals(user, result.user());
+	}
+
+	@Test
+	void loginUserRejectsBadVerificationCodeBeforeLookup() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+
+		UserLoginResult result = service.loginUser(loginRequest("newuser", "Password!", "wrong"), "abcde");
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Verification code is incorrect.", result.message());
+		verify(userMapper, never()).findByUsername(any(String.class));
+	}
+
+	@Test
+	void loginUserRejectsInvalidCredentials() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = new User();
+		user.setPassword(passwordEncoder.encode("Password!"));
+		when(userMapper.findByUsername("newuser")).thenReturn(user);
+
+		UserLoginResult result = service.loginUser(loginRequest("newuser", "wrong-password", "abcde"), "abcde");
+
+		assertEquals(UserServiceStatus.UNAUTHORIZED, result.status());
+		assertEquals("Invalid username or password.", result.message());
+	}
 
 	@Test
 	void registerUserHashesPasswordAndSavesNormalizedFields() {
@@ -183,6 +227,14 @@ class UserServiceTest {
 		request.setToken(token);
 		request.setNewPassword(newPassword);
 		request.setConfirmPassword(confirmPassword);
+		return request;
+	}
+
+	private UserLoginRequest loginRequest(String username, String password, String code) {
+		UserLoginRequest request = new UserLoginRequest();
+		request.setUsername(username);
+		request.setPassword(password);
+		request.setCode(code);
 		return request;
 	}
 

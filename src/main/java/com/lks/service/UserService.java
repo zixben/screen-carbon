@@ -3,6 +3,7 @@ package com.lks.service;
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
 import com.lks.dto.PasswordResetRequest;
+import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
 import com.lks.mapper.UserMapper;
 import org.slf4j.Logger;
@@ -108,6 +109,32 @@ public class UserService {
 			log.error("Error saving user: ", e);
 			return UserServiceResult.internalError("Error saving user");
 		}
+	}
+
+	public UserLoginResult loginUser(UserLoginRequest request, String verificationCode) {
+		if (request == null) {
+			return UserLoginResult.badRequest("Invalid request body.");
+		}
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			return UserLoginResult.badRequest(e.getMessage());
+		}
+
+		if (verificationCode == null || isBlank(request.getCode())
+				|| !verificationCode.equalsIgnoreCase(request.getCode().trim())) {
+			return UserLoginResult.badRequest("Verification code is incorrect.");
+		}
+		if (isBlank(request.getUsername()) || isBlank(request.getPassword())) {
+			return UserLoginResult.unauthorized("Invalid username or password.");
+		}
+
+		User userFromDb = userMapper.findByUsername(request.getUsername().trim());
+		if (userFromDb != null && passwordEncoder.matches(request.getPassword(), userFromDb.getPassword())) {
+			return UserLoginResult.ok(userFromDb);
+		}
+
+		return UserLoginResult.unauthorized("Invalid username or password.");
 	}
 
 	public UserServiceResult recoverPassword(String submittedEmail) {

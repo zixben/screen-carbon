@@ -13,6 +13,7 @@ import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.util.ValidateCode;
 import com.lks.service.RequestRateLimiter;
+import com.lks.service.UserLoginResult;
 import com.lks.service.UserService;
 import com.lks.service.UserServiceResult;
 import com.lks.service.UserServiceStatus;
@@ -118,46 +119,20 @@ public class UserController {
 		HttpSession session = req.getSession();
 		String vcode = (String) session.getAttribute("vcode");
 
-		Map<String, String> response = new HashMap<>();
-		if (request == null) {
-			response.put("message", "Invalid request body.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-
-		try {
-			validateNoUnsupportedFields(request.getUnsupportedFields());
-		} catch (IllegalArgumentException e) {
-			response.put("message", e.getMessage());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-
 		enforceClientRateLimit(req, "login", MAX_LOGIN_ATTEMPTS_PER_WINDOW, LOGIN_RATE_LIMIT_WINDOW,
 				"Too many login attempts. Please try again later.");
 
-		if (vcode == null || isBlank(request.getCode()) || !vcode.equalsIgnoreCase(request.getCode().trim())) {
-			response.put("message", "Verification code is incorrect.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		UserLoginResult result = userService.loginUser(request, vcode);
+		Map<String, String> response = new HashMap<>();
+		response.put("message", result.message());
+		if (result.status() == UserServiceStatus.OK) {
+			User user = result.user();
+			session.setAttribute("loggedInUser", user);
+			response.put("username", user.getUsername());
+			response.put("role", user.getRole());
+			response.put("id", user.getId().toString());
 		}
-		if (isBlank(request.getUsername()) || isBlank(request.getPassword())) {
-			response.put("message", "Invalid username or password.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-		}
-
-		User userFromDb = userMapper.findByUsername(request.getUsername().trim());
-
-		if (userFromDb != null && passwordEncoder.matches(request.getPassword(), userFromDb.getPassword())) {
-			session.setAttribute("loggedInUser", userFromDb);
-
-			response.put("username", userFromDb.getUsername());
-			response.put("role", userFromDb.getRole());
-			response.put("id", userFromDb.getId().toString());
-
-			response.put("message", "Login successful.");
-			return ResponseEntity.ok(response);
-		}
-
-		response.put("message", "Invalid username or password.");
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		return ResponseEntity.status(toHttpStatus(result.status())).body(response);
 	}
 
 	@DeleteMapping("/delete")
@@ -347,6 +322,7 @@ public class UserController {
 		return switch (status) {
 			case OK -> HttpStatus.OK;
 			case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+			case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
 			case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
 			case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
 		};

@@ -10,6 +10,7 @@ import com.lks.dto.UserSearchRequest;
 import com.lks.exception.RateLimitExceededException;
 import com.lks.mapper.UserMapper;
 import com.lks.service.RequestRateLimiter;
+import com.lks.service.UserLoginResult;
 import com.lks.service.UserService;
 import com.lks.service.UserServiceResult;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -123,9 +125,32 @@ class UserControllerTest {
 	}
 
 	@Test
+	void loginUserSetsSessionFromServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+		httpRequest.setRemoteAddr("203.0.113.12");
+		httpRequest.getSession().setAttribute("vcode", "abcde");
+		UserLoginRequest request = new UserLoginRequest();
+		User user = new User();
+		user.setId(42);
+		user.setUsername("session-user");
+		user.setRole("ADMIN");
+		when(userService.loginUser(request, "abcde")).thenReturn(UserLoginResult.ok(user));
+
+		ResponseEntity<Map<String, String>> response = controller.loginUser(request, httpRequest);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("Login successful.", response.getBody().get("message"));
+		assertEquals("session-user", response.getBody().get("username"));
+		assertEquals(user, httpRequest.getSession().getAttribute("loggedInUser"));
+	}
+
+	@Test
 	void loginUserRateLimitsRepeatedAttemptsFromSameClient() {
 		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(UserService.class));
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(userMapper, userService);
 		MockHttpServletRequest httpRequest = new MockHttpServletRequest();
 		httpRequest.setRemoteAddr("203.0.113.10");
 		httpRequest.getSession().setAttribute("vcode", "abcde");
@@ -133,6 +158,8 @@ class UserControllerTest {
 		request.setUsername("limited-user");
 		request.setPassword("wrong-password");
 		request.setCode("abcde");
+		when(userService.loginUser(any(UserLoginRequest.class), eq("abcde")))
+				.thenReturn(UserLoginResult.unauthorized("Invalid username or password."));
 
 		for (int i = 0; i < 10; i++) {
 			ResponseEntity<Map<String, String>> response = controller.loginUser(request, httpRequest);
