@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Map;
 
@@ -208,25 +207,33 @@ class UserControllerTest {
 	}
 
 	@Test
-	void updateUserRejectsHtmlDescriptionBeforePersisting() {
-		UserMapper userMapper = mock(UserMapper.class);
-		UserController controller = controllerWith(userMapper, mock(UserService.class));
-		User user = new User();
-		user.setId(42);
-		user.setUsername("olduser");
-		user.setPassword("existing-hash");
-		when(userMapper.findById(42)).thenReturn(user);
-
+	void updateUserMapsServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
 		AdminUserUpdateRequest request = new AdminUserUpdateRequest();
 		request.setId(42);
 		request.setUsername("newuser");
 		request.setDescription("<script>alert(1)</script>");
+		when(userService.updateUserAsAdmin(request))
+				.thenReturn(UserServiceResult.badRequest("Description contains invalid characters."));
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> controller.updateUser(request, adminSession()));
+		ResponseEntity<String> response = controller.updateUser(request, adminSession());
 
-		assertEquals("Description contains invalid characters.", exception.getMessage());
-		verify(userMapper, never()).updateUser(any(User.class));
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		assertEquals("Description contains invalid characters.", response.getBody());
+		verify(userService).updateUserAsAdmin(request);
+	}
+
+	@Test
+	void updateUserRejectsNonAdminBeforeService() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+
+		ResponseEntity<String> response = controller.updateUser(new AdminUserUpdateRequest(), new MockHttpSession());
+
+		assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+		assertEquals("Admin access required.", response.getBody());
+		verifyNoInteractions(userService);
 	}
 
 	@Test
@@ -244,7 +251,7 @@ class UserControllerTest {
 	}
 
 	private UserController controllerWith(UserMapper userMapper, UserService userService) {
-		return new UserController(userMapper, userService, new RequestRateLimiter(), new BCryptPasswordEncoder());
+		return new UserController(userMapper, userService, new RequestRateLimiter());
 	}
 
 	private MockHttpSession adminSession() {

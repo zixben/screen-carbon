@@ -2,6 +2,7 @@ package com.lks.service;
 
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
+import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
@@ -169,6 +170,59 @@ class UserServiceTest {
 	}
 
 	@Test
+	void updateUserAsAdminRejectsHtmlDescriptionBeforePersisting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = user(42, "olduser", "OldPassword!");
+		when(userMapper.findById(42)).thenReturn(user);
+
+		UserServiceResult result = service.updateUserAsAdmin(adminUpdateRequest(42, "newuser", null,
+				"<script>alert(1)</script>"));
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Description contains invalid characters.", result.message());
+		verify(userMapper, never()).updateUser(any(User.class));
+	}
+
+	@Test
+	void updateUserAsAdminRejectsDuplicateUsernameBeforePersisting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = user(42, "olduser", "OldPassword!");
+		User duplicate = user(99, "newuser", "OtherPassword!");
+		when(userMapper.findById(42)).thenReturn(user);
+		when(userMapper.findByUsername("newuser")).thenReturn(duplicate);
+
+		UserServiceResult result = service.updateUserAsAdmin(adminUpdateRequest(42, "newuser", null, "profile"));
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Username is already taken.", result.message());
+		verify(userMapper, never()).updateUser(any(User.class));
+	}
+
+	@Test
+	void updateUserAsAdminHashesPasswordAndUpdatesUser() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = user(42, "olduser", "OldPassword!");
+		when(userMapper.findById(42)).thenReturn(user);
+		when(userMapper.updateUser(any(User.class))).thenReturn(1);
+
+		UserServiceResult result = service.updateUserAsAdmin(adminUpdateRequest(42, "newuser", "NewPassword!",
+				"profile"));
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("success", result.message());
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userMapper).updateUser(userCaptor.capture());
+		User updatedUser = userCaptor.getValue();
+		assertEquals("newuser", updatedUser.getUsername());
+		assertEquals("profile", updatedUser.getDescription());
+		assertNotEquals("NewPassword!", updatedUser.getPassword());
+		assertTrue(passwordEncoder.matches("NewPassword!", updatedUser.getPassword()));
+	}
+
+	@Test
 	void buildRecoveryLinkUsesConfiguredBaseUrlAndEncodesToken() {
 		UserService service = serviceWith(mock(UserMapper.class), mock(EmailService.class), false,
 				"https://example.test/app/", false);
@@ -287,11 +341,29 @@ class UserServiceTest {
 		return request;
 	}
 
+	private AdminUserUpdateRequest adminUpdateRequest(Integer id, String username, String password,
+			String description) {
+		AdminUserUpdateRequest request = new AdminUserUpdateRequest();
+		request.setId(id);
+		request.setUsername(username);
+		request.setPassword(password);
+		request.setDescription(description);
+		return request;
+	}
+
 	private User sessionUser() {
 		User user = new User();
 		user.setId(42);
 		user.setUsername("session-user");
 		user.setPassword(passwordEncoder.encode("Password!"));
+		return user;
+	}
+
+	private User user(Integer id, String username, String password) {
+		User user = new User();
+		user.setId(id);
+		user.setUsername(username);
+		user.setPassword(passwordEncoder.encode(password));
 		return user;
 	}
 

@@ -2,6 +2,7 @@ package com.lks.service;
 
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
+import com.lks.dto.AdminUserUpdateRequest;
 import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
@@ -168,6 +169,49 @@ public class UserService {
 			return UserServiceResult.ok("User deleted successfully.");
 		}
 		return UserServiceResult.badRequest("Deletion failed: User not found.");
+	}
+
+	public UserServiceResult updateUserAsAdmin(AdminUserUpdateRequest request) {
+		if (request == null) {
+			return UserServiceResult.badRequest("Invalid request body.");
+		}
+		if (request.getId() == null || request.getId() <= 0) {
+			return UserServiceResult.badRequest("User id is required.");
+		}
+
+		User user = userMapper.findById(request.getId());
+		if (user == null) {
+			return UserServiceResult.badRequest("User not found.");
+		}
+
+		String username;
+		String description;
+		try {
+			username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
+			description = validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false);
+		} catch (IllegalArgumentException e) {
+			return UserServiceResult.badRequest(e.getMessage());
+		}
+
+		User existingUserByUsername = userMapper.findByUsername(username);
+		if (existingUserByUsername != null && !existingUserByUsername.getId().equals(user.getId())) {
+			return UserServiceResult.badRequest("Username is already taken.");
+		}
+
+		user.setUsername(username);
+		user.setDescription(description);
+
+		if (!isBlank(request.getPassword())) {
+			if (!isPasswordStrong(request.getPassword())) {
+				return UserServiceResult.badRequest("Password does not meet the required strength.");
+			}
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
+
+		if (userMapper.updateUser(user) > 0) {
+			return UserServiceResult.ok("success");
+		}
+		return UserServiceResult.badRequest("fail");
 	}
 
 	public UserServiceResult recoverPassword(String submittedEmail) {

@@ -21,7 +21,6 @@ import com.lks.service.UserServiceStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -38,10 +37,7 @@ public class UserController {
 	private final UserMapper userMapper;
 	private final UserService userService;
 	private final RequestRateLimiter requestRateLimiter;
-	private final PasswordEncoder passwordEncoder;
 
-	private static final int MAX_USERNAME_LENGTH = 24;
-	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_USER_SEARCH_TERM_LENGTH = 50;
 	private static final int MAX_LOGIN_ATTEMPTS_PER_WINDOW = 10;
 	private static final int MAX_SIGNUP_ATTEMPTS_PER_WINDOW = 5;
@@ -52,12 +48,10 @@ public class UserController {
 	private static final Duration PASSWORD_RECOVERY_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
 
-	public UserController(UserMapper userMapper, UserService userService, RequestRateLimiter requestRateLimiter,
-			PasswordEncoder passwordEncoder) {
+	public UserController(UserMapper userMapper, UserService userService, RequestRateLimiter requestRateLimiter) {
 		this.userMapper = userMapper;
 		this.userService = userService;
 		this.requestRateLimiter = requestRateLimiter;
-		this.passwordEncoder = passwordEncoder;
 	}
 
 	@PostMapping("/password-recovery")
@@ -87,10 +81,6 @@ public class UserController {
 	@ResponseBody
 	public ResponseEntity<Map<String, String>> updatePassword(@ModelAttribute PasswordResetRequest request) {
 		return serviceResponse(userService.updatePassword(request));
-	}
-
-	private boolean isPasswordStrong(String password) {
-		return userService.isPasswordStrong(password);
 	}
 
 	@GetMapping("/all")
@@ -165,40 +155,7 @@ public class UserController {
 		if (!isAdmin(session)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
 		}
-
-		if (request == null) {
-			return ResponseEntity.badRequest().body("Invalid request body.");
-		}
-		if (request.getId() == null || request.getId() <= 0) {
-			return ResponseEntity.badRequest().body("User id is required.");
-		}
-
-		User user = userMapper.findById(request.getId());
-		if (user == null) {
-			return ResponseEntity.badRequest().body("User not found.");
-		}
-
-		String username = validateUserText(request.getUsername(), "Username", MAX_USERNAME_LENGTH, true);
-
-		User existingUserByUsername = userMapper.findByUsername(username);
-		if (existingUserByUsername != null && !existingUserByUsername.getId().equals(user.getId())) {
-			return ResponseEntity.badRequest().body("Username is already taken.");
-		}
-
-		user.setUsername(username);
-		user.setDescription(validateUserText(request.getDescription(), "Description", MAX_DESCRIPTION_LENGTH, false));
-
-		if (!isBlank(request.getPassword())) {
-			if (!isPasswordStrong(request.getPassword())) {
-				return ResponseEntity.badRequest().body("Password does not meet the required strength.");
-			}
-			user.setPassword(passwordEncoder.encode(request.getPassword()));
-		}
-
-		if (userMapper.updateUser(user) > 0) {
-			return ResponseEntity.ok("success");
-		}
-		return ResponseEntity.badRequest().body("fail");
+		return serviceStringResponse(userService.updateUserAsAdmin(request));
 	}
 
 	@GetMapping("/getCode")
