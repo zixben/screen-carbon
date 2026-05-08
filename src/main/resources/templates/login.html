@@ -84,11 +84,9 @@
 									Don’t have an account?
 									<a href="/signup">Sign up</a>
 
-									<!-- Forgot Password Link -->
 									<a href="#" id="forgotPasswordLink" class="d-block mt-3">Forgot Password?</a>
 
 								</div>
-								<!-- <a href="https://www.gla.ac.uk/colleges/arts/legal/privacynotice/" -->
 								<a href="/privacy-notice"
 									class="d-block mt-3">Privacy Policy
 								</a>
@@ -97,7 +95,6 @@
 					</div>
 				</div>
 
-				<!-- Password Recovery Form (Initially Hidden) -->
 				<div id="passwordRecoveryForm" class="form-container d-none full-page__content">
 					<h2>Password Recovery</h2>
 					<form id="passwordRecoveryForm" class="form__wrapper">
@@ -109,7 +106,6 @@
 						<button type="submit" class="btn btn-primary">Submit</button>
 					</form>
 					<div id="responseMessage" class="mt-3"></div>
-					<!-- Back to Login Link -->
 					<a href="#" id="backToLoginLink" class="d-block mt-3">Back to Login</a>
 				</div>
 			</div>
@@ -136,7 +132,6 @@
 	<script src="assets/js/server.js"></script>
 	<script>
 		$(document).ready(function () {
-			// Validate form fields before login
 			function validateLoginForm() {
 				var isValid = true;
 
@@ -168,70 +163,57 @@
 				return isValid;
 			}
 
-			// Show error message
 			function showError(selector, message) {
 				$(selector).next('.error').remove();
 				$(selector).after(`<div class="error" style="color:red;">${message}</div>`);
 			}
 
-			// Remove error message
 			function removeError(selector) {
 				$(selector).next('.error').remove();
 			}
 
-			// CSRF token setup for AJAX requests
 			var csrfToken = $('input[name="_csrf"]').val();
 
-			// Handle login button click
 			$(".login").on("click", function (e) {
-				e.preventDefault(); // Prevent default form submission
+				e.preventDefault();
 
-				// Validate the form
 				if (!validateLoginForm()) {
 					return;
 				}
 
-				// Serialize form data to an object
 				var formDataArray = $('form').serializeArray();
 				var formDataObj = {};
 				$.each(formDataArray, function (i, field) {
 					formDataObj[field.name] = field.value;
 				});
 
-				// Convert form data object to JSON string
 				var formDataJson = JSON.stringify(formDataObj);
 
-				// Perform the login AJAX request
 				$.ajax({
-					type: "POST", // Specify the request type
+					type: "POST",
 					url: server + "/user/login",
 					data: formDataJson,
 					contentType: "application/json;charset=UTF-8",
 					headers: {
-						'X-CSRF-TOKEN': csrfToken  // Add CSRF token to the request headers
+						'X-CSRF-TOKEN': csrfToken
 					},
 					success: function (resp) {
-						//console.log(resp);
 						window.localStorage.removeItem("user");
-						//if (resp && resp.username === "admin") {
 						if (resp.role === "ADMIN") {
-							//alert("Login successful, redirecting to the admin page!");
-							alert(resp.message); // Show success message
+							alert(resp.message);
 							window.location.href = server + "/admin";
 
 						} else {
 
-							//alert("Login successful, redirecting to the home page!");
-							alert(resp.message); // Show success message
+							alert(resp.message);
 							window.location.href = server + "/";
 						}
 
 					},
 					error: function (jqXHR, textStatus, errorThrown) {
-						//alert("Login failed. Please check your credentials and try again.");
 						var response = jqXHR.responseJSON;
 						if (response && response.message) {
-							alert(response.message);  // Show error message from the server
+							alert(response.message);
 						} else {
 							alert("An unexpected error occurred.");
 						}
@@ -239,7 +221,6 @@
 				});
 			});
 
-			// Reload captcha image on click
 			$("#imgpw").on("click", function () {
 				var date = new Date().getMilliseconds();
 				$("#imgpw").attr("src", server + "/user/getCode?" + date);

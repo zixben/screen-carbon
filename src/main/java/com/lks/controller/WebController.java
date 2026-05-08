@@ -34,7 +34,6 @@ public class WebController {
 		model.addAttribute("scripts", "/assets/js/index.js");
 
 		return "index";
-		// Return the Thymeleaf template name
 	}
 	
 	@GetMapping("/search-results")
@@ -49,11 +48,10 @@ public class WebController {
 	public String movies(Model model, HttpSession session,
 			@RequestParam(value = "toggle", required = false) Boolean toggle) {
 
-		// Set the session toggle state based on the parameter or default to false
 		if (toggle != null) {
 			session.setAttribute("toggleState", toggle);
 		} else if (session.getAttribute("toggleState") == null) {
-			session.setAttribute("toggleState", false); // Default state
+			session.setAttribute("toggleState", false);
 		}
 
 		Boolean toggleState = (Boolean) session.getAttribute("toggleState");
@@ -70,7 +68,7 @@ public class WebController {
 			model.addAttribute("scripts", "/assets/js/moviesTMDB.js");
 		}
 
-		return "movies"; // Return the Thymeleaf template name
+		return "movies";
 	}
 
 	@GetMapping("/movie")
@@ -86,11 +84,10 @@ public class WebController {
 	public String tvShows(Model model, HttpSession session,
 			@RequestParam(value = "toggle", required = false) Boolean toggle) {
 
-		// Set the session toggle state based on the parameter or default to false
 		if (toggle != null) {
 			session.setAttribute("toggleState", toggle);
 		} else if (session.getAttribute("toggleState") == null) {
-			session.setAttribute("toggleState", false); // Default state
+			session.setAttribute("toggleState", false);
 		}
 
 		Boolean toggleState = (Boolean) session.getAttribute("toggleState");
@@ -100,14 +97,13 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/movies.css");
 
 		if (toggleState) {
-			;
 			model.addAttribute("scripts", "/assets/js/tvClimateRated.js");
 		} else {
 
 			model.addAttribute("scripts", "/assets/js/tvTMDB.js");
 		}
 
-		return "tv-shows"; // Return the Thymeleaf template name
+		return "tv-shows";
 	}
 
 	@GetMapping("/tv")
@@ -132,7 +128,6 @@ public class WebController {
 
 		model.addAttribute("title", "Register");
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
@@ -144,7 +139,6 @@ public class WebController {
 
 		model.addAttribute("title", "Login");
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
@@ -155,51 +149,18 @@ public class WebController {
 	public String privacyNotice(Model model) {
 
 		model.addAttribute("title", "Privacy Notice");
-//		model.addAttribute("activePage", "about");
-//		model.addAttribute("styles", "/assets/css/about.css");
-//		model.addAttribute("scripts", "/assets/js/tv-shows.js");
 
 		return "privacy-notice";
 	}
 
-//	@GetMapping("/admin")
-//	public String adminPage(HttpSession session, Model model) {
-//		User loggedInUser = (User) session.getAttribute("loggedInUser");
-//
-//		if (loggedInUser == null) {
-//
-//			// Redirect to login page or return an error message
-//			return "redirect:/login";
-//		}
-//
-//		model.addAttribute("title", "Admin");
-//
-//		return "main"; // Return the Thymeleaf template name
-//	}
-//	@GetMapping("/admin")
-//	public String adminPage(HttpSession session, Model model) {
-//	    User loggedInUser = (User) session.getAttribute("loggedInUser");
-//
-//	    if (loggedInUser == null || !"admin".equalsIgnoreCase(loggedInUser.getRole())) {
-//	        // Redirect non-admin users to login or an error page
-//	        return "redirect:/login";
-//	    }
-//
-//	    model.addAttribute("title", "Admin");
-//	    return "main"; // Return the Thymeleaf template name for the admin page
-//	}
 	@GetMapping("/admin")
 	public String adminPage(HttpSession session, Model model) {
 	    User loggedInUser = (User) session.getAttribute("loggedInUser");
-	    //System.out.println("Accessing /admin endpoint");
-	    //System.out.println("Logged-in user: " + loggedInUser);
 
 	    if (loggedInUser == null || !"ADMIN".equalsIgnoreCase(loggedInUser.getRole())) {
-	        System.out.println("Redirecting to login, user not authorized or not logged in.");
 	        return "redirect:/login";
 	    }
 
-	    //System.out.println("Admin access granted for user: " + loggedInUser.getUsername());
 	    model.addAttribute("title", "Admin");
 	    return "main";
 	}
@@ -209,7 +170,7 @@ public class WebController {
 		User loggedInUser = (User) session.getAttribute("loggedInUser");
 		if (loggedInUser == null || !"ADMIN".equalsIgnoreCase(loggedInUser.getRole())) {
 			
-			return "redirect:/"; // Redirect to home or another page
+			return "redirect:/";
 		}
 		return "1";
     }
@@ -218,7 +179,7 @@ public class WebController {
 		User loggedInUser = (User) session.getAttribute("loggedInUser");
 		if (loggedInUser == null || !"ADMIN".equalsIgnoreCase(loggedInUser.getRole())) {
 			
-			return "redirect:/"; // Redirect to home or another page
+			return "redirect:/";
 		}
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
@@ -234,7 +195,6 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/rate.css");
 		model.addAttribute("scripts", "/assets/js/rate.js");
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
@@ -248,7 +208,7 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/finishRating.css");
 		model.addAttribute("scripts", "/assets/js/finish-rating.js");
 
-		return "finish-rating"; // Return the Thymeleaf template name
+		return "finish-rating";
 	}
 
 	@GetMapping("/user-settings")
@@ -256,7 +216,6 @@ public class WebController {
 
 		if (session.getAttribute("loggedInUser") == null) {
 
-			// Redirect to login page or return an error message
 			return "redirect:/login";
 		}
 
@@ -265,22 +224,19 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/User1.css");
 		model.addAttribute("scripts", "/assets/js/User1.js");
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
-		return "User1"; // Return the Thymeleaf template name
+		return "User1";
 	}
 
 	@GetMapping("/user-ratings")
 	public String user2(HttpSession session, Model model, HttpServletRequest request) {
 
 		if (session.getAttribute("loggedInUser") == null) {
-			// Redirect to login page or return an error message
 			return "redirect:/login";
 		}
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
@@ -289,7 +245,7 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/User2.css");
 		model.addAttribute("scripts", "/assets/js/User2.js");
 
-		return "User2"; // Return the Thymeleaf template name
+		return "User2";
 	}
 
 	@GetMapping("/about")
@@ -306,16 +262,13 @@ public class WebController {
 	@GetMapping("/reset-password")
 	public String showResetPasswordForm(@RequestParam("token") String token, Model model, HttpServletRequest request) {
 
-		// Retrieve all recovery tokens that are not expired and not used
 		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
 
-		// Add CSRF token to the model
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
 
 		RecoveryToken validToken = null;
 
-		// Check if any stored token matches the raw token
 		for (RecoveryToken rt : recoveryTokens) {
 			if (passwordEncoder.matches(token, rt.getTokenHash())) {
 				validToken = rt;
@@ -323,27 +276,25 @@ public class WebController {
 			}
 		}
 
-		// Validate the token: check if it exists, is not expired, and has not been used
 		if (validToken == null || validToken.getExpiresAt().before(new java.util.Date()) || validToken.isUsed()) {
 			model.addAttribute("message", "Invalid or expired token.");
-			return "login"; // Redirect to an error page or show a message
+			return "login";
 		}
 
-		// Pass the token to the reset password form if valid
 		model.addAttribute("token", token);
 		model.addAttribute("title", "Reset Password");
 		model.addAttribute("scripts", "/assets/js/reset-password.js");
 
-		return "reset-password"; // Render the reset password form
+		return "reset-password";
 	}
 	
 
 	@GetMapping("/logout")
 	public String logout(HttpServletRequest request) {
-		HttpSession session = request.getSession(false); // Get session if exists, don't create otherwise
+		HttpSession session = request.getSession(false);
 		if (session != null) {
-			session.invalidate(); // Invalidate the session to clear the attributes
+			session.invalidate();
 		}
-		return "redirect:/"; // Redirect to login page after logout
+		return "redirect:/";
 	}
 }

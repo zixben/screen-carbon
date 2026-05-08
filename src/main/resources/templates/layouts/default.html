@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 
 <head th:replace="~{fragments/resources :: common-resources}">
-	<!-- <title th:text="${title}">Title</title> -->
 	
 </head>
 
@@ -28,8 +27,6 @@
 <script th:src="@{${scripts}}"></script>
 <script>
 		function toggleContent(isChecked) {
-			// Redirect with the toggle state to the controller to reload the page with the appropriate content
-			console.log(isChecked);
 			window.location.href = `?toggle=${isChecked}`;
 		}
 	</script>

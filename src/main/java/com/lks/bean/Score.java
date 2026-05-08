@@ -2,26 +2,21 @@ package com.lks.bean;
 
 import java.io.Serializable;
 import java.util.List;
-//import java.util.Date;
 
 
 
 @SuppressWarnings("serial")
 public class Score implements Serializable,Cloneable{
-    /**  */
 
     private Integer id ;
-    /**  */
 
     private Integer uId ;
-    /**  */
 
     private Integer vId;
 
     private String videoName ;
     private String videoType;
     private String vImg;
-    /**  */
 
     private String score ;
     private Integer releaseYear;

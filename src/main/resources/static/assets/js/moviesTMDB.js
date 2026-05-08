@@ -29,7 +29,6 @@ $(document).ready(function() {
 	}
 
 	function getMovies() {
-		// https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=action'
 		let sort = sessionStorage.getItem("Sort");
 		if (sort == null) sort = "";
 		let Genre = sessionStorage.getItem("Genre");
@@ -47,7 +46,6 @@ $(document).ready(function() {
 
 
 		var climateMovies = [];
-		// AJAX call for the Highest Ranked Climate-friendly Films & TV Shows
 		$.ajax({
 			url: server + "/score/getOrderAvg",
 			method: "get",
@@ -57,14 +55,12 @@ $(document).ready(function() {
 			},
 			success: function(response) {
 				climateMovies = response;
-				//updateCarousel(rankedClimateInner, climateMovies, true);
 			},
 			error: function(xhr, status, error) {
 				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 			}
 		});
 
-		// "&Country="+Country+
 		$.ajax({
 			url: "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=" + num + "&sort_by=" + sort + "&with_genres=" + Genre + "&with_origin_country=" + Country + "&primary_release_year=" + Year,
 			cache: false,

@@ -40,13 +40,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-//import javax.servlet.ServletOutputStream;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
-//import javax.servlet.http.HttpSession;
-
-import org.slf4j.Logger; //FK 2023
-import org.slf4j.LoggerFactory; //FK 2023
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 @RestController
@@ -84,8 +79,8 @@ public class UserController {
 	private static final Duration SIGNUP_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration PASSWORD_RECOVERY_RATE_LIMIT_WINDOW = Duration.ofHours(1);
 	private static final Duration CAPTCHA_RATE_LIMIT_WINDOW = Duration.ofMinutes(10);
-	private static final Logger log = LoggerFactory.getLogger(UserController.class); // FK 2023
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // Create an instance of the password
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	@PostMapping("/password-recovery")
 	public ResponseEntity<?> recoverPassword(@RequestBody PasswordRecoveryRequest request, HttpServletRequest httpRequest) {
@@ -108,7 +103,6 @@ public class UserController {
 
 		log.info("Password recovery requested.");
 
-		// Find the user by email
 		User user = userMapper.findByEmail(email);
 		if (user != null && !isAccountLocked(user)) {
 			if (userMapper.countRecentRecoveryAttempts(user.getId()) >= MAX_RECOVERY_ATTEMPTS_PER_WINDOW) {
@@ -118,7 +112,6 @@ public class UserController {
 			}
 
 			try {
-				// Generate a secure, time-limited token
 				String rawToken = generateSecureToken();
 				String tokenHash = passwordEncoder.encode(rawToken);
 				Timestamp expiresAt = Timestamp.from(Instant.now().plus(Duration.ofMinutes(30)));
@@ -137,17 +130,14 @@ public class UserController {
 							.body(Map.of("message", "Password recovery email is not configured."));
 				}
 
-				// If email sent successfully, insert the recovery token into the database
 				userMapper.insertRecoveryToken(user.getId(), tokenHash, expiresAt);
 				log.info("Generated recovery token and sent email for user ID {}.", user.getId());
 
-				// Respond with a success message
 				return ResponseEntity
 						.ok(Map.of("message", "A recovery link has been sent if the email is registered."));
 
 			} catch (Exception e) {
 
-				// Handle email sending error, don't insert the token if email fails to send
 				log.error("Failed to send recovery email for user ID {}: {}", user.getId(), e.getMessage());
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("message", "Failed to send recovery email. Please try again later."));
@@ -189,56 +179,47 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Password is required."));
 		}
 
-		// Retrieve all active recovery tokens that are not expired and not used
 		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
 
 		RecoveryToken validToken = null;
 
-		// Check if any stored token matches the raw token
 		for (RecoveryToken rt : recoveryTokens) {
 			if (passwordEncoder.matches(token, rt.getTokenHash())) {
 				validToken = rt;
 				break;
 			}
 		}
-		// Validate the token: check if it exists, is not expired, and has not been used
 		if (validToken == null || validToken.getExpiresAt().before(new Date()) || validToken.isUsed()) {
 			log.warn("Invalid, expired, or already used token.");
 			return invalidRecoveryTokenResponse();
 		}
 
-		// Fetch the associated user using the valid token's user ID
 		User user = userMapper.findById(validToken.getUserId());
 		if (user == null) {
 			log.warn("Recovery token references a missing user.");
 			return invalidRecoveryTokenResponse();
 		}
 
-		// Check if the new password matches the confirm password
 		if (!newPassword.equals(confirmPassword)) {
 			log.warn("Passwords do not match.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Passwords do not match."));
 		}
 
-		// Check if the new password is strong enough
 		if (!isPasswordStrong(newPassword)) {
 			log.warn("Password does not meet the required strength.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(Map.of("message", "Password does not meet the required strength."));
 		}
 
-		// Check if the new password matches the old password to avoid reuse
 		if (passwordEncoder.matches(newPassword, user.getPassword())) {
 			log.warn("New password must not be the same as the previous password.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(Map.of("message", "New password must not be the same as the previous password."));
 		}
 
-		// Update the user's password
 		user.setPassword(passwordEncoder.encode(newPassword));
 		if (userMapper.updateUser(user) > 0) {
 
-			// Clear all unnecessary recovery data related to this user
 			userMapper.clearAllRecoveryTokensForUser(user.getId());
 
 			sendPasswordChangedNotification(user);
@@ -249,7 +230,6 @@ public class UserController {
 
 			log.error("Failed to update password for user ID: {}", user.getId());
 
-			// Mark the token as used after successful password update
 			userMapper.markTokenAsUsed(validToken.getId());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("message", "Failed to update password. Please try again."));
@@ -276,13 +256,10 @@ public class UserController {
 	}
 
 	private boolean isPasswordStrong(String password) {
-
-		// Implement password strength validation logic (length, special characters
 		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*()].*");
 	}
 
 	private boolean isAccountLocked(User user) {
-		// Convert Timestamp to Instant for comparison
 		return user.getLockTime() != null && user.getLockTime().toInstant().isAfter(Instant.now());
 	}
 
@@ -328,7 +305,6 @@ public class UserController {
 		enforceClientRateLimit(req, "login", MAX_LOGIN_ATTEMPTS_PER_WINDOW, LOGIN_RATE_LIMIT_WINDOW,
 				"Too many login attempts. Please try again later.");
 
-		// Verify the code (case-insensitive)
 		if (vcode == null || isBlank(request.getCode()) || !vcode.equalsIgnoreCase(request.getCode().trim())) {
 			response.put("message", "Verification code is incorrect.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -338,24 +314,19 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 		}
 
-		// Fetch the user by username
 		User userFromDb = userMapper.findByUsername(request.getUsername().trim());
 
 		if (userFromDb != null && passwordEncoder.matches(request.getPassword(), userFromDb.getPassword())) {
-			// Valid credentials, set user in session
 			session.setAttribute("loggedInUser", userFromDb);
 
-			//System.out.println("Session loggedInUser: " + session.getAttribute("loggedInUser"));
 			response.put("username", userFromDb.getUsername());
 			response.put("role", userFromDb.getRole());
 			response.put("id", userFromDb.getId().toString());
 
-			// Return a success message
 			response.put("message", "Login successful.");
 			return ResponseEntity.ok(response);
 		}
 
-		// Return unauthorized if the credentials are invalid
 		response.put("message", "Invalid username or password.");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 	}
@@ -373,7 +344,6 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 
-		// Check if the user is logged in and the request data is valid
 		if (sessionUser == null || request == null || isBlank(request.getPassword())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user data or no user logged in.");
 		}
@@ -382,14 +352,11 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Username mismatch.");
 		}
 
-		// Authenticate the user's password before deletion
 		if (!passwordEncoder.matches(request.getPassword(), sessionUser.getPassword())) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Incorrect password.");
 		}
-
-		// Proceed with deletion
 		if (userMapper.deleteUser(sessionUser.getId()) > 0) {
-			session.invalidate(); // Invalidate the session after deletion
+			session.invalidate();
 			return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully.");
 		} else {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Deletion failed: User not found.");
@@ -430,14 +397,12 @@ public class UserController {
 		log.info("Received registration for username: {}", username);
 
 		try {
-			// Check if the username already exists
 			User existingUserByUsername = userMapper.findByUsername(username);
 			if (existingUserByUsername != null) {
 				log.warn("Username already taken: {}", username);
 				return ResponseEntity.badRequest().body("Username is already taken.");
 			}
 
-			// Check if the email already exists
 			User existingUserByEmail = userMapper.findByEmail(email);
 			if (existingUserByEmail != null) {
 				log.warn("Email already in use: {}", email);
@@ -450,11 +415,9 @@ public class UserController {
 			user.setEmail(email);
 			user.setDescription(description);
 
-			// Hash the password before saving
 			String hashedPassword = passwordEncoder.encode(request.getPassword());
 			user.setPassword(hashedPassword);
 
-			// Save the user to the database
 			Integer result = userMapper.saveUser(user);
 			if (result > 0) {
 				log.info("User successfully saved: {}", username);
@@ -464,7 +427,6 @@ public class UserController {
 				return ResponseEntity.badRequest().body("Registration failure");
 			}
 		} catch (Exception e) {
-			// Log the exception
 			log.error("Error saving user: ", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving user");
 		}
@@ -511,14 +473,6 @@ public class UserController {
 		return ResponseEntity.badRequest().body("fail");
 	}
 
-	/**
-	 * @Author
-	 * @Description
-	 * @Date
-	 * @param req
-	 * @param resp
-	 * @return void
-	 */
 	@GetMapping("/getCode")
 	public void getCode(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		enforceClientRateLimit(req, "captcha", MAX_CAPTCHA_REQUESTS_PER_WINDOW, CAPTCHA_RATE_LIMIT_WINDOW,
@@ -530,12 +484,6 @@ public class UserController {
 		vCode.write(sos);
 	}
 
-	/**
-	 * @Author
-	 * @Description
-	 * @Date
-	 * @return void
-	 */
 	@GetMapping("/selectByUser")
 	public ResponseEntity<?> getUserWhere(UserSearchRequest request, HttpSession session) throws IOException {
 		if (!isAdmin(session)) {
@@ -559,11 +507,9 @@ public class UserController {
 	@GetMapping("/check-username")
 	public ResponseEntity<?> checkUsernameAvailability(@RequestParam("username") String username) {
 
-		// Check if the username exists
 		User existingUser = userMapper.findByUsername(username);
 		if (existingUser != null) {
 
-			// Username already exists
 			return ResponseEntity.badRequest().body(new HashMap<String, String>() {
 
 				private static final long serialVersionUID = 1L;
@@ -573,11 +519,7 @@ public class UserController {
 				}
 			});
 		}
-		// Username is available
 		return ResponseEntity.ok(new HashMap<String, String>() {
-			/**
-			* 
-			*/
 			private static final long serialVersionUID = 1L;
 
 			{
@@ -588,11 +530,9 @@ public class UserController {
 
 	@GetMapping("/check-email")
 	public ResponseEntity<?> checkEmailAvailability(@RequestParam("email") String email) {
-		// Check if the email exists
 		User existingUser = userMapper.findByEmail(email);
 		if (existingUser != null) {
 
-			// Email already exists
 			return ResponseEntity.badRequest().body(new HashMap<String, String>() {
 
 				private static final long serialVersionUID = 1L;
@@ -602,7 +542,6 @@ public class UserController {
 				}
 			});
 		}
-		// Email is available
 		return ResponseEntity.ok(new HashMap<String, String>() {
 
 			private static final long serialVersionUID = 1L;

@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Random;
 
 @Component
@@ -116,17 +115,6 @@ public class ValidateCode {
 
 	public String getCode() {
 		return code;
-	}
-
-	public static void main(String[] args) {
-		ValidateCode vCode = new ValidateCode(140, 40, 5, 50);
-		try {
-			String path = "C:\\Users\\zhao'wan'jun\\Desktop\\";
-			System.out.println(vCode.getCode() + " >" + path);
-			vCode.write(path, new Date().getTime() + ".png");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 }

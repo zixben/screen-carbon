@@ -54,35 +54,16 @@ public class ScoreServiceImpl implements ScoreService {
 	@Autowired
 	private ScoreMapper scoreMapper;
 
-	/*
-	 * @Override public List<?> getAverageFractionX() { List<String> averageFraction
-	 * = scoreMapper.getAverageFractionX(); return averageFraction; }
-	 * 
-	 * @Override public List<Double> getAverageFractionY() { List<Double>
-	 * averageFraction = scoreMapper.getAverageFractionY(); return averageFraction;
-	 * }
-	 * 
-	 * @SuppressWarnings({ "rawtypes", "unchecked" })
-	 * 
-	 * @Override public Map getMovieCount() { List<String> countX =
-	 * scoreMapper.getCountX(); List<Integer> countY = scoreMapper.getCountY(); Map
-	 * map = new HashMap(); map.put("countX", countX); map.put("countY", countY);
-	 * return map; }
-	 */
 	@Override
     public List<String> getAverageFractionX() {
         return scoreMapper.getAverageFractionX();
     }
 
-//    @Override
-//    public List<Double> getAverageFractionY() {
-//        return scoreMapper.getAverageFractionY();
-//    }
 	@Override
 	public List<Double> getAverageFractionY() {
 	    List<Double> averageFractionY = scoreMapper.getAverageFractionY();
 	    return averageFractionY.stream()
-	            .map(score -> score != null ? score : 0.0) // Multiply by 10, round to 2 decimals
+	            .map(score -> score != null ? score : 0.0)
 	            .toList();
 	}
 
@@ -196,20 +177,15 @@ public class ScoreServiceImpl implements ScoreService {
 		scoreMapper.insert(score);
 
 		if ("movie".equals(score.getVideoType())) {
-			// Insert the release year into the movies_release_year table
 			scoreMapper.insertReleaseYear(score.getvId(), score.getReleaseYear());
 
-			// Insert genres into the movies_genres table
 			if (score.getGenres() != null && !score.getGenres().isEmpty()) {
 				scoreMapper.insertGenres(score.getvId(), score.getGenres());
 			}
 
-			// Insert countries into the movies_countries table
 			if (score.getCountries() != null && !score.getCountries().isEmpty()) {
-				// Step 1: Retrieve country IDs based on short names
 				List<Integer> countryIds = scoreMapper.getCountryIdsByShortNames(score.getCountries());
 
-				// Insert the country IDs into the movies_countries table
 				if (!countryIds.isEmpty()) {
 					scoreMapper.insertCountries(score.getvId(), countryIds);
 				}
@@ -240,24 +216,18 @@ public class ScoreServiceImpl implements ScoreService {
 			return false;
 		}
 
-	    // Check if the popularity record exists
 	    Double existingPopularity = scoreMapper.getPopularityByVIdAndType(vId, videoType);
 
 	    if (existingPopularity == null) {
-	        System.out.println("Inserting new popularity: " + popularity);
 	        return scoreMapper.insertPopularity(vId, videoType, popularity) > 0;
 	    } else {
 	        final double TOLERANCE = 0.0001;
 
 	        if (Math.abs(existingPopularity - popularity) > TOLERANCE) {
-	            System.out.println("Updating popularity: Old=" + existingPopularity + ", New=" + popularity);
 	            return scoreMapper.updatePopularity(vId, videoType, popularity) > 0;
-	        } else {
-	            System.out.println("No update needed: Old=" + existingPopularity + ", New=" + popularity);
 	        }
 	    }
 
-	    // No changes were made
 	    return false;
 	}
 

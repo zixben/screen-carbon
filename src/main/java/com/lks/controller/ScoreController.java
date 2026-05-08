@@ -37,27 +37,6 @@ public class ScoreController {
 
 	private final ScoreListRequestValidator scoreListRequestValidator = new ScoreListRequestValidator();
 
-//	@GetMapping("/getAvgFraction")
-//	public ResponseEntity<Map> getAverageFraction() {
-//		List<String> averageFractionX = scoreServiceImpl.getAverageFractionX();
-//		List<String> averageFractionY = scoreServiceImpl.getAverageFractionY();
-//
-//		Map map = new HashMap();
-//		map.put("avgX", averageFractionX);
-//		map.put("avgY", averageFractionY);
-//		return ResponseEntity.ok(map);
-//	}
-//	@GetMapping("/getAvgFraction")
-//    public ResponseEntity<Map<String, Object>> getAverageFraction() {
-//        List<String> averageFractionX = scoreServiceImpl.getAverageFractionX();
-//        List<Double> averageFractionY = scoreServiceImpl.getAverageFractionY();
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("avgX", averageFractionX);
-//        response.put("avgY", averageFractionY);
-//
-//        return ResponseEntity.ok(response);
-//    }
 	@GetMapping("/getAvgFraction")
 	public ResponseEntity<Map<String, Object>> getAverageFraction() {
 	    List<String> averageFractionX = scoreServiceImpl.getAverageFractionX();
@@ -177,11 +156,6 @@ public class ScoreController {
 		return ResponseEntity.ok(getAvgScoreByIdAndTitle);
 	}
 
-//	@GetMapping("/getCountFraction")
-//	public ResponseEntity<Map> getCountMovieFraction() {
-//		Map movieCount = scoreServiceImpl.getMovieCount();
-//		return ResponseEntity.ok(movieCount);
-//	}
 	@GetMapping("/getCountFraction")
     public ResponseEntity<Map<String, Object>> getCountMovieFraction() {
         Map<String, Object> movieCount = scoreServiceImpl.getMovieCount();
@@ -204,25 +178,11 @@ public class ScoreController {
         return ResponseEntity.ok(top20Popularity);
     }
 
-
-	/**
-	 * 
-	 *
-	 * @param id
-	 * 
-	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<Score> queryById(@PathVariable("id") Integer id) {
 		return ResponseEntity.ok(scoreServiceImpl.queryById(id));
 	}
 
-	/**
-	 * 
-	 *
-	 * @param score
-	 * @param pageRequest
-	 * 
-	 */
 	@GetMapping("/getPage")
 	public ResponseEntity<Page<Score>> paginQuery(Score score, PageRequest pageRequest) {
 		return ResponseEntity.ok(scoreServiceImpl.paginQuery(score, pageRequest));
@@ -254,12 +214,6 @@ public class ScoreController {
 		return ResponseEntity.ok(response);
 	}
 
-	/**
-	 * 
-	 *
-	 * @param score
-	 * @return
-	 */
 	@PostMapping("/add")
 	public ResponseEntity<ScoreResultResponse> add(@RequestBody ScoreSubmissionRequest request,
 			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser,
@@ -272,13 +226,6 @@ public class ScoreController {
 		return ResponseEntity.ok(response);
 	}
 
-	/**
-	 * 
-	 *
-	 * @param score
-	 * @return
-	 */
-
 	@PutMapping("/update")
 	public ResponseEntity<?> edit(Score score,
 			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {
@@ -288,12 +235,6 @@ public class ScoreController {
 		return ResponseEntity.ok(scoreServiceImpl.update(score));
 	}
 
-	/**
-	 * 
-	 *
-	 * @param id
-	 * @return
-	 */
 	@DeleteMapping("/delete")
 	public ResponseEntity<?> deleteById(Integer id,
 			@SessionAttribute(name = "loggedInUser", required = false) User loggedInUser) {

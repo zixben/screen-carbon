@@ -106,7 +106,6 @@ $(document).ready(function() {
 
         if (matchedRankedItem) {
 
-			//if (item.isInScoreData) {
 				vote_average = matchedRankedItem.score || 0;
 				let borderColor = determineBorderColor(vote_average);
 				let iconPath = determineIconPath(vote_average);

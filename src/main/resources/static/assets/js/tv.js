@@ -9,8 +9,6 @@ if (id === null) {
 if (videoType !== "tv") {
 	throw new Error("Invalid video type.");
 }
-
-//console.log(params);
 	
 $.ajax({
 	url: server + "/score/getScoreAvg/" + id + "/" + videoType,
@@ -19,14 +17,9 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(response) {
-		//console.log(response);
 		response.forEach((avgScore) => {
-			//console.log(avgScore);
 			let vote_average = avgScore;
 			if (vote_average !== null) {
-				//console.log(vote_average, typeof (vote_average));
-
-				// Determine border color based on rating
 				borderColor = determineBorderColor(vote_average);
 				iconPath = determineIconPath(vote_average);
 
@@ -34,7 +27,6 @@ $.ajax({
 				setRatingIcon("#icon-path", iconPath, 30);
 
 				let avgScorePercentage = (vote_average * 10).toString();
-				//console.log(avgScorePercentage.substring(0, 5));
 				$("#currentRatingPerc").text(Math.round(avgScorePercentage) + "%");
 
 			} else {
@@ -51,7 +43,6 @@ $.ajax({
 					},
 					success: function(resp) {
 						scoreTMDB = resp.vote_average;
-						//$(".rating-layout").html("<i class='bi bi-star-fill'></i><h3 class='rating'>" + scoreTMDB + "</h3>");
 						$(".rating-layout").empty().append($("<h3>").addClass("rating").text("Not yet rated"));
 					},
 					error: function(xhr, status, error) {
@@ -74,15 +65,12 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(resp) {
-		// console.log(resp);
-		// console.log("Release date: " + resp.first_air_date);
 		$("#title").text(resp.name || "");
 		$("#release_date").text(resp.first_air_date || "");
 		$("#runtime").text(resp.runtime || "");
 		
 		const $genre = $("#genre").empty();
 		(resp.genres || []).forEach((genre, index) => {
-			//console.log(`${index + 1}st genre: ${genre.name}`);
 			let genreName = genre.name;
 			if (genreName === "Science Fiction") {
 				genreName = "Sci-Fi";
@@ -103,11 +91,9 @@ $.ajax({
 			} else {
 				productionCountries += `${resp.production_countries[i].iso_3166_1}`;
 			}
-    		//productionCountries += `${resp.production_countries[i].iso_3166_1}`;
 		}
 
 		$("#production_countries").text(productionCountries);
-		//$("#production_countries").html(`${resp.production_countries[0].iso_3166_1});
 		
 		$("#spoken_languages").text((resp.spoken_languages && resp.spoken_languages[0])
 			? resp.spoken_languages[0].english_name
@@ -126,13 +112,9 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(resp) {
-		// console.log(resp);
 		$("#cast").text(resp.cast && resp.cast[0] ? resp.cast[0].name : "");
 		for (const respElement of resp.crew || []) {
-				//console.log('Known Department: ' + respElement.known_for_department + '' + ' | Name: ' + respElement.name);
-			//if (respElement.known_for_department == "Creator") {
 			if (respElement.known_for_department == "Directing") {
-				//console.log(respElement.name);
 				$("#director").text(respElement.name || "");
 				break;
 			} 
@@ -182,17 +164,7 @@ function appendActorCard($container, personId, profileUrl, name, role) {
 }
 
 function toRatePage() {
-	//window.location.href = server + "/rate.html?id=" + id + "&" + "type=tv"
-	//console.log(window.localStorage);
-	//let user = window.localStorage.getItem("user");
-	//console.log(user);
-	/*if (user == null) {
-		alert("The user is not logged in. Please try again！！！！")
-		return;
-	} else {*/
-		window.location.href = server + "/rate?id=" + id + "&" + "type=tv"
-//	}
-
+	window.location.href = server + "/rate?id=" + id + "&" + "type=tv"
 }
 
 function toPersonPage(uId) {
@@ -202,16 +174,14 @@ function toPersonPage(uId) {
 	}
 }
 
-// Function to determine border color based on rating
 function determineBorderColor(vote_average) {
-	if (vote_average >= 8) return '#669900'; // Green
-	else if (vote_average >= 6) return '#aec000'; // Old Yellow '#ffcc02'; Now Light green 
-	else if (vote_average >= 4) return '#ff9900'; // Orange
-	else if (vote_average >= 2) return '#cc0100'; // Old_Brown '#9a6601'; Now Red
-	else return '#808080';  // Old_red '#cc3401'; // Now Grey
+	if (vote_average >= 8) return '#669900';
+	else if (vote_average >= 6) return '#aec000';
+	else if (vote_average >= 4) return '#ff9900';
+	else if (vote_average >= 2) return '#cc0100';
+	else return '#808080';
 }
 
-// Function to determine icon path based on rating
 function determineIconPath(vote_average) {
 	if (vote_average >= 8) return 'assets/images/ranking_icons/ICONS_0000_Green.png';
 	else if (vote_average >= 6) return 'assets/images/ranking_icons/ICONS_0001_LightGreen.png';

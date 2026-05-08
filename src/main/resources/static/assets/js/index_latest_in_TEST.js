@@ -147,10 +147,8 @@ $(document).ready(function () {
             const cachedTimestamp = localStorage.getItem(POPULARITY_CACHE_TIMESTAMP_KEY);
 
             if (cachedData && cachedTimestamp && Date.now() - cachedTimestamp < ONE_WEEK_IN_MS) {
-                console.log("Using cached popularity data.");
                 resolve(JSON.parse(cachedData));
             } else {
-                console.log("Fetching new popularity data.");
                 let requests = scoreData.map((item) => getPopularity(item));
                 Promise.all(requests).then((fetchedData) => {
                     localStorage.setItem(POPULARITY_CACHE_KEY, JSON.stringify(fetchedData));

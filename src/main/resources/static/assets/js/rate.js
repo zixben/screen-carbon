@@ -26,7 +26,6 @@ let selectedAnswers = [];
 let releaseYear = null;
 let genreIds = [];
 let countryShortNames = [];
-// CSRF token setup for AJAX requests
 var csrfToken = $('input[name="_csrf"]').val();
 
 page.addEventListener("click", () => {
@@ -34,7 +33,6 @@ page.addEventListener("click", () => {
 		let answers = collectAnswerOptions(1, 5);
 
 		if (answers.length != 5) {
-			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
@@ -45,7 +43,6 @@ page.addEventListener("click", () => {
 	} else if (status == 2) {
 		let answers = collectAnswerOptions(6, 10);
 		if (answers.length != 5) {
-			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
@@ -59,7 +56,6 @@ page.addEventListener("click", () => {
 		let answers = collectAnswerOptions(11, 15);
 
 		if (answers.length != 5) {
-			//alert("Please enter");
 			alert("You have unselected options");
 			return;
 		}
@@ -68,7 +64,6 @@ page.addEventListener("click", () => {
 		submitScore(type, selectedAnswers)
 	}
 
-	// Scroll to the "Question:" part
 	document.getElementById("introduction-title").scrollIntoView({
 		behavior: 'smooth'
 	});
@@ -92,8 +87,6 @@ function collectAnswerOptions(startQuestion, endQuestion) {
 	return answers;
 }
 
-
-// Determine which menu item should be active and add the 'active' class
 if (type === 'movie') {
 	document.getElementById('movies-menu').classList.add('active');
 } else if (type === 'tv') {

@@ -284,9 +284,8 @@
 				return isValid && isUsernameAvailable && isEmailAvailable;
 			}
 
-			// Form submission handler
 			$('.register').on('click', function (e) {
-				e.preventDefault(); // Prevent form submission
+				e.preventDefault();
 
 				if (!isUsernameAvailable) {
 					alert("Please choose a different username. The current one is already taken.");
@@ -300,9 +299,6 @@
 
 				if (validateField()) {
 
-					console.log('CSRF Token:', csrfToken);
-
-					// Serialize form data to an object
 					var formDataArray = $('form').serializeArray();
 
 					var formDataObj = {};
@@ -310,7 +306,6 @@
 						formDataObj[field.name] = field.value;
 					});
 
-					// Convert form data object to JSON string
 					var formDataJson = JSON.stringify(formDataObj);
 
 					$.ajax({
