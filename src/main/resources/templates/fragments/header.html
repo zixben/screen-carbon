@@ -30,7 +30,7 @@
 						aria-expanded="false">My ratings</button>
 
 					<ul class="dropdown-menu" style="background-color: black; border-color: white;">
-						<li th:if="${session.loggedInUser != null}" onclick = 'logout()'>
+						<li th:if="${session.loggedInUser != null}">
 							<a th:href="@{/logout}" class="dropdown-item">Logout</a>
 						</li>
 						<li th:if="${session.loggedInUser != null}">

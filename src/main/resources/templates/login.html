@@ -198,7 +198,6 @@
 						'X-CSRF-TOKEN': csrfToken
 					},
 					success: function (resp) {
-						window.localStorage.removeItem("user");
 						if (resp.role === "ADMIN") {
 							alert(resp.message);
 							window.location.href = server + "/admin";

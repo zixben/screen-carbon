@@ -44,7 +44,6 @@ function deleteFuntion() {
 		},
 		success: function(response) {
 			alert("Success: " + response);
-			window.localStorage.removeItem("user");
 			window.location.href = server + "/logout";
 
 		},
