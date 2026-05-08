@@ -2,8 +2,6 @@ package com.lks.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
@@ -21,10 +19,13 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class WebController {
-	@Autowired
-	private UserMapper userMapper;
+	private final UserMapper userMapper;
+	private final PasswordEncoder passwordEncoder;
 
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	public WebController(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+		this.userMapper = userMapper;
+		this.passwordEncoder = passwordEncoder;
+	}
 
 	@GetMapping("/")
 	public String index(Model model, HttpSession session) {
