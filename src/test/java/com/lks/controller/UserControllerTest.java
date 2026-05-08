@@ -63,6 +63,33 @@ class UserControllerTest {
 	}
 
 	@Test
+	void createUserAsAdminMapsServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		UserRegistrationRequest request = new UserRegistrationRequest();
+		when(userService.registerUser(request)).thenReturn(UserServiceResult.ok("success"));
+
+		ResponseEntity<String> response = controller.createUserAsAdmin(request, adminSession());
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("success", response.getBody());
+		verify(userService).registerUser(request);
+	}
+
+	@Test
+	void createUserAsAdminRejectsNonAdminBeforeService() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		UserRegistrationRequest request = new UserRegistrationRequest();
+
+		ResponseEntity<String> response = controller.createUserAsAdmin(request, new MockHttpSession());
+
+		assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+		assertEquals("Admin access required.", response.getBody());
+		verifyNoInteractions(userService);
+	}
+
+	@Test
 	void currentUserReturnsSessionBackedUserResponse() {
 		UserController controller = controllerWith(mock(UserMapper.class), mock(UserService.class));
 		MockHttpSession session = new MockHttpSession();

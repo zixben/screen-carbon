@@ -34,29 +34,34 @@
 						<fieldset>
 							<div class="mb-2">
 								<label class="form-label col-form-label-sm fa-text-height">Username:</label>
-								<input type="text" title="UserName" maxlength="10" id="adduname" name="username"
+								<input type="text" title="UserName" maxlength="24" id="adduname" name="username"
 									class="username form-control form-control-sm" placeholder="Please enter Username">
 							</div>
 							<div class="mb-2">
 								<label class="form-label col-form-label-sm">Full Name:</label>
-								<input type="text" title="FullName" maxlength="10" id="addlogname" name="fullName"
+								<input type="text" title="FullName" maxlength="200" id="addlogname" name="fullName"
 									class="logName  form-control form-control-sm" placeholder="Please enter Full Name">
 							</div>
 							<div class="mb-2">
+								<label class="form-label col-form-label-sm">Email:</label>
+								<input type="email" title="Email" maxlength="50" id="addemail" name="email"
+									class="email form-control form-control-sm" placeholder="Please enter Email">
+							</div>
+							<div class="mb-2">
 								<label class="col-sm-2 col-form-label col-form-label-sm">Password:</label>
-								<input type="text" title="Password" maxlength="10" id="addpw"
+								<input type="password" title="Password" maxlength="72" id="addpw" name="password"
 									class="form-control inputPassword form-control-sm"
 									placeholder="Please enter a password">
 							</div>
 							<div class="mb-2">
 								<label class="col-sm-4 col-md-5 col-form-label">Enter the Password Again:</label>
-								<input type="text" title="Password" maxlength="10" id="addpw2" name="password"
+								<input type="password" title="Password" maxlength="72" id="addpw2" name="confirmPass"
 									class="form-control inputPassword2 form-control-sm"
 									placeholder="Enter the password again">
 							</div>
 							<div class="mb-2">
 								<label class="col-sm-2 col-form-label">Description:</label>
-								<textarea class="form-control cmmt form-control-sm" id="addcmmt" maxlength="10"
+								<textarea class="form-control cmmt form-control-sm" id="addcmmt" maxlength="350"
 									name="description" title="description" aria-label="With textarea"></textarea>
 							</div>
 							<div class="mb-12">
@@ -280,8 +285,8 @@
 			$(".alert").html("<strong>Warning！</strong>Account must be letters or numbers!");
 			myAnimate()
 		} else if ($(this).hasClass("inputPassword")) {
-			if ($(this).val().length > 9 || !p.test($(this)[0].value)) {
-				$(".alert").html("<strong>Warning！</strong>Password must be 10 digits or letters!");
+			if ($(this).val().length > 0 && ($(this).val().length < 8 || !/[!@#$%^&*()]/.test($(this)[0].value))) {
+				$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
 				myAnimate()
 			}
 		}
@@ -352,8 +357,8 @@
 		} else if ((password.length > 0 || confirmPassword.length > 0) && password != confirmPassword) {
 			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
 			myAnimate()
-		} else if (password.length > 0 && !p.test(password)) {
-			$(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
+		} else if (password.length > 0 && (password.length < 8 || !/[!@#$%^&*()]/.test(password))) {
+			$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
 			myAnimate()
 		} else {
 			axios.post(server + "/user/update", updateUserForm, {
@@ -377,50 +382,61 @@
 	}
 
 	function addUser() {
-		var addUserFrom = $("#addUserFrom").serialize();
-		var addUserFormArray = $("#addUserFrom").serializeArray();
-		if (addUserFormArray[0].value.length == 0) {
+		const user = {
+			username: $("#adduname").val().trim(),
+			fullName: $("#addlogname").val().trim(),
+			email: $("#addemail").val().trim(),
+			password: $("#addpw").val(),
+			confirmPass: $("#addpw2").val(),
+			description: $("#addcmmt").val().trim()
+		};
+		const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+		const strongPassword = user.password.length >= 8 && /[!@#$%^&*()]/.test(user.password);
+
+		if (user.username.length == 0) {
 			$(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
 			myAnimate()
 			$("#adduname")[0].focus()
-		} else if (addUserFormArray[1].value.length == 0) {
-			$(".alert").html("<strong>Warning！</strong>Account cannot be empty!");
+		} else if (user.fullName.length == 0) {
+			$(".alert").html("<strong>Warning！</strong>Full Name cannot be empty!");
 			myAnimate()
 			$("#addlogname")[0].focus()
-		} else if (!p.test(addUserFormArray[1].value)) {
-			$(".alert").html("<strong>Warning！</strong>Account must be letters or numbers!");
+		} else if (user.email.length == 0) {
+			$(".alert").html("<strong>Warning！</strong>Email cannot be empty!");
 			myAnimate()
-			$("#addlogname")[0].focus()
-		} else if ($("#addpw").val().length == 0) {
+			$("#addemail")[0].focus()
+		} else if (!emailPattern.test(user.email)) {
+			$(".alert").html("<strong>Warning！</strong>Email is invalid!");
+			myAnimate()
+			$("#addemail")[0].focus()
+		} else if (user.password.length == 0) {
 			$(".alert").html("<strong>Warning！</strong>Password cannot be empty!");
 			myAnimate()
-			if ($("#addpw").val().length == 0) {
-				$("#addpw")[0].focus()
-			} else {
-				$("#addpw2")[0].focus()
-			}
-		} else if ($("#addpw").val() != $("#addpw2").val()) {
+			$("#addpw")[0].focus()
+		} else if (user.password != user.confirmPass) {
 			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
 			myAnimate()
-		} else if (!p.test(addUserFormArray[2].value)) {
-			$(".alert").html("<strong>Warning！</strong>Password must be letters or numbers!");
+		} else if (!strongPassword) {
+			$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
 			myAnimate()
-			if (!p.test($("#addpw").val())) {
-				$("#addpw")[0].focus()
-			} else {
-				$("#addpw2")[0].focus()
-			}
+			$("#addpw")[0].focus()
 		} else {
-			axios.get(server + "/user/save?" + addUserFrom).then(resp => {
+			axios.post(server + "/user/admin/create", user, {
+				headers: {
+					"Content-Type": "application/json",
+					[csrfHeader]: csrfToken
+				}
+			}).then(resp => {
 				if (resp.data == "success") {
 					$(".alert").removeClass("alert-warning").addClass("alert-success");
 					getSelectAll();
 					$(".alert").html("<strong>Congratulation！</strong>User added successfully!");
 					myAnimate()
-				} else if (resp.data == "exist") {
-					$(".alert").html("<strong>Warning！</strong>User already exists!");
-					myAnimate()
 				}
+			}).catch(error => {
+				const message = error.response?.data?.message || error.response?.data || "User add failed!";
+				$(".alert").text("Warning！" + message);
+				myAnimate()
 			})
 			$(".alert").removeClass("alert-success").addClass("alert-warning")
 		}

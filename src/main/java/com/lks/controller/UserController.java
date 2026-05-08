@@ -199,6 +199,14 @@ public class UserController {
 		return serviceStringResponse(userService.registerUser(request));
 	}
 
+	@PostMapping("/admin/create")
+	public ResponseEntity<String> createUserAsAdmin(@RequestBody UserRegistrationRequest request, HttpSession session) {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
+		}
+		return serviceStringResponse(userService.registerUser(request));
+	}
+
 	@PostMapping("/update")
 	public ResponseEntity<String> updateUser(AdminUserUpdateRequest request, HttpSession session) {
 		if (!isAdmin(session)) {
