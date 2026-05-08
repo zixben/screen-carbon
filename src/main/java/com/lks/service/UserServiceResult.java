@@ -10,6 +10,10 @@ public record UserServiceResult(UserServiceStatus status, String message) {
 		return new UserServiceResult(UserServiceStatus.BAD_REQUEST, message);
 	}
 
+	public static UserServiceResult unauthorized(String message) {
+		return new UserServiceResult(UserServiceStatus.UNAUTHORIZED, message);
+	}
+
 	public static UserServiceResult serviceUnavailable(String message) {
 		return new UserServiceResult(UserServiceStatus.SERVICE_UNAVAILABLE, message);
 	}

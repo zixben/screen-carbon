@@ -138,33 +138,11 @@ public class UserController {
 	@DeleteMapping("/delete")
 	public ResponseEntity<String> deleteUser(@RequestBody DeleteAccountRequest request, HttpSession session) {
 		User sessionUser = (User) session.getAttribute("loggedInUser");
-		if (request == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body.");
-		}
-
-		try {
-			validateNoUnsupportedFields(request.getUnsupportedFields());
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-		}
-
-		if (sessionUser == null || request == null || isBlank(request.getPassword())) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user data or no user logged in.");
-		}
-
-		if (!isBlank(request.getUsername()) && !sessionUser.getUsername().equals(request.getUsername().trim())) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Username mismatch.");
-		}
-
-		if (!passwordEncoder.matches(request.getPassword(), sessionUser.getPassword())) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Incorrect password.");
-		}
-		if (userMapper.deleteUser(sessionUser.getId()) > 0) {
+		UserServiceResult result = userService.deleteCurrentUser(request, sessionUser);
+		if (result.status() == UserServiceStatus.OK) {
 			session.invalidate();
-			return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully.");
-		} else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Deletion failed: User not found.");
 		}
+		return serviceStringResponse(result);
 	}
 
 	@PostMapping("/save")

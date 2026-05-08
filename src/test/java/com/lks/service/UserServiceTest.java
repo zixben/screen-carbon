@@ -2,6 +2,7 @@ package com.lks.service;
 
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
+import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
@@ -73,6 +74,47 @@ class UserServiceTest {
 
 		assertEquals(UserServiceStatus.UNAUTHORIZED, result.status());
 		assertEquals("Invalid username or password.", result.message());
+	}
+
+	@Test
+	void deleteCurrentUserDeletesAfterPasswordMatch() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		User user = sessionUser();
+		when(userMapper.deleteUser(42)).thenReturn(1);
+
+		UserServiceResult result = service.deleteCurrentUser(deleteAccountRequest(" session-user ", "Password!"), user);
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("User deleted successfully.", result.message());
+		verify(userMapper).deleteUser(42);
+	}
+
+	@Test
+	void deleteCurrentUserRejectsUsernameMismatchBeforeDeleting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+
+		UserServiceResult result = service.deleteCurrentUser(deleteAccountRequest("other-user", "Password!"),
+				sessionUser());
+
+		assertEquals(UserServiceStatus.UNAUTHORIZED, result.status());
+		assertEquals("Authentication failed: Username mismatch.", result.message());
+		verify(userMapper, never()).deleteUser(any(Integer.class));
+	}
+
+	@Test
+	void deleteCurrentUserRejectsUnsupportedFieldBeforeDeleting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		DeleteAccountRequest request = deleteAccountRequest("session-user", "Password!");
+		request.addUnsupportedField("id", 42);
+
+		UserServiceResult result = service.deleteCurrentUser(request, sessionUser());
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Unsupported user field: id", result.message());
+		verifyNoInteractions(userMapper);
 	}
 
 	@Test
@@ -236,6 +278,21 @@ class UserServiceTest {
 		request.setPassword(password);
 		request.setCode(code);
 		return request;
+	}
+
+	private DeleteAccountRequest deleteAccountRequest(String username, String password) {
+		DeleteAccountRequest request = new DeleteAccountRequest();
+		request.setUsername(username);
+		request.setPassword(password);
+		return request;
+	}
+
+	private User sessionUser() {
+		User user = new User();
+		user.setId(42);
+		user.setUsername("session-user");
+		user.setPassword(passwordEncoder.encode("Password!"));
+		return user;
 	}
 
 	private UserRegistrationRequest registrationRequest() {

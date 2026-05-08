@@ -2,6 +2,7 @@ package com.lks.service;
 
 import com.lks.bean.RecoveryToken;
 import com.lks.bean.User;
+import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
@@ -135,6 +136,38 @@ public class UserService {
 		}
 
 		return UserLoginResult.unauthorized("Invalid username or password.");
+	}
+
+	public UserServiceResult deleteCurrentUser(DeleteAccountRequest request, User sessionUser) {
+		if (request == null) {
+			return UserServiceResult.badRequest("Invalid request body.");
+		}
+		try {
+			validateNoUnsupportedFields(request.getUnsupportedFields());
+		} catch (IllegalArgumentException e) {
+			return UserServiceResult.badRequest(e.getMessage());
+		}
+
+		if (sessionUser == null || isBlank(request.getPassword())) {
+			return UserServiceResult.badRequest("Invalid user data or no user logged in.");
+		}
+
+		if (!isBlank(request.getUsername())
+				&& (isBlank(sessionUser.getUsername()) || !sessionUser.getUsername().equals(request.getUsername().trim()))) {
+			return UserServiceResult.unauthorized("Authentication failed: Username mismatch.");
+		}
+
+		if (isBlank(sessionUser.getPassword())) {
+			return UserServiceResult.unauthorized("Authentication failed: Incorrect password.");
+		}
+		if (!passwordEncoder.matches(request.getPassword(), sessionUser.getPassword())) {
+			return UserServiceResult.unauthorized("Authentication failed: Incorrect password.");
+		}
+
+		if (userMapper.deleteUser(sessionUser.getId()) > 0) {
+			return UserServiceResult.ok("User deleted successfully.");
+		}
+		return UserServiceResult.badRequest("Deletion failed: User not found.");
 	}
 
 	public UserServiceResult recoverPassword(String submittedEmail) {

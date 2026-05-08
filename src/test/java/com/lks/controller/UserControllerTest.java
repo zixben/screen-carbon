@@ -2,6 +2,7 @@ package com.lks.controller;
 
 import com.lks.bean.User;
 import com.lks.dto.AdminUserUpdateRequest;
+import com.lks.dto.DeleteAccountRequest;
 import com.lks.dto.PasswordResetRequest;
 import com.lks.dto.UserLoginRequest;
 import com.lks.dto.UserRegistrationRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -172,6 +174,40 @@ class UserControllerTest {
 	}
 
 	@Test
+	void deleteUserInvalidatesSessionAfterServiceSuccess() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		MockHttpSession session = sessionWithUser();
+		DeleteAccountRequest request = new DeleteAccountRequest();
+		User sessionUser = (User) session.getAttribute("loggedInUser");
+		when(userService.deleteCurrentUser(request, sessionUser))
+				.thenReturn(UserServiceResult.ok("User deleted successfully."));
+
+		ResponseEntity<String> response = controller.deleteUser(request, session);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("User deleted successfully.", response.getBody());
+		assertTrue(session.isInvalid());
+	}
+
+	@Test
+	void deleteUserDoesNotInvalidateSessionAfterServiceFailure() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		MockHttpSession session = sessionWithUser();
+		DeleteAccountRequest request = new DeleteAccountRequest();
+		User sessionUser = (User) session.getAttribute("loggedInUser");
+		when(userService.deleteCurrentUser(request, sessionUser))
+				.thenReturn(UserServiceResult.unauthorized("Authentication failed: Incorrect password."));
+
+		ResponseEntity<String> response = controller.deleteUser(request, session);
+
+		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+		assertEquals("Authentication failed: Incorrect password.", response.getBody());
+		assertEquals(sessionUser, session.getAttribute("loggedInUser"));
+	}
+
+	@Test
 	void updateUserRejectsHtmlDescriptionBeforePersisting() {
 		UserMapper userMapper = mock(UserMapper.class);
 		UserController controller = controllerWith(userMapper, mock(UserService.class));
@@ -216,6 +252,15 @@ class UserControllerTest {
 		User admin = new User();
 		admin.setRole("ADMIN");
 		session.setAttribute("loggedInUser", admin);
+		return session;
+	}
+
+	private MockHttpSession sessionWithUser() {
+		MockHttpSession session = new MockHttpSession();
+		User user = new User();
+		user.setId(42);
+		user.setUsername("session-user");
+		session.setAttribute("loggedInUser", user);
 		return session;
 	}
 
