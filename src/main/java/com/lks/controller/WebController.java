@@ -223,7 +223,7 @@ public class WebController {
 		model.addAttribute("title", "User Settings");
 		model.addAttribute("styles0", "/assets/css/docs.css");
 		model.addAttribute("styles", "/assets/css/User1.css");
-		model.addAttribute("scripts", "/assets/js/User1.js");
+		model.addAttribute("scripts", "/assets/js/User1.js?v=delete-confirmation-2");
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);

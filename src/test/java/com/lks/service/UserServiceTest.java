@@ -92,6 +92,21 @@ class UserServiceTest {
 	}
 
 	@Test
+	void deleteCurrentUserAcceptsMatchingOptionalEmail() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		DeleteAccountRequest request = deleteAccountRequest("session-user", "Password!");
+		request.setEmail(" Session@Example.com ");
+		when(userMapper.deleteUser(42)).thenReturn(1);
+
+		UserServiceResult result = service.deleteCurrentUser(request, sessionUser());
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("User deleted successfully.", result.message());
+		verify(userMapper).deleteUser(42);
+	}
+
+	@Test
 	void deleteCurrentUserRejectsUsernameMismatchBeforeDeleting() {
 		UserMapper userMapper = mock(UserMapper.class);
 		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
@@ -101,6 +116,20 @@ class UserServiceTest {
 
 		assertEquals(UserServiceStatus.UNAUTHORIZED, result.status());
 		assertEquals("Authentication failed: Username mismatch.", result.message());
+		verify(userMapper, never()).deleteUser(any(Integer.class));
+	}
+
+	@Test
+	void deleteCurrentUserRejectsEmailMismatchBeforeDeleting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		DeleteAccountRequest request = deleteAccountRequest("session-user", "Password!");
+		request.setEmail("other@example.com");
+
+		UserServiceResult result = service.deleteCurrentUser(request, sessionUser());
+
+		assertEquals(UserServiceStatus.UNAUTHORIZED, result.status());
+		assertEquals("Authentication failed: Email mismatch.", result.message());
 		verify(userMapper, never()).deleteUser(any(Integer.class));
 	}
 
@@ -394,6 +423,7 @@ class UserServiceTest {
 		User user = new User();
 		user.setId(42);
 		user.setUsername("session-user");
+		user.setEmail("session@example.com");
 		user.setPassword(passwordEncoder.encode("Password!"));
 		return user;
 	}

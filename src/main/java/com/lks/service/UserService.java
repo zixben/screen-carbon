@@ -158,6 +158,18 @@ public class UserService {
 			return UserServiceResult.unauthorized("Authentication failed: Username mismatch.");
 		}
 
+		String submittedEmail = trimToNull(request.getEmail());
+		if (submittedEmail != null) {
+			String email = normalizeEmail(submittedEmail);
+			String sessionEmail = normalizeEmail(sessionUser.getEmail());
+			if (email == null) {
+				return UserServiceResult.badRequest("Email is invalid.");
+			}
+			if (sessionEmail == null || !sessionEmail.equals(email)) {
+				return UserServiceResult.unauthorized("Authentication failed: Email mismatch.");
+			}
+		}
+
 		if (isBlank(sessionUser.getPassword())) {
 			return UserServiceResult.unauthorized("Authentication failed: Incorrect password.");
 		}
