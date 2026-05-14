@@ -84,6 +84,14 @@
 	<build>
 		<resources>
 			<resource>
+				<directory>${project.basedir}</directory>
+				<includes>
+					<include>.env</include>
+				</includes>
+				<targetPath>.</targetPath>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
 				<directory>src/main/resources</directory>
 				<excludes>
 					<exclude>.env*</exclude>

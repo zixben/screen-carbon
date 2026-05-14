@@ -16,5 +16,12 @@
 	<link rel="stylesheet" href="assets/css/footer.css" />
 	 <link  rel="stylesheet"  th:href="@{${styles0}}"/>
 	    <link  rel="stylesheet"  th:href="@{${styles}}"/>
-	   
+
+	<th:block th:replace="~{fragments/resources :: cloudflare-web-analytics}"></th:block>
 </head>
+
+<th:block th:fragment="cloudflare-web-analytics">
+	<script th:if="${cloudflareWebAnalytics != null and cloudflareWebAnalytics.enabled}" defer
+		src="https://static.cloudflareinsights.com/beacon.min.js"
+		th:attr="data-cf-beacon=${cloudflareWebAnalytics.beaconConfigJson}"></script>
+</th:block>

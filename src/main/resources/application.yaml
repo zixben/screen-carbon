@@ -4,7 +4,7 @@ server:
 spring:
   config:
     import:
-      - optional:file:.env[.properties]
+      - optional:classpath:.env[.properties]
       - optional:file:src/main/resources/application-local.yaml
 
   datasource:
@@ -51,3 +51,8 @@ app:
     log-link: ${PASSWORD_RECOVERY_LOG_LINK:false}
   tmdb:
     bearer-token: ${TMDB_BEARER_TOKEN:}
+  cloudflare:
+    web-analytics:
+      enabled: ${CLOUDFLARE_WEB_ANALYTICS_ENABLED:false}
+      token: ${CLOUDFLARE_WEB_ANALYTICS_TOKEN:}
+      spa: ${CLOUDFLARE_WEB_ANALYTICS_SPA:false}
