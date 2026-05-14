@@ -27,7 +27,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(
                     "/admin", "/1", "/2-2",
-                    "/admin/analytics/**",
                     "/user/all", "/user/admin/**", "/user/update", "/user/selectByUser", "/user/countUsers",
                     "/score/update", "/score/delete", "/score/getAvgFraction", "/score/getCountFraction",
                     "/score/getTotalRated"

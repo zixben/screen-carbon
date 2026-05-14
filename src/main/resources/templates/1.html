@@ -18,14 +18,8 @@
             height: 360px;
         }
 
-        #main3 {
-            clear: both;
-            margin: 3% auto 0;
-            width: 90%;
-            height: 360px;
-        }
-
         .scoreResult {
+            clear: both;
             width: 90%;
             margin: 20px auto;
             padding: 10px;
@@ -49,7 +43,6 @@
     <h1>Rating Dashboard</h1>
     <div id="main"></div>
     <div id="main2"></div>
-    <div id="main3"></div>
     <div class="scoreResult">
         <p>The Highest Average Rating: <span id="supreme">Loading...</span></p>
         <p>The Most Popular Movie/Show: <span id="hot">Loading...</span></p>
@@ -65,12 +58,10 @@
             const avgDataUrl = "/score/getAvgFraction";
             const countDataUrl = "/score/getCountFraction";
             const totalRatedUrl = "/score/getTotalRated";
-            const geoTrafficUrl = "/admin/analytics/geo-traffic?days=30&limit=20";
 
             let avgData = {};
             let countData = {};
             let totalRated = 0;
-            let geoTraffic = {};
 
             const fetchData = async (url) => {
                 try {
@@ -153,44 +144,13 @@
                 document.getElementById("total").innerText = totalRated.count || 0;
             }
 
-            geoTraffic = await fetchData(geoTrafficUrl);
-            if (geoTraffic) {
-                const trafficItems = Array.isArray(geoTraffic.items) ? geoTraffic.items : [];
-                const geoSeriesData = trafficItems.map(item => ({
-                    name: formatGeoLabel(item),
-                    value: item.requestCount || 0
-                }));
-                const geoOptions = {
-                    title: { text: "Geographical Traffic, Last 30 Days" },
-                    tooltip: {
-                        trigger: "item",
-                        formatter: "{b}: {c} ({d}%)"
-                    },
-                    series: [{
-                        name: "Page views",
-                        type: "pie",
-                        radius: "65%",
-                        data: geoSeriesData.length ? geoSeriesData : [{ name: "No data", value: 0 }]
-                    }]
-                };
-                renderChart("main3", geoOptions);
-            }
-
             // Handle resizing of charts
             window.addEventListener("resize", () => {
                 const avgChart = echarts.getInstanceByDom(document.getElementById("main"));
                 const countChart = echarts.getInstanceByDom(document.getElementById("main2"));
-                const geoChart = echarts.getInstanceByDom(document.getElementById("main3"));
                 if (avgChart) avgChart.resize();
                 if (countChart) countChart.resize();
-                if (geoChart) geoChart.resize();
             });
-
-            function formatGeoLabel(item) {
-                const countryCode = item.countryCode === "ZZ" ? "Unknown" : item.countryCode;
-                const region = item.region && item.region !== "Unknown" ? ` - ${item.region}` : "";
-                return `${countryCode}${region}`;
-            }
         });
     </script>
 </body>
