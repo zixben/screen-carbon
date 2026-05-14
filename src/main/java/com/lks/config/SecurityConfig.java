@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/admin", "/1", "/2-2",
                     "/admin/analytics/**",
-                    "/user/all", "/user/admin/create", "/user/update", "/user/selectByUser", "/user/countUsers",
+                    "/user/all", "/user/admin/**", "/user/update", "/user/selectByUser", "/user/countUsers",
                     "/score/update", "/score/delete", "/score/getAvgFraction", "/score/getCountFraction",
                     "/score/getTotalRated"
                 ).hasRole("ADMIN")

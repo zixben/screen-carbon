@@ -171,6 +171,25 @@ public class UserService {
 		return UserServiceResult.badRequest("Deletion failed: User not found.");
 	}
 
+	public UserServiceResult deleteUserAsAdmin(Integer id, User adminUser) {
+		if (id == null || id <= 0) {
+			return UserServiceResult.badRequest("User id is required.");
+		}
+		if (adminUser != null && id.equals(adminUser.getId())) {
+			return UserServiceResult.badRequest("Admin users cannot delete their own account from user management.");
+		}
+
+		User user = userMapper.findById(id);
+		if (user == null) {
+			return UserServiceResult.badRequest("User not found.");
+		}
+
+		if (userMapper.deleteUser(id) > 0) {
+			return UserServiceResult.ok("success");
+		}
+		return UserServiceResult.badRequest("fail");
+	}
+
 	public UserServiceResult updateUserAsAdmin(AdminUserUpdateRequest request) {
 		if (request == null) {
 			return UserServiceResult.badRequest("Invalid request body.");

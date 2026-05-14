@@ -135,6 +135,15 @@ public class UserController {
 		return serviceStringResponse(result);
 	}
 
+	@DeleteMapping("/admin/{id}")
+	public ResponseEntity<String> deleteUserAsAdmin(@PathVariable Integer id, HttpSession session) {
+		if (!isAdmin(session)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Admin access required.");
+		}
+		User adminUser = (User) session.getAttribute("loggedInUser");
+		return serviceStringResponse(userService.deleteUserAsAdmin(id, adminUser));
+	}
+
 	@PostMapping("/save")
 	public ResponseEntity<String> saveUser(@RequestBody UserRegistrationRequest request, HttpServletRequest httpRequest) {
 		enforceClientRateLimit(httpRequest, "signup", MAX_SIGNUP_ATTEMPTS_PER_WINDOW, SIGNUP_RATE_LIMIT_WINDOW,

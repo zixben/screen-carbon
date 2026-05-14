@@ -207,6 +207,33 @@ class UserControllerTest {
 	}
 
 	@Test
+	void deleteUserAsAdminMapsServiceResult() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+		MockHttpSession session = adminSession();
+		User admin = (User) session.getAttribute("loggedInUser");
+		when(userService.deleteUserAsAdmin(77, admin)).thenReturn(UserServiceResult.ok("success"));
+
+		ResponseEntity<String> response = controller.deleteUserAsAdmin(77, session);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("success", response.getBody());
+		verify(userService).deleteUserAsAdmin(77, admin);
+	}
+
+	@Test
+	void deleteUserAsAdminRejectsNonAdminBeforeService() {
+		UserService userService = mock(UserService.class);
+		UserController controller = controllerWith(mock(UserMapper.class), userService);
+
+		ResponseEntity<String> response = controller.deleteUserAsAdmin(77, new MockHttpSession());
+
+		assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+		assertEquals("Admin access required.", response.getBody());
+		verifyNoInteractions(userService);
+	}
+
+	@Test
 	void updateUserMapsServiceResult() {
 		UserService userService = mock(UserService.class);
 		UserController controller = controllerWith(mock(UserMapper.class), userService);

@@ -278,25 +278,20 @@
 		$(".alert").css("top", "0px").finish();
 		if ($(this).val().length == 0) {
 			if (!$(this).hasClass("cmmt")) {
-				$(".alert").html("<strong>Warning！</strong>" + $(this).attr("title") + "Input cannot be empty!")
-				myAnimate()
+				showWarning($(this).attr("title") + "Input cannot be empty!");
 			}
 		} else if ($(this).hasClass("logName") && !p.test($(this).val())) {
-			$(".alert").html("<strong>Warning！</strong>Account must be letters or numbers!");
-			myAnimate()
+			showWarning("Account must be letters or numbers!");
 		} else if ($(this).hasClass("inputPassword")) {
 			if ($(this).val().length > 0 && ($(this).val().length < 8 || !/[!@#$%^&*()]/.test($(this)[0].value))) {
-				$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
-				myAnimate()
+				showWarning("Password must be at least 8 characters and include a special character!");
 			}
 		}
 		if (($(this).hasClass("inputPassword") && $(".inputPassword").val() != $(".inputPassword2").val())) {
-			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!!!");
-			myAnimate();
+			showWarning("The passwords are inconsistent!!!");
 		}
 		if (($(this).hasClass("inputPassword2") && $(".inputPassword").val() != $(".inputPassword2").val())) {
-			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!!!");
-			myAnimate();
+			showWarning("The passwords are inconsistent!!!");
 		}
 	});
 
@@ -308,6 +303,26 @@
 			opacity: 0.7,
 			top: '+100',
 		}, 500).delay(1000).fadeOut();
+	}
+
+	function showAlert(success, message) {
+		$(".alert").each(function () {
+			$(this)
+				.removeClass("alert-success alert-warning")
+				.addClass(success ? "alert-success" : "alert-warning")
+				.empty()
+				.append($("<strong>").text(success ? "Success！" : "Warning！"))
+				.append(document.createTextNode(message));
+		});
+		myAnimate();
+	}
+
+	function showWarning(message) {
+		showAlert(false, message);
+	}
+
+	function showSuccess(message) {
+		showAlert(true, message);
 	}
 
 	function updateUserCount() {
@@ -351,15 +366,12 @@
 		var password = $("#updatepw").val();
 		var confirmPassword = $("#updatepw2").val();
 		if ($("#updateUname").val().length == 0) {
-			$(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
-			myAnimate()
+			showWarning("UserName cannot be empty!");
 			$("#updateUname")[0].focus()
 		} else if ((password.length > 0 || confirmPassword.length > 0) && password != confirmPassword) {
-			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
-			myAnimate()
+			showWarning("The passwords are inconsistent!");
 		} else if (password.length > 0 && (password.length < 8 || !/[!@#$%^&*()]/.test(password))) {
-			$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
-			myAnimate()
+			showWarning("Password must be at least 8 characters and include a special character!");
 		} else {
 			axios.post(server + "/user/update", updateUserForm, {
 				headers: {
@@ -368,13 +380,10 @@
 				}
 			}).then(resp => {
 				if (resp.data == "success") {
-					$(".alert").removeClass("alert-warning").addClass("alert-success");
-					$(".alert").html("<strong>Congratulation！</strong>Update succeeded!");
-					myAnimate()
+					showSuccess("Update succeeded!");
 					getSelectAll();
 				} else {
-					$(".alert").html("<strong>Warning！</strong>Update failed, please check again!");
-					myAnimate()
+					showWarning("Update failed, please check again!");
 				}
 			})
 			$(".alert").removeClass("alert-success").addClass("alert-warning")
@@ -394,31 +403,24 @@
 		const strongPassword = user.password.length >= 8 && /[!@#$%^&*()]/.test(user.password);
 
 		if (user.username.length == 0) {
-			$(".alert").html("<strong>Warning！</strong>UserName cannot be empty!");
-			myAnimate()
+			showWarning("UserName cannot be empty!");
 			$("#adduname")[0].focus()
 		} else if (user.fullName.length == 0) {
-			$(".alert").html("<strong>Warning！</strong>Full Name cannot be empty!");
-			myAnimate()
+			showWarning("Full Name cannot be empty!");
 			$("#addlogname")[0].focus()
 		} else if (user.email.length == 0) {
-			$(".alert").html("<strong>Warning！</strong>Email cannot be empty!");
-			myAnimate()
+			showWarning("Email cannot be empty!");
 			$("#addemail")[0].focus()
 		} else if (!emailPattern.test(user.email)) {
-			$(".alert").html("<strong>Warning！</strong>Email is invalid!");
-			myAnimate()
+			showWarning("Email is invalid!");
 			$("#addemail")[0].focus()
 		} else if (user.password.length == 0) {
-			$(".alert").html("<strong>Warning！</strong>Password cannot be empty!");
-			myAnimate()
+			showWarning("Password cannot be empty!");
 			$("#addpw")[0].focus()
 		} else if (user.password != user.confirmPass) {
-			$(".alert").html("<strong>Warning！</strong>The passwords are inconsistent!");
-			myAnimate()
+			showWarning("The passwords are inconsistent!");
 		} else if (!strongPassword) {
-			$(".alert").html("<strong>Warning！</strong>Password must be at least 8 characters and include a special character!");
-			myAnimate()
+			showWarning("Password must be at least 8 characters and include a special character!");
 			$("#addpw")[0].focus()
 		} else {
 			axios.post(server + "/user/admin/create", user, {
@@ -428,15 +430,12 @@
 				}
 			}).then(resp => {
 				if (resp.data == "success") {
-					$(".alert").removeClass("alert-warning").addClass("alert-success");
 					getSelectAll();
-					$(".alert").html("<strong>Congratulation！</strong>User added successfully!");
-					myAnimate()
+					showSuccess("User added successfully!");
 				}
 			}).catch(error => {
 				const message = error.response?.data?.message || error.response?.data || "User add failed!";
-				$(".alert").text("Warning！" + message);
-				myAnimate()
+				showWarning(message);
 			})
 			$(".alert").removeClass("alert-success").addClass("alert-warning")
 		}
@@ -448,16 +447,20 @@
 		$("#deleteBtn").unbind("click")
 		$("#deleteBtn").bind("click", function () {
 			var id = e.getRow(index).id
-			axios.get(server + "/user/delete/" + id).then(resp => {
-				if (resp.data == "success") {
-					$(".alert").removeClass("alert-warning").addClass("alert-success");
-					getSelectAll();
-					$(".alert").html("<strong>Congratulation！</strong>Delete user successfully!");
-					myAnimate()
-				} else {
-					$(".alert").html("<strong>Warning！</strong>Delete user failed!");
-					myAnimate()
+			axios.delete(server + "/user/admin/" + id, {
+				headers: {
+					[csrfHeader]: csrfToken
 				}
+			}).then(resp => {
+				if (resp.data == "success") {
+					getSelectAll();
+					showSuccess("Delete user successfully!");
+				} else {
+					showWarning("Delete user failed!");
+				}
+			}).catch(error => {
+				const message = error.response?.data?.message || error.response?.data || "Delete user failed!";
+				showWarning(message);
 			})
 			$(".alert").removeClass("alert-success").addClass("alert-warning");
 			deleteM.hide();
@@ -470,8 +473,7 @@
 			var jsonStr = $("#selectLogname").serialize();
 			axios.post(server + "/user/selectByLogUsername?" + jsonStr).then(resp => {
 				if (resp.data == "noExist") {
-					$(".alert").html("<strong>warning！</strong>The account does not exist, please re-enter it!");
-					myAnimate()
+					showWarning("The account does not exist, please re-enter it!");
 				} else {
 					$(".updateUname").val(resp.data.uname);
 					$(".updatePw").val(resp.data.pwd);
@@ -479,8 +481,7 @@
 				}
 			})
 		} else {
-			$(".alert").html("<strong>warning！</strong>Account is a number or letter, please re-enter it!");
-			myAnimate()
+			showWarning("Account is a number or letter, please re-enter it!");
 		}
 	}
 

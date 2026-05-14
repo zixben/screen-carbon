@@ -119,6 +119,45 @@ class UserServiceTest {
 	}
 
 	@Test
+	void deleteUserAsAdminDeletesExistingUser() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		when(userMapper.findById(77)).thenReturn(user(77, "target-user", "Password!"));
+		when(userMapper.deleteUser(77)).thenReturn(1);
+
+		UserServiceResult result = service.deleteUserAsAdmin(77, adminUser());
+
+		assertEquals(UserServiceStatus.OK, result.status());
+		assertEquals("success", result.message());
+		verify(userMapper).deleteUser(77);
+	}
+
+	@Test
+	void deleteUserAsAdminRejectsSelfDeletionBeforeDeleting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+
+		UserServiceResult result = service.deleteUserAsAdmin(1, adminUser());
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("Admin users cannot delete their own account from user management.", result.message());
+		verifyNoInteractions(userMapper);
+	}
+
+	@Test
+	void deleteUserAsAdminRejectsMissingUserBeforeDeleting() {
+		UserMapper userMapper = mock(UserMapper.class);
+		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
+		when(userMapper.findById(77)).thenReturn(null);
+
+		UserServiceResult result = service.deleteUserAsAdmin(77, adminUser());
+
+		assertEquals(UserServiceStatus.BAD_REQUEST, result.status());
+		assertEquals("User not found.", result.message());
+		verify(userMapper, never()).deleteUser(any(Integer.class));
+	}
+
+	@Test
 	void registerUserHashesPasswordAndSavesNormalizedFields() {
 		UserMapper userMapper = mock(UserMapper.class);
 		UserService service = serviceWith(userMapper, mock(EmailService.class), false, "http://localhost:8081", false);
@@ -356,6 +395,14 @@ class UserServiceTest {
 		user.setId(42);
 		user.setUsername("session-user");
 		user.setPassword(passwordEncoder.encode("Password!"));
+		return user;
+	}
+
+	private User adminUser() {
+		User user = new User();
+		user.setId(1);
+		user.setUsername("admin-user");
+		user.setRole("ADMIN");
 		return user;
 	}
 
