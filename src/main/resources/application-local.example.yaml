@@ -31,3 +31,11 @@ app:
       enabled: ${CLOUDFLARE_WEB_ANALYTICS_ENABLED:false}
       token: ${CLOUDFLARE_WEB_ANALYTICS_TOKEN:}
       spa: ${CLOUDFLARE_WEB_ANALYTICS_SPA:false}
+    analytics:
+      enabled: ${CLOUDFLARE_ANALYTICS_ENABLED:false}
+      account-id: ${CLOUDFLARE_ANALYTICS_ACCOUNT_ID:}
+      api-token: ${CLOUDFLARE_ANALYTICS_API_TOKEN:}
+      site-tag: ${CLOUDFLARE_ANALYTICS_SITE_TAG:}
+      request-host: ${CLOUDFLARE_ANALYTICS_REQUEST_HOST:}
+      lookback-days: ${CLOUDFLARE_ANALYTICS_LOOKBACK_DAYS:7}
+      cache-seconds: ${CLOUDFLARE_ANALYTICS_CACHE_SECONDS:300}
