@@ -35,7 +35,7 @@ public class SecurityConfig {
                     "/user-settings", "/user-ratings", "/user/delete", "/score/getScoreList/**"
                 ).authenticated()
                 .requestMatchers(
-                    "/", "/search-results", "/movies", "/movie", "/tv-shows", "/tv", "/details", "/rate",
+                    "/", "/error", "/favicon.ico", "/search-results", "/movies", "/movie", "/tv-shows", "/tv", "/details", "/rate",
                     "/finish-rating", "/about", "/privacy-notice", "/signup", "/login", "/reset-password**",
                     "/update-password", "/logout",
                     "/assets/**", "/css/**", "/js/**", "/plugins/**", "/table/**",

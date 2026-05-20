@@ -27,6 +27,11 @@ public class WebController {
 		this.passwordEncoder = passwordEncoder;
 	}
 
+	@GetMapping("/favicon.ico")
+	public String favicon() {
+		return "redirect:/assets/images/logo/LOGO_V3-BLACK_(NO_TEXT).png";
+	}
+
 	@GetMapping("/")
 	public String index(Model model, HttpSession session) {
 
