@@ -9,6 +9,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -25,16 +29,16 @@ public class SecurityConfig {
                 )
             )
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(
+                .requestMatchers(antMatchers(
                     "/admin", "/admin/analytics", "/1", "/2-2",
                     "/user/all", "/user/admin/**", "/user/update", "/user/selectByUser", "/user/countUsers",
                     "/score/update", "/score/delete", "/score/getAvgFraction", "/score/getCountFraction",
                     "/score/getTotalRated"
-                ).hasRole("ADMIN")
-                .requestMatchers(
+                )).hasRole("ADMIN")
+                .requestMatchers(antMatchers(
                     "/user-settings", "/user-ratings", "/user/delete", "/score/getScoreList/**"
-                ).authenticated()
-                .requestMatchers(
+                )).authenticated()
+                .requestMatchers(antMatchers(
                     "/", "/error", "/favicon.ico", "/search-results", "/movies", "/movie", "/tv-shows", "/tv", "/details", "/rate",
                     "/finish-rating", "/about", "/privacy-notice", "/signup", "/login", "/reset-password**",
                     "/update-password", "/logout",
@@ -47,7 +51,7 @@ public class SecurityConfig {
                     "/score/getMovieScoreCountDesc", "/score/getMovieScoreCountAsc",
                     "/score/getTVScoreCountDesc", "/score/getTVScoreCountAsc", "/score/getScoreAvg/**",
                     "/score/getTop20Popularity"
-                ).permitAll()
+                )).permitAll()
                 .anyRequest().denyAll()
             )
             .formLogin(form -> form
@@ -74,5 +78,11 @@ public class SecurityConfig {
     @Bean
     public SessionAuthenticationFilter sessionAuthenticationFilter() {
         return new SessionAuthenticationFilter();
+    }
+
+    private static RequestMatcher[] antMatchers(String... patterns) {
+        return Arrays.stream(patterns)
+                .map(AntPathRequestMatcher::new)
+                .toArray(RequestMatcher[]::new);
     }
 }
