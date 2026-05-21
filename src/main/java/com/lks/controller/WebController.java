@@ -1,5 +1,7 @@
 package com.lks.controller;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,10 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class WebController {
+	private static final int MAX_BCRYPT_INPUT_BYTES = 72;
+	private static final String INVALID_RESET_LINK_MESSAGE =
+			"Invalid or expired reset link. Please request a new password recovery email.";
+
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
 
@@ -269,15 +275,19 @@ public class WebController {
 	}
 
 	@GetMapping("/reset-password")
-	public String showResetPasswordForm(@RequestParam("token") String token, Model model, HttpServletRequest request) {
-
-		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
+	public String showResetPasswordForm(@RequestParam(value = "token", required = false) String token, Model model,
+			HttpServletRequest request) {
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+		model.addAttribute("title", "Reset Password");
 		model.addAttribute("csrfToken", csrfToken);
 
-		RecoveryToken validToken = null;
+		if (!isValidRecoveryTokenParameter(token)) {
+			return invalidResetPasswordPage(model);
+		}
 
+		RecoveryToken validToken = null;
+		List<RecoveryToken> recoveryTokens = userMapper.findActiveRecoveryTokens();
 		for (RecoveryToken rt : recoveryTokens) {
 			if (passwordEncoder.matches(token, rt.getTokenHash())) {
 				validToken = rt;
@@ -285,16 +295,35 @@ public class WebController {
 			}
 		}
 
-		if (validToken == null || validToken.getExpiresAt().before(new java.util.Date()) || validToken.isUsed()) {
-			model.addAttribute("message", "Invalid or expired token.");
-			return "login";
+		if (validToken == null || validToken.getExpiresAt().before(new Date()) || validToken.isUsed()) {
+			return invalidResetPasswordPage(model);
 		}
 
 		model.addAttribute("token", token);
-		model.addAttribute("title", "Reset Password");
 		model.addAttribute("scripts", "/assets/js/reset-password.js");
 
 		return "reset-password";
+	}
+
+	private String invalidResetPasswordPage(Model model) {
+		model.addAttribute("message", INVALID_RESET_LINK_MESSAGE);
+		return "reset-password";
+	}
+
+	private boolean isValidRecoveryTokenParameter(String token) {
+		return token != null
+				&& !token.trim().isEmpty()
+				&& token.getBytes(StandardCharsets.UTF_8).length <= MAX_BCRYPT_INPUT_BYTES
+				&& !containsControlCharacter(token);
+	}
+
+	private boolean containsControlCharacter(String value) {
+		for (int i = 0; i < value.length(); i++) {
+			if (Character.isISOControl(value.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 
