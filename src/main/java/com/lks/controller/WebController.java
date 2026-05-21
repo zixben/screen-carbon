@@ -65,7 +65,7 @@ public class WebController {
 
 		model.addAttribute("title", "Movies");
 		model.addAttribute("activePage", "movies");
-		model.addAttribute("styles", "/assets/css/movies.css");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-card-spacing-1");
 
 		if (toggleState) {
 
@@ -101,7 +101,7 @@ public class WebController {
 
 		model.addAttribute("title", "TV Shows");
 		model.addAttribute("activePage", "tv-shows");
-		model.addAttribute("styles", "/assets/css/movies.css");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-card-spacing-1");
 
 		if (toggleState) {
 			model.addAttribute("scripts", "/assets/js/tvClimateRated.js");
