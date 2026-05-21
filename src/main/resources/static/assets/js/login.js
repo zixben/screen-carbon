@@ -2,12 +2,16 @@ $(document).ready(function () {
     const csrfToken = $('input[name="_csrf"]').first().val();
 
     function showError(selector, message) {
-        $(selector).next(".error").remove();
-        $(selector).after(`<div class="error" style="color:red;">${message}</div>`);
+        const $formGroup = $(selector).closest(".form-group");
+        $formGroup.children(".auth-field-error").remove();
+        $("<div>", {
+            "class": "auth-field-error",
+            text: message
+        }).appendTo($formGroup);
     }
 
     function removeError(selector) {
-        $(selector).next(".error").remove();
+        $(selector).closest(".form-group").children(".auth-field-error").remove();
     }
 
     function validateLoginForm() {
@@ -46,6 +50,19 @@ $(document).ready(function () {
             formDataObj[field.name] = field.value;
         });
         return JSON.stringify(formDataObj);
+    }
+
+    function responseJson(response) {
+        return response.json().catch(function () {
+            return {};
+        });
+    }
+
+    function setRecoveryMessage(message, type) {
+        $("#responseMessage")
+            .removeClass("d-none alert-success alert-danger")
+            .addClass("alert " + (type === "success" ? "alert-success" : "alert-danger"))
+            .text(message);
     }
 
     function submitLogin(e) {
@@ -98,29 +115,27 @@ $(document).ready(function () {
     $("#passwordRecoveryForm").on("submit", function (e) {
         e.preventDefault();
 
-        $.ajax({
-            type: "POST",
-            url: server + "/user/password-recovery",
-            contentType: "application/json;charset=UTF-8",
-            data: JSON.stringify({ email: $("#email").val() }),
+        fetch(server + "/user/password-recovery", {
+            method: "POST",
             headers: {
+                "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            success: function (response) {
-                $("#responseMessage")
-                    .removeClass("d-none alert-danger")
-                    .addClass("alert alert-success")
-                    .text(response.message);
-            },
-            error: function (error) {
-                const errorMessage = error.responseJSON && error.responseJSON.message
-                    ? error.responseJSON.message
-                    : "An error occurred. Please try again.";
-                $("#responseMessage")
-                    .removeClass("d-none alert-success")
-                    .addClass("alert alert-danger")
-                    .text(errorMessage);
-            }
-        });
+            body: JSON.stringify({ email: $("#email").val() })
+        })
+            .then(function (response) {
+                return responseJson(response).then(function (data) {
+                    if (!response.ok) {
+                        throw new Error(data.message || "An error occurred. Please try again.");
+                    }
+                    return data;
+                });
+            })
+            .then(function (response) {
+                setRecoveryMessage(response.message, "success");
+            })
+            .catch(function (error) {
+                setRecoveryMessage(error.message || "An error occurred. Please try again.", "error");
+            });
     });
 });

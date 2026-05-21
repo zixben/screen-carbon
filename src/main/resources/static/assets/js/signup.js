@@ -4,12 +4,16 @@ $(document).ready(function () {
     const csrfToken = $('input[name="_csrf"]').first().val();
 
     function showError(selector, message) {
-        $(selector).next(".error").remove();
-        $(selector).after(`<div class="error" style="color:red;">${message}</div>`);
+        const $formGroup = $(selector).closest(".form-group");
+        $formGroup.children(".auth-field-error").remove();
+        $("<div>", {
+            "class": "auth-field-error",
+            text: message
+        }).appendTo($formGroup);
     }
 
     function removeError(selector) {
-        $(selector).next(".error").remove();
+        $(selector).closest(".form-group").children(".auth-field-error").remove();
     }
 
     function checkPasswordComplexity(password) {
