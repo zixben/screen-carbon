@@ -53,6 +53,6 @@ class WebControllerResetPasswordTest {
 		assertEquals("reset-password", view);
 		assertEquals("Reset Password", model.getAttribute("title"));
 		assertEquals("reset-token", model.getAttribute("token"));
-		assertEquals("/assets/js/reset-password.js", model.getAttribute("scripts"));
+		assertEquals("/assets/js/reset-password.js?v=auth-flow-1", model.getAttribute("scripts"));
 	}
 }

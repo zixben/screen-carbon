@@ -300,7 +300,7 @@ public class WebController {
 		}
 
 		model.addAttribute("token", token);
-		model.addAttribute("scripts", "/assets/js/reset-password.js");
+		model.addAttribute("scripts", "/assets/js/reset-password.js?v=auth-flow-1");
 
 		return "reset-password";
 	}

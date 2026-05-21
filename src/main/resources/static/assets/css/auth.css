@@ -23,6 +23,14 @@
 	padding-top: 70px;
 }
 
+.auth-alert {
+	margin-top: 24px;
+}
+
+.auth-response {
+	margin-top: 20px;
+}
+
 @media (max-width: 575.98px) {
 	.form__wrapper .form-control.auth-captcha-input,
 	.auth-captcha-image {
