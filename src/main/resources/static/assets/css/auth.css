@@ -33,9 +33,10 @@
 
 .auth-field-error {
 	color: #dc3545;
-	font-size: 0.875rem;
-	line-height: 1.4;
-	margin-top: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.45;
+	margin-top: 8px;
 }
 
 @media (max-width: 575.98px) {
