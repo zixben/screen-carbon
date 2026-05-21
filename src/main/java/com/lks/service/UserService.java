@@ -16,23 +16,27 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 @Service
 public class UserService {
 	private static final String GENERIC_RECOVERY_MESSAGE =
 			"A recovery link has been sent if the email is registered.";
+	private static final int RECOVERY_TOKEN_RANDOM_BYTES = 32;
+	private static final int MAX_BCRYPT_INPUT_BYTES = 72;
 	private static final int MAX_USERNAME_LENGTH = 24;
 	private static final int MAX_FULL_NAME_LENGTH = 200;
 	private static final int MAX_EMAIL_LENGTH = 50;
 	private static final int MAX_DESCRIPTION_LENGTH = 350;
 	private static final int MAX_RECOVERY_ATTEMPTS_PER_WINDOW = 3;
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	private final UserMapper userMapper;
@@ -418,7 +422,9 @@ public class UserService {
 	}
 
 	private String generateSecureToken() {
-		return UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
+		byte[] tokenBytes = new byte[RECOVERY_TOKEN_RANDOM_BYTES];
+		SECURE_RANDOM.nextBytes(tokenBytes);
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
 	}
 
 	private String normalizeEmail(String email) {
@@ -445,7 +451,9 @@ public class UserService {
 	}
 
 	private boolean isValidRecoveryToken(String token) {
-		return token != null && token.length() <= 200 && !containsControlCharacter(token);
+		return token != null
+				&& token.getBytes(StandardCharsets.UTF_8).length <= MAX_BCRYPT_INPUT_BYTES
+				&& !containsControlCharacter(token);
 	}
 
 	private boolean containsHtmlBoundary(String value) {
