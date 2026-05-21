@@ -63,15 +63,35 @@ $(document).ready(function () {
         };
     }
 
-    function responseMessage(xhr, fallback) {
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-            return xhr.responseJSON.message;
-        }
-        try {
-            return JSON.parse(xhr.responseText).message || fallback;
-        } catch (e) {
-            return fallback;
-        }
+    function responseJson(response) {
+        return response.json().catch(function () {
+            return {};
+        });
+    }
+
+    function fetchJson(url, options, fallback) {
+        return fetch(url, options).then(function (response) {
+            return responseJson(response).then(function (data) {
+                if (!response.ok) {
+                    throw new Error(data.message || fallback);
+                }
+                return data;
+            });
+        });
+    }
+
+    function fetchText(url, options) {
+        return fetch(url, options).then(function (response) {
+            return response.text().then(function (text) {
+                if (!response.ok) {
+                    const error = new Error(text || "Request failed.");
+                    error.status = response.status;
+                    error.responseText = text;
+                    throw error;
+                }
+                return text;
+            });
+        });
     }
 
     $("#username").on("input", debounce(function () {
@@ -82,24 +102,20 @@ $(document).ready(function () {
             return;
         }
 
-        $.ajax({
-            url: "/user/check-username",
-            data: { username: username },
-            contentType: "application/json;charset=UTF-8",
+        fetchJson("/user/check-username?" + new URLSearchParams({ username: username }).toString(), {
             headers: {
                 "X-CSRF-TOKEN": csrfToken
-            },
-            success: function () {
+            }
+        }, "Username is already taken.")
+            .then(function () {
                 isUsernameAvailable = true;
                 removeError("#username");
-            },
-            error: function (xhr) {
-                const errorMessage = responseMessage(xhr, "Username is already taken.");
-                console.error("Error checking username", errorMessage);
-                showError("#username", errorMessage);
+            })
+            .catch(function (error) {
+                console.error("Error checking username", error.message);
+                showError("#username", error.message || "Username is already taken.");
                 isUsernameAvailable = false;
-            }
-        });
+            });
     }, 500));
 
     $("#email").on("input", debounce(function () {
@@ -110,24 +126,20 @@ $(document).ready(function () {
             return;
         }
 
-        $.ajax({
-            url: "/user/check-email",
-            data: { email: email },
-            contentType: "application/json;charset=UTF-8",
+        fetchJson("/user/check-email?" + new URLSearchParams({ email: email }).toString(), {
             headers: {
                 "X-CSRF-TOKEN": csrfToken
-            },
-            success: function () {
+            }
+        }, "Email is already in use.")
+            .then(function () {
                 isEmailAvailable = true;
                 removeError("#email");
-            },
-            error: function (xhr) {
-                const errorMessage = responseMessage(xhr, "Email is already in use.");
-                console.error("Error checking email", errorMessage);
-                showError("#email", errorMessage);
+            })
+            .catch(function (error) {
+                console.error("Error checking email", error.message);
+                showError("#email", error.message || "Email is already in use.");
                 isEmailAvailable = false;
-            }
-        });
+            });
     }, 500));
 
     function validateField() {
@@ -203,29 +215,26 @@ $(document).ready(function () {
             formDataObj[field.name] = field.value;
         });
 
-        $.ajax({
-            type: "POST",
-            url: server + "/user/save",
-            data: JSON.stringify(formDataObj),
-            contentType: "application/json;charset=UTF-8",
+        fetchText(server + "/user/save", {
+            method: "POST",
             headers: {
+                "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            success: function (resp) {
+            body: JSON.stringify(formDataObj)
+        })
+            .then(function (resp) {
                 if (resp === "success") {
                     alert("Registration successful, about to jump to the login page!");
                     window.location.href = server + "/login";
                 } else {
                     alert("Sorry, registration failed!");
                 }
-            },
-            error: function (jqXHR, textStatus) {
-                console.error("Registration error:", textStatus, jqXHR.status, jqXHR.responseText);
+            })
+            .catch(function (error) {
+                console.error("Registration error:", error.status, error.responseText || error.message);
                 alert("Sorry, there was a problem with your registration. Please try again.");
-            }
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            console.error("AJAX request failed:", textStatus, errorThrown);
-        });
+            });
     }
 
     $(".register").on("click", submitRegistration);
