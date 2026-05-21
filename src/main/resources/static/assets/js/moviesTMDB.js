@@ -6,8 +6,8 @@ $(document).ready(function() {
 	window.sessionStorage.setItem("movieNumPage", 1);
 	getMovies();
 
-	$(".form-select").on("change", () => {
-		let element = window.event.target;
+	$(".form-select").on("change", function(e) {
+		let element = e.currentTarget;
 		let index = element.selectedIndex;
 		let value = element.options[index].value;
 		let key = element.options[0].text;
@@ -45,7 +45,6 @@ $(document).ready(function() {
 		$("#pageNum").text(num)
 
 
-		var climateMovies = [];
 		$.ajax({
 			url: server + "/score/getOrderAvg",
 			method: "get",
@@ -54,13 +53,26 @@ $(document).ready(function() {
 				"accept": "application/json"
 			},
 			success: function(response) {
-				climateMovies = response;
+				loadTmdbMovies(Array.isArray(response) ? response : []);
 			},
 			error: function(xhr, status, error) {
 				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
+				loadTmdbMovies([]);
 			}
 		});
+	}
 
+	function loadTmdbMovies(climateMovies) {
+		let sort = sessionStorage.getItem("Sort");
+		if (sort == null) sort = "";
+		let Genre = sessionStorage.getItem("Genre");
+		if (Genre == null) Genre = "";
+		let Country = sessionStorage.getItem("Country");
+		if (Country == null) Country = "";
+		let Year = sessionStorage.getItem("Year");
+		if (Year == null) Year = "";
+
+		let num = Number(window.sessionStorage.getItem("movieNumPage"));
 		$.ajax({
 			url: "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=" + num + "&sort_by=" + sort + "&with_genres=" + Genre + "&with_origin_country=" + Country + "&primary_release_year=" + Year,
 			cache: false,
@@ -91,7 +103,7 @@ $(document).ready(function() {
 
 		const title = respElement.title || respElement.name || "";
 		const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-		const matchedClimateMovie = climateMovies.find(m => (m.vId === resultId && m.videoName === title));
+		const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === resultId && m.videoName === title));
 		const score = matchedClimateMovie ? Number(matchedClimateMovie.score) : null;
 		const isRated = Number.isFinite(score);
 		const borderColor = isRated ? determineBorderColor(score) : "";

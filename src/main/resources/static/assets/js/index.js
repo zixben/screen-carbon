@@ -24,42 +24,50 @@ $(document).ready(function() {
 	}
 
 	var climateMovies = [];
+	loadClimateMovies();
 
-	$.ajax({
-		url: server + "/score/getTop20Popularity",
-		method: "get",
-		headers: {
-			"Authorization": jwt,
-			"accept": "application/json"
-		},
-		success: function(response) {
-			climateMovies = response;
-			const rankedClimateInner = document.querySelector('#highestRankedClimate .carousel-inner');
-			updateCarousel(rankedClimateInner, climateMovies, true);
-			restoreCarouselState('#highestRankedClimate');
-		},
-		error: function(xhr, status, error) {
-			console.error("An error occurred: " + status + ", " + error + ", " + xhr);
-		}
-	});
+	function loadClimateMovies() {
+		$.ajax({
+			url: server + "/score/getTop20Popularity",
+			method: "get",
+			headers: {
+				"Authorization": jwt,
+				"accept": "application/json"
+			},
+			success: function(response) {
+				climateMovies = Array.isArray(response) ? response : [];
+				const rankedClimateInner = document.querySelector('#highestRankedClimate .carousel-inner');
+				updateCarousel(rankedClimateInner, climateMovies, true);
+				restoreCarouselState('#highestRankedClimate');
+				loadTrendingMovies();
+			},
+			error: function(xhr, status, error) {
+				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
+				climateMovies = [];
+				loadTrendingMovies();
+			}
+		});
+	}
 
-	$.ajax({
-		url: "https://api.themoviedb.org/3/trending/all/day?language=en-US",
-		cache: false,
-		method: "get",
-		headers: {
-			"Authorization": jwt,
-			"accept": "application/json"
-		},
-		success: function(response) {
-			const trendingMoviesInner = document.querySelector('#trendingMoviesCarousel .carousel-inner');  
-			updateCarousel(trendingMoviesInner, response.results, false);
-			restoreCarouselState('#trendingMoviesCarousel');
-		},
-		error: function(xhr, status, error) {
-			console.error("An error occurred: " + status + ", " + error);
-		}
-	});
+	function loadTrendingMovies() {
+		$.ajax({
+			url: "https://api.themoviedb.org/3/trending/all/day?language=en-US",
+			cache: false,
+			method: "get",
+			headers: {
+				"Authorization": jwt,
+				"accept": "application/json"
+			},
+			success: function(response) {
+				const trendingMoviesInner = document.querySelector('#trendingMoviesCarousel .carousel-inner');
+				updateCarousel(trendingMoviesInner, response.results || [], false);
+				restoreCarouselState('#trendingMoviesCarousel');
+			},
+			error: function(xhr, status, error) {
+				console.error("An error occurred: " + status + ", " + error);
+			}
+		});
+	}
 
 	function updateCarousel(carouselInner, movies, isCustomData) {
 		if (!carouselInner) {

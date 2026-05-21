@@ -36,6 +36,7 @@ public class WebController {
 	public String index(Model model, HttpSession session) {
 
 		model.addAttribute("title", "Screen Carbon Test");
+		model.addAttribute("activePage", "home");
 		model.addAttribute("styles", "/assets/css/index.css");
 		model.addAttribute("scripts", "/assets/js/index.js");
 

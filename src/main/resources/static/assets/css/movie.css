@@ -27,11 +27,11 @@
 	flex-wrap: wrap;
 }
 
-.movieDateRuntime #releaseDateRuntime {
+.movieDateRuntime .releaseDateRuntime {
 	margin: 5px;
 }
 
-#releaseDateRuntime {
+.releaseDateRuntime {
 	font-weight: 600;
 }
 

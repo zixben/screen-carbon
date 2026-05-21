@@ -31,11 +31,12 @@
 		}
 
 		#navbarNav ul li.active a {
-			color: blueviolet;
+			color: #9bd14b;
+			font-weight: 700;
 		}
 		
 		#navbarNav ul li:hover a {
-  			color: #1c425c;
+  			color: #9bd14b;
 		}
 
 
@@ -57,28 +58,30 @@
   			background-color: unset;
 		}
 
-		@media (max-width: 576px) {
-			.navbar-nav {
-				flex-direction: column;
-			}
-		}
 		/* Additional styles for collapsed navbar */
-		@media (max-width: 992px) {
+		@media (max-width: 991.98px) {
 			
 			#navbarNav {
 				margin-top: 20px;
 			}
 			/* Adjusting for Bootstrap's LG breakpoint */
 			.navbar-nav {
+				flex-direction: column;
 				justify-content: center;
-				align-items: flex-start;
+				align-items: stretch;
 			}
 
-			.navbar-nav .nav-link,
-			.navbar-nav .btn-subscribe {
-				margin: 5px 35px;
-				/* Adjust vertical spacing */
+			.navbar-nav .nav-link {
+				margin: 5px 0;
 				width: 100%;
-				/* Full width for vertical layout */
+			}
+
+			.dropdown {
+				margin-top: 10px;
+			}
+
+			.btn-subscribe {
+				width: 100%;
+				text-align: left;
 			}
 		}
