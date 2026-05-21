@@ -134,6 +134,7 @@ public class WebController {
 	public String signup(Model model, HttpServletRequest request) {
 
 		model.addAttribute("title", "Register");
+		model.addAttribute("scripts", "/assets/js/signup.js?v=auth-pages-1");
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
@@ -145,6 +146,7 @@ public class WebController {
 	public String login(Model model, HttpServletRequest request) {
 
 		model.addAttribute("title", "Login");
+		model.addAttribute("scripts", "/assets/js/login.js?v=auth-pages-1");
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
