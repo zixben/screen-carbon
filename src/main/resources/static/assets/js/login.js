@@ -65,6 +65,17 @@ $(document).ready(function () {
             .text(message);
     }
 
+    function fetchJson(url, options) {
+        return fetch(url, options).then(function (response) {
+            return responseJson(response).then(function (data) {
+                if (!response.ok) {
+                    throw new Error(data.message || "An unexpected error occurred.");
+                }
+                return data;
+            });
+        });
+    }
+
     function submitLogin(e) {
         e.preventDefault();
 
@@ -72,23 +83,21 @@ $(document).ready(function () {
             return;
         }
 
-        $.ajax({
-            type: "POST",
-            url: server + "/user/login",
-            data: formToJson($("#loginRequestForm")),
-            contentType: "application/json;charset=UTF-8",
+        fetchJson(server + "/user/login", {
+            method: "POST",
             headers: {
+                "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            success: function (resp) {
+            body: formToJson($("#loginRequestForm"))
+        })
+            .then(function (resp) {
                 alert(resp.message);
                 window.location.href = resp.role === "ADMIN" ? server + "/admin" : server + "/";
-            },
-            error: function (jqXHR) {
-                const response = jqXHR.responseJSON;
-                alert(response && response.message ? response.message : "An unexpected error occurred.");
-            }
-        });
+            })
+            .catch(function (error) {
+                alert(error.message || "An unexpected error occurred.");
+            });
     }
 
     $(".login").on("click", submitLogin);
@@ -115,7 +124,7 @@ $(document).ready(function () {
     $("#passwordRecoveryForm").on("submit", function (e) {
         e.preventDefault();
 
-        fetch(server + "/user/password-recovery", {
+        fetchJson(server + "/user/password-recovery", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
@@ -123,14 +132,6 @@ $(document).ready(function () {
             },
             body: JSON.stringify({ email: $("#email").val() })
         })
-            .then(function (response) {
-                return responseJson(response).then(function (data) {
-                    if (!response.ok) {
-                        throw new Error(data.message || "An error occurred. Please try again.");
-                    }
-                    return data;
-                });
-            })
             .then(function (response) {
                 setRecoveryMessage(response.message, "success");
             })
