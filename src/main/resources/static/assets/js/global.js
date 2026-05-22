@@ -146,6 +146,48 @@ function toggleContent(isChecked) {
     window.location.href = "?toggle=" + Boolean(isChecked);
 }
 
+function updateMediaPagination(page, options) {
+    const settings = options || {};
+    const currentPage = Math.max(1, Number(page) || 1);
+    const totalPages = Number(settings.totalPages);
+    const isLoading = Boolean(settings.isLoading);
+    const hasTotalPages = Number.isInteger(totalPages) && totalPages > 0;
+    const hasPrevious = !isLoading && (settings.hasPrevious !== undefined ? Boolean(settings.hasPrevious) : currentPage > 1);
+    const hasNext = !isLoading && (settings.hasNext !== undefined
+        ? Boolean(settings.hasNext)
+        : !hasTotalPages || currentPage < totalPages);
+    const pageNumber = document.getElementById("pageNum");
+    const pageTotal = document.getElementById("pageTotal");
+
+    if (pageNumber) {
+        pageNumber.textContent = currentPage;
+    }
+
+    document.querySelectorAll('[data-action="prev"]').forEach(function (button) {
+        setMediaPaginationButtonState(button, !hasPrevious);
+    });
+
+    document.querySelectorAll('[data-action="next"]').forEach(function (button) {
+        setMediaPaginationButtonState(button, !hasNext);
+    });
+
+    if (pageTotal) {
+        if (isLoading) {
+            pageTotal.textContent = "";
+        } else if (hasTotalPages) {
+            pageTotal.textContent = "of " + totalPages;
+        } else {
+            pageTotal.textContent = hasNext ? "" : "last page";
+        }
+    }
+}
+
+function setMediaPaginationButtonState(button, disabled) {
+    button.disabled = disabled;
+    button.classList.toggle("is-disabled", disabled);
+    button.setAttribute("aria-disabled", String(disabled));
+}
+
 /*
  * Scroll Top Bar
  */

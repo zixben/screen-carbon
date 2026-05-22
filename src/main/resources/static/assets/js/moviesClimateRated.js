@@ -11,27 +11,40 @@ $(document).ready(function() {
 		const genre = window.sessionStorage.getItem("selectedGenre") || "";
 		const year = window.sessionStorage.getItem("selectedYear") || "";
 
+		updateMediaPagination(page, { isLoading: true });
+
 		$.ajax({
 			url: url,
 			method: 'GET',
 			data: {
-				limit: pageSize,
+				limit: pageSize + 1,
 				offset: offset,
 				country: country,
 				genre: genre,
 				year: year
 			},
 			success: function(response) {
-				if (response && response.length) {
+				const videos = Array.isArray(response) ? response : [];
+				const hasNextPage = videos.length > pageSize;
+				const currentPageVideos = hasNextPage ? videos.slice(0, pageSize) : videos;
 
-					renderVideos(response);
+				if (currentPageVideos.length) {
+					renderVideos(currentPageVideos);
 				} else {
+					if (page > defaultPage) {
+						const previousPage = page - 1;
+						window.sessionStorage.setItem("movieNumPage", previousPage);
+						fetchVideos(url, previousPage);
+						return;
+					}
+
 					showTextMessage("#movies", "No results found");
 				}
-				updatePageNumber(page);
+				updatePageNumber(page, hasNextPage);
 			},
 			error: function(error) {
 				console.error("Error fetching videos:", error);
+				updatePageNumber(page, false);
 			}
 		});
 	}
@@ -131,8 +144,8 @@ $(document).ready(function() {
 		fetchVideos(url, page);
 	}
 
-	function updatePageNumber(page) {
-		$('#pageNum').text(page);
+	function updatePageNumber(page, hasNextPage) {
+		updateMediaPagination(page, { hasNext: hasNextPage });
 	}
 
 	function prePage() {

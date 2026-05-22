@@ -13,17 +13,28 @@ $(document).ready(function() {
 		let key = element.options[0].text;
 		window.sessionStorage.setItem(key, value);
 		window.sessionStorage.setItem("tvNumPage", 1);
+		window.sessionStorage.removeItem("tvTotalPages");
 		getMovies();
 	})
 
 	function prePage() {
 		let num = Number(window.sessionStorage.getItem("tvNumPage"));
+		if (num <= 1) {
+			window.sessionStorage.setItem("tvNumPage", 1);
+			updateMediaPagination(1);
+			return;
+		}
 		window.sessionStorage.setItem("tvNumPage", num - 1);
 		getMovies();
 	}
 
 	function nextPage() {
 		let num = Number(window.sessionStorage.getItem("tvNumPage"));
+		const totalPages = Number(window.sessionStorage.getItem("tvTotalPages"));
+		if (Number.isInteger(totalPages) && totalPages > 0 && num >= totalPages) {
+			updateMediaPagination(num, { totalPages: totalPages });
+			return;
+		}
 		window.sessionStorage.setItem("tvNumPage", num + 1);
 		getMovies();
 	}
@@ -40,9 +51,15 @@ $(document).ready(function() {
 
 		let num = Number(window.sessionStorage.getItem("tvNumPage"));
 		if (num < 1) {
-			return;
+			num = 1;
+			window.sessionStorage.setItem("tvNumPage", num);
 		}
-		$("#pageNum").text(num)
+		const storedTotalPages = Number(window.sessionStorage.getItem("tvTotalPages"));
+		if (Number.isInteger(storedTotalPages) && storedTotalPages > 0 && num > storedTotalPages) {
+			num = storedTotalPages;
+			window.sessionStorage.setItem("tvNumPage", num);
+		}
+		updateMediaPagination(num, { totalPages: storedTotalPages, isLoading: true });
 
 
 		$.ajax({
@@ -82,15 +99,32 @@ $(document).ready(function() {
 				"accept": "application/json"
 			},
 			success: function(resp) {
-				if (resp.results.length) {
+				const results = Array.isArray(resp.results) ? resp.results : [];
+				const totalPages = Math.max(1, Number(resp.total_pages) || 1);
+				window.sessionStorage.setItem("tvTotalPages", totalPages);
+
+				if (num > totalPages) {
+					window.sessionStorage.setItem("tvNumPage", totalPages);
+					updateMediaPagination(totalPages, { totalPages: totalPages });
+					getMovies();
+					return;
+				}
+
+				updateMediaPagination(num, { totalPages: totalPages });
+
+				if (results.length) {
 					const $tvShows = $("#tv-shows").empty();
 
-					for (const respElement of resp.results) {
+					for (const respElement of results) {
 						appendTmdbTvCard($tvShows, respElement, climateMovies);
 					}
 				} else {
 					showTextMessage("#tv-shows", "No results found");
 				}
+			},
+			error: function() {
+				updateMediaPagination(num, { hasNext: false });
+				showTextMessage("#tv-shows", "No results found");
 			}
 		})
 	}

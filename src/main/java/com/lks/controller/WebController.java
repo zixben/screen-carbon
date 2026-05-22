@@ -71,14 +71,14 @@ public class WebController {
 
 		model.addAttribute("title", "Movies");
 		model.addAttribute("activePage", "movies");
-		model.addAttribute("styles", "/assets/css/movies.css?v=media-card-spacing-1");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-2");
 
 		if (toggleState) {
 
-			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js");
+			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=media-pagination-2");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/moviesTMDB.js");
+			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=media-pagination-2");
 		}
 
 		return "movies";
@@ -107,13 +107,13 @@ public class WebController {
 
 		model.addAttribute("title", "TV Shows");
 		model.addAttribute("activePage", "tv-shows");
-		model.addAttribute("styles", "/assets/css/movies.css?v=media-card-spacing-1");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-2");
 
 		if (toggleState) {
-			model.addAttribute("scripts", "/assets/js/tvClimateRated.js");
+			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-pagination-2");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/tvTMDB.js");
+			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=media-pagination-2");
 		}
 
 		return "tv-shows";

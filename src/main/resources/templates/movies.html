@@ -112,7 +112,7 @@
 				<!-- Search Section -->
 
 
-				<div class="mt-4 d-inline-block position-relative w-100" style="max-width: 500px;">
+				<div class="media-search-wrapper mt-4 position-relative w-100">
 					<input type="text" class="form-control search-input moveInput" placeholder="Search for a movie">
 					<i class="fa fa-search search-icon"></i>
 				</div>
@@ -122,13 +122,23 @@
 			</div>
 
 
-			<div class="toPage" style="height: 60px;width: 100%;margin-top: 20px;clear: both;">
-				<nav aria-label="Page navigation example">
-					<ul class="pagination">
-						<li class="page-item" data-action="prev"><a class="page-link" href="#">Previous</a></li>
-						<li class="page-item"><a class="page-link" href="#" id="pageNum">1</a></li>
-						<li class="page-item" data-action="next"><a class="page-link" href="#">Next</a></li>
-					</ul>
+			<div class="media-pagination">
+				<nav class="media-pagination__nav" aria-label="Movies pagination">
+					<button type="button" class="media-pagination__button page-item" data-action="prev"
+						aria-label="Previous page">
+						<i class="bi bi-chevron-left" aria-hidden="true"></i>
+						<span>Previous</span>
+					</button>
+					<div class="media-pagination__current" aria-live="polite">
+						<span class="media-pagination__label">Page</span>
+						<span id="pageNum" class="media-pagination__number">1</span>
+						<span id="pageTotal" class="media-pagination__total"></span>
+					</div>
+					<button type="button" class="media-pagination__button page-item" data-action="next"
+						aria-label="Next page">
+						<span>Next</span>
+						<i class="bi bi-chevron-right" aria-hidden="true"></i>
+					</button>
 				</nav>
 			</div>
 		</div>
