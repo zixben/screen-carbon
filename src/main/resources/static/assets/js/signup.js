@@ -1,19 +1,50 @@
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
     let isUsernameAvailable = false;
     let isEmailAvailable = false;
-    const csrfToken = $('input[name="_csrf"]').first().val();
+    const signupForm = document.getElementById("signupForm");
+    const fullNameInput = document.getElementById("fullName");
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPass");
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const csrfToken = csrfInput ? csrfInput.value : "";
+    const serverBase = typeof server === "string" ? server : "";
+
+    function field(selector) {
+        return document.querySelector(selector);
+    }
+
+    function removeGroupErrors(formGroup) {
+        if (!formGroup) {
+            return;
+        }
+        Array.from(formGroup.children).forEach(function (child) {
+            if (child.classList.contains("auth-field-error")) {
+                child.remove();
+            }
+        });
+    }
 
     function showError(selector, message) {
-        const $formGroup = $(selector).closest(".form-group");
-        $formGroup.children(".auth-field-error").remove();
-        $("<div>", {
-            "class": "auth-field-error",
-            text: message
-        }).appendTo($formGroup);
+        const element = field(selector);
+        const formGroup = element ? element.closest(".form-group") : null;
+
+        if (!formGroup) {
+            return;
+        }
+
+        removeGroupErrors(formGroup);
+
+        const error = document.createElement("div");
+        error.className = "auth-field-error";
+        error.textContent = message;
+        formGroup.appendChild(error);
     }
 
     function removeError(selector) {
-        $(selector).closest(".form-group").children(".auth-field-error").remove();
+        const element = field(selector);
+        removeGroupErrors(element ? element.closest(".form-group") : null);
     }
 
     function checkPasswordComplexity(password) {
@@ -45,21 +76,14 @@ $(document).ready(function () {
         return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
     }
 
-    function debounce(func, wait, immediate) {
+    function debounce(func, wait) {
         let timeout;
-        return function () {
+        return function (event) {
             const context = this;
-            const args = arguments;
             clearTimeout(timeout);
             timeout = setTimeout(function () {
-                timeout = null;
-                if (!immediate) {
-                    func.apply(context, args);
-                }
+                func.call(context, event);
             }, wait);
-            if (immediate && !timeout) {
-                func.apply(context, args);
-            }
         };
     }
 
@@ -94,8 +118,8 @@ $(document).ready(function () {
         });
     }
 
-    $("#username").on("input", debounce(function () {
-        const username = $(this).val().trim();
+    usernameInput.addEventListener("input", debounce(function () {
+        const username = usernameInput.value.trim();
         if (username.length < 3) {
             showError("#username", "Username must be at least 3 characters long.");
             isUsernameAvailable = false;
@@ -118,8 +142,8 @@ $(document).ready(function () {
             });
     }, 500));
 
-    $("#email").on("input", debounce(function () {
-        const email = $(this).val().trim();
+    emailInput.addEventListener("input", debounce(function () {
+        const email = emailInput.value.trim();
         if (!validateEmail(email)) {
             showError("#email", "Please enter a valid email address.");
             isEmailAvailable = false;
@@ -144,11 +168,11 @@ $(document).ready(function () {
 
     function validateField() {
         let isValid = true;
-        const password = $("#password").val();
-        const confirmPassword = $("#confirmPass").val();
-        const email = $("#email").val().trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const email = emailInput.value.trim();
 
-        if (!$("#fullName").val().trim().length) {
+        if (!fullNameInput.value.trim().length) {
             showError("#fullName", "Full Name cannot be empty.");
             isValid = false;
         } else {
@@ -165,7 +189,7 @@ $(document).ready(function () {
             removeError("#email");
         }
 
-        if (!$("#username").val().trim().length) {
+        if (!usernameInput.value.trim().length) {
             showError("#username", "Username cannot be empty.");
             isValid = false;
         } else if (!isUsernameAvailable) {
@@ -193,8 +217,16 @@ $(document).ready(function () {
         return isValid && isUsernameAvailable && isEmailAvailable;
     }
 
-    function submitRegistration(e) {
-        e.preventDefault();
+    function formToJson(form) {
+        const formDataObj = {};
+        new FormData(form).forEach(function (value, key) {
+            formDataObj[key] = value;
+        });
+        return JSON.stringify(formDataObj);
+    }
+
+    function submitRegistration(event) {
+        event.preventDefault();
 
         if (!isUsernameAvailable) {
             alert("Please choose a different username. The current one is already taken.");
@@ -210,23 +242,18 @@ $(document).ready(function () {
             return;
         }
 
-        const formDataObj = {};
-        $.each($("#signupForm").serializeArray(), function (i, field) {
-            formDataObj[field.name] = field.value;
-        });
-
-        fetchText(server + "/user/save", {
+        fetchText(serverBase + "/user/save", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            body: JSON.stringify(formDataObj)
+            body: formToJson(signupForm)
         })
             .then(function (resp) {
                 if (resp === "success") {
                     alert("Registration successful, about to jump to the login page!");
-                    window.location.href = server + "/login";
+                    window.location.href = serverBase + "/login";
                 } else {
                     alert("Sorry, registration failed!");
                 }
@@ -237,6 +264,6 @@ $(document).ready(function () {
             });
     }
 
-    $(".register").on("click", submitRegistration);
-    $("#signupForm").on("submit", submitRegistration);
+    document.querySelector(".register").addEventListener("click", submitRegistration);
+    signupForm.addEventListener("submit", submitRegistration);
 });
