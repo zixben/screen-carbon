@@ -1,24 +1,57 @@
-$(document).ready(function () {
-    const csrfToken = $('input[name="_csrf"]').first().val();
+document.addEventListener("DOMContentLoaded", function () {
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const csrfToken = csrfInput ? csrfInput.value : "";
+    const loginForm = document.getElementById("loginRequestForm");
+    const passwordRecoveryForm = document.getElementById("passwordRecoveryForm");
+    const loginPanel = document.getElementById("loginForm");
+    const passwordRecoveryPanel = document.getElementById("passwordRecoveryPanel");
+    const captchaImage = document.getElementById("imgpw");
+    const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+    const backToLoginLink = document.getElementById("backToLoginLink");
+    const responseMessage = document.getElementById("responseMessage");
+    const serverBase = typeof server === "string" ? server : "";
+
+    function field(selector) {
+        return document.querySelector(selector);
+    }
+
+    function removeGroupErrors(formGroup) {
+        if (!formGroup) {
+            return;
+        }
+        Array.from(formGroup.children).forEach(function (child) {
+            if (child.classList.contains("auth-field-error")) {
+                child.remove();
+            }
+        });
+    }
 
     function showError(selector, message) {
-        const $formGroup = $(selector).closest(".form-group");
-        $formGroup.children(".auth-field-error").remove();
-        $("<div>", {
-            "class": "auth-field-error",
-            text: message
-        }).appendTo($formGroup);
+        const element = field(selector);
+        const formGroup = element ? element.closest(".form-group") : null;
+
+        if (!formGroup) {
+            return;
+        }
+
+        removeGroupErrors(formGroup);
+
+        const error = document.createElement("div");
+        error.className = "auth-field-error";
+        error.textContent = message;
+        formGroup.appendChild(error);
     }
 
     function removeError(selector) {
-        $(selector).closest(".form-group").children(".auth-field-error").remove();
+        const element = field(selector);
+        removeGroupErrors(element ? element.closest(".form-group") : null);
     }
 
     function validateLoginForm() {
         let isValid = true;
-        const username = $("#username").val().trim();
-        const password = $("#password").val().trim();
-        const code = $("#code").val().trim();
+        const username = field("#username").value.trim();
+        const password = field("#password").value.trim();
+        const code = field("#code").value.trim();
 
         if (username.length === 0) {
             showError("#username", "Please enter your username.");
@@ -44,10 +77,10 @@ $(document).ready(function () {
         return isValid;
     }
 
-    function formToJson($form) {
+    function formToJson(form) {
         const formDataObj = {};
-        $.each($form.serializeArray(), function (i, field) {
-            formDataObj[field.name] = field.value;
+        new FormData(form).forEach(function (value, key) {
+            formDataObj[key] = value;
         });
         return JSON.stringify(formDataObj);
     }
@@ -59,10 +92,9 @@ $(document).ready(function () {
     }
 
     function setRecoveryMessage(message, type) {
-        $("#responseMessage")
-            .removeClass("d-none alert-success alert-danger")
-            .addClass("alert " + (type === "success" ? "alert-success" : "alert-danger"))
-            .text(message);
+        responseMessage.textContent = message;
+        responseMessage.classList.remove("d-none", "alert-success", "alert-danger");
+        responseMessage.classList.add("alert", type === "success" ? "alert-success" : "alert-danger");
     }
 
     function fetchJson(url, options) {
@@ -76,61 +108,61 @@ $(document).ready(function () {
         });
     }
 
-    function submitLogin(e) {
-        e.preventDefault();
+    function submitLogin(event) {
+        event.preventDefault();
 
         if (!validateLoginForm()) {
             return;
         }
 
-        fetchJson(server + "/user/login", {
+        fetchJson(serverBase + "/user/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            body: formToJson($("#loginRequestForm"))
+            body: formToJson(loginForm)
         })
             .then(function (resp) {
                 alert(resp.message);
-                window.location.href = resp.role === "ADMIN" ? server + "/admin" : server + "/";
+                window.location.href = resp.role === "ADMIN" ? serverBase + "/admin" : serverBase + "/";
             })
             .catch(function (error) {
                 alert(error.message || "An unexpected error occurred.");
             });
     }
 
-    $(".login").on("click", submitLogin);
-    $("#loginRequestForm").on("submit", submitLogin);
+    function refreshCaptcha() {
+        captchaImage.src = serverBase + "/user/getCode?" + new Date().getMilliseconds();
+    }
 
-    $("#imgpw").on("click", function () {
-        const date = new Date().getMilliseconds();
-        $("#imgpw").attr("src", server + "/user/getCode?" + date);
-    });
-    $("#imgpw").attr("src", server + "/user/getCode");
+    loginForm.addEventListener("submit", submitLogin);
+    document.querySelector(".login").addEventListener("click", submitLogin);
+    captchaImage.addEventListener("click", refreshCaptcha);
+    captchaImage.src = serverBase + "/user/getCode";
 
-    $("#forgotPasswordLink").on("click", function (e) {
-        e.preventDefault();
-        $("#loginForm").addClass("d-none");
-        $("#passwordRecoveryPanel").removeClass("d-none");
-    });
-
-    $("#backToLoginLink").on("click", function (e) {
-        e.preventDefault();
-        $("#passwordRecoveryPanel").addClass("d-none");
-        $("#loginForm").removeClass("d-none");
+    forgotPasswordLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        loginPanel.classList.add("d-none");
+        passwordRecoveryPanel.classList.remove("d-none");
     });
 
-    $("#passwordRecoveryForm").on("submit", function (e) {
-        e.preventDefault();
+    backToLoginLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        passwordRecoveryPanel.classList.add("d-none");
+        loginPanel.classList.remove("d-none");
+    });
 
-        fetchJson(server + "/user/password-recovery", {
+    passwordRecoveryForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        fetchJson(serverBase + "/user/password-recovery", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8",
                 "X-CSRF-TOKEN": csrfToken
             },
-            body: JSON.stringify({ email: $("#email").val() })
+            body: JSON.stringify({ email: passwordRecoveryForm.querySelector("#email").value })
         })
             .then(function (response) {
                 setRecoveryMessage(response.message, "success");
