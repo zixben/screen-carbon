@@ -1,59 +1,64 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layouts/default}">
+
 <head>
-    <title th:text="${title}"></title>
-    
-	
+	<title th:text="${title}"></title>
 </head>
+
 <body>
-    <div layout:fragment="content">
+	<div layout:fragment="content">
+		<div class="pageBody search-page">
+			<header class="search-page__header">
+				<div>
+					<p class="search-page__eyebrow">Search results</p>
+					<h2 class="search-page__title">"<span class="searchValue"></span>"</h2>
+				</div>
+				<p class="search-page__summary" id="searchResultsSummary" aria-live="polite"></p>
+			</header>
 
-<!-- pageBody start -->
-<div class="pageBody">
-    <div class="selectCar">
-        <h2>Search Result for: "<span class="searchValue"></span>"</h2>
-        <form class="row g-3">
-            <div class="col-auto">
-                <div class="btn-group" style="width: 370px;height: 35px;" role="group" aria-label="Basic example">
-                    <button type="button" style="border: 1px solid #6c757d;"
-                            class="btn btn-sm  btn-outline-secondary active" onclick="setActiveTab(this); movies('movie', 1);">Films
-                    </button>
-                    <button type="button" style="border: 1px solid #6c757d;"
-                            class="btn btn-outline-secondary" onclick="setActiveTab(this); movies('tv', 1)">TV shows
-                    </button>
-                    <button type="button" style="border: 1px solid #6c757d;"
-                            class="btn btn-outline-secondary" onclick="setActiveTab(this); movies('person', 1)">Cast & crew
-                    </button>
-                </div>
-            </div>
-        </form>
+			<div class="search-tabs" role="tablist" aria-label="Search result type">
+				<button type="button" class="search-tabs__button active" data-search-type="movie" role="tab"
+					aria-selected="true">
+					<i class="bi bi-film" aria-hidden="true"></i>
+					<span>Films</span>
+				</button>
+				<button type="button" class="search-tabs__button" data-search-type="tv" role="tab"
+					aria-selected="false">
+					<i class="bi bi-tv" aria-hidden="true"></i>
+					<span>TV shows</span>
+				</button>
+				<button type="button" class="search-tabs__button" data-search-type="person" role="tab"
+					aria-selected="false">
+					<i class="bi bi-people" aria-hidden="true"></i>
+					<span>Cast & crew</span>
+				</button>
+			</div>
 
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="section-title__wrapper">
-                <div class="section-title" style="margin-bottom: 0px;">
-                    <h2 class="main-title">▎Choose the title that you wish to rate!</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12 items">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="section-title__wrapper">
-                <div class="section-title">
-                    <h2 class="more" onclick="more()">See more ></h2>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- pageBody end -->
-    </div>
+			<div class="search-results">
+				<div class="items" aria-live="polite"></div>
+			</div>
+
+			<div class="media-pagination search-pagination">
+				<nav class="media-pagination__nav" aria-label="Search results pagination">
+					<button type="button" class="media-pagination__button page-item" data-action="prev"
+						aria-label="Previous page">
+						<i class="bi bi-chevron-left" aria-hidden="true"></i>
+						<span>Previous</span>
+					</button>
+					<div class="media-pagination__current" aria-live="polite">
+						<span class="media-pagination__label">Page</span>
+						<span id="pageNum" class="media-pagination__number">1</span>
+						<span id="pageTotal" class="media-pagination__total"></span>
+					</div>
+					<button type="button" class="media-pagination__button page-item" data-action="next"
+						aria-label="Next page">
+						<span>Next</span>
+						<i class="bi bi-chevron-right" aria-hidden="true"></i>
+					</button>
+				</nav>
+			</div>
+		</div>
+	</div>
 </body>
 
 </html>

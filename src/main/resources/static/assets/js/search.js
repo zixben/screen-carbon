@@ -1,26 +1,77 @@
-var queryString = decodeURIComponent(window.location.search);
-var params = new URLSearchParams(queryString);
-var value = params.get('value');
-var videoType = safeVideoType(params.get('type'));
+const params = new URLSearchParams(window.location.search);
+const value = String(params.get("value") || "").trim();
+const requestedType = params.get("type");
+const requestedPage = Number(params.get("page"));
+const searchTypes = {
+	movie: {
+		endpoint: "/search/movie",
+		label: "Films",
+		itemLabel: "Film",
+		resultsLabel: "films",
+		icon: "bi-film"
+	},
+	tv: {
+		endpoint: "/search/tv",
+		label: "TV shows",
+		itemLabel: "TV show",
+		resultsLabel: "TV shows",
+		icon: "bi-tv"
+	},
+	person: {
+		endpoint: "/search/person",
+		label: "Cast & crew",
+		itemLabel: "Cast & crew",
+		resultsLabel: "people",
+		icon: "bi-people"
+	}
+};
+const searchState = {
+	type: normalizeSearchType(requestedType),
+	page: Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+	totalPages: 1,
+	requestId: 0
+};
+const maxSearchPage = 500;
+let climateVideoCache = null;
 
-function setActiveTab(button) {
-	// Remove active class from all buttons
-	$('.btn-group .btn').removeClass('active');
-
-	// Add active class to the clicked button
-	$(button).addClass('active');
-
+function normalizeSearchType(type) {
+	return Object.prototype.hasOwnProperty.call(searchTypes, type) ? type : "movie";
 }
 
-function more() {
-	let where = window.sessionStorage.getItem("where");
-	let page = Number(window.sessionStorage.getItem("page"));
-	page += 1;
-	movies(where, page)
+function setActiveTab(type) {
+	$(".search-tabs__button").each(function() {
+		const isActive = $(this).data("search-type") === type;
+		$(this).toggleClass("active", isActive);
+		$(this).attr("aria-selected", String(isActive));
+	});
+}
+
+function setSearchSummary(message) {
+	$("#searchResultsSummary").text(message || "");
+}
+
+function setSearchMessage(message, className) {
+	const $items = $(".items").empty();
+	$("<div>")
+		.addClass(className || "search-empty")
+		.text(message)
+		.appendTo($items);
+}
+
+function updateSearchUrl(type, page) {
+	const nextParams = new URLSearchParams();
+	nextParams.set("value", value);
+	nextParams.set("type", type);
+	nextParams.set("page", String(page));
+	window.history.replaceState(null, "", window.location.pathname + "?" + nextParams.toString());
 }
 
 function fetchClimateVideo() {
-	return new Promise((resolve, reject) => {
+	if (climateVideoCache) {
+		return Promise.resolve(climateVideoCache);
+	}
+
+	return new Promise((resolve) => {
 		$.ajax({
 			url: server + "/score/getOrderAvg",
 			method: "get",
@@ -28,28 +79,35 @@ function fetchClimateVideo() {
 				"accept": "application/json"
 			},
 			success: function(response) {
-				resolve(response);
+				climateVideoCache = Array.isArray(response) ? response : [];
+				resolve(climateVideoCache);
 			},
 			error: function(xhr, status, error) {
 				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
-				reject(error);
+				climateVideoCache = [];
+				resolve(climateVideoCache);
 			}
 		});
 	});
 }
 
-function fetchMovies(value, page, climateVideo) {
+function fetchSearchResults(type, page) {
+	const searchParams = new URLSearchParams({
+		query: value,
+		include_adult: "false",
+		language: "en-US",
+		page: String(page)
+	});
+
 	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: "https://api.themoviedb.org/3/search/multi?query=" + encodeURIComponent(value || "") + "&include_adult=false&language=en-US&page=" + page,
+			url: "https://api.themoviedb.org/3" + searchTypes[type].endpoint + "?" + searchParams.toString(),
 			method: "get",
 			headers: {
 				"Authorization": jwt,
 				"accept": "application/json"
 			},
-			success: function(resp) {
-				resolve({ resp, climateVideo });
-			},
+			success: resolve,
 			error: function(xhr, status, error) {
 				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 				reject(error);
@@ -58,96 +116,226 @@ function fetchMovies(value, page, climateVideo) {
 	});
 }
 
-function renderMovies(data) {
-	const { resp, climateVideo } = data;
+function loadSearch(type, page) {
+	const normalizedType = normalizeSearchType(type);
+	const normalizedPage = Math.min(maxSearchPage, Math.max(1, Number(page) || 1));
+	const requestId = searchState.requestId + 1;
+	searchState.requestId = requestId;
+	searchState.type = normalizedType;
+	searchState.page = normalizedPage;
+
+	setActiveTab(normalizedType);
+	setSearchSummary("Loading " + searchTypes[normalizedType].label.toLowerCase() + "...");
+	setSearchMessage("Loading results...", "search-loading");
+	updateMediaPagination(normalizedPage, {
+		totalPages: searchState.totalPages,
+		isLoading: true
+	});
+	updateSearchUrl(normalizedType, normalizedPage);
+
+	if (!value) {
+		setSearchSummary("");
+		setSearchMessage("No search term provided.", "search-empty");
+		updateMediaPagination(1, { totalPages: 1 });
+		return;
+	}
+
+	Promise.all([
+		fetchSearchResults(normalizedType, normalizedPage),
+		normalizedType === "person" ? Promise.resolve([]) : fetchClimateVideo()
+	])
+		.then(function(results) {
+			if (requestId !== searchState.requestId) {
+				return;
+			}
+
+			const response = results[0] || {};
+			const climateVideo = results[1] || [];
+			const totalPages = Math.min(maxSearchPage, Math.max(1, Number(response.total_pages) || 1));
+			const totalResults = Math.max(0, Number(response.total_results) || 0);
+
+			if (normalizedPage > totalPages) {
+				loadSearch(normalizedType, totalPages);
+				return;
+			}
+
+			searchState.totalPages = totalPages;
+			searchState.page = normalizedPage;
+			setSearchSummary(formatSearchSummary(totalResults, normalizedType));
+			renderResults(Array.isArray(response.results) ? response.results : [], normalizedType, climateVideo);
+			updateMediaPagination(normalizedPage, { totalPages: totalPages });
+		})
+		.catch(function(error) {
+			if (requestId !== searchState.requestId) {
+				return;
+			}
+
+			console.error("An error occurred while fetching search results: ", error);
+			setSearchSummary("Search unavailable");
+			setSearchMessage("Search results could not be loaded.", "search-empty");
+			updateMediaPagination(normalizedPage, { hasNext: false });
+		});
+}
+
+function formatSearchSummary(totalResults, type) {
+	if (totalResults === 1) {
+		return "1 result";
+	}
+
+	return totalResults.toLocaleString() + " " + searchTypes[type].resultsLabel;
+}
+
+function renderResults(results, type, climateVideo) {
 	const $items = $(".items").empty();
 	let renderedAny = false;
-	for (const respElement of resp.results || []) {
-		if (respElement.media_type != window.sessionStorage.getItem("where")) {
-			continue;
+
+	for (const result of results) {
+		const card = createResultCard(result, type, climateVideo);
+		if (card) {
+			$items.append(card);
+			renderedAny = true;
 		}
-
-		const resultId = safePositiveInteger(respElement.id);
-		if (resultId === null) {
-			continue;
-		}
-
-		let title = respElement.title || respElement.name || "";
-		let overview = String(respElement.overview || "").substring(0, 200) + "...";
-		let score = "Not yet rated";
-		let color;
-		let iconPath;
-		let iconClass = '';
-
-		if (climateVideo.some(m => (m.vId === respElement.id && m.videoType === respElement.media_type))) {
-			climateVideo.forEach((item) => {
-				if (item.vId === respElement.id && item.videoType === respElement.media_type) {
-					let climateVoteAverage = item.score;
-					score = (climateVoteAverage * 10).toString().substring(0, 5) + "%";
-					color = determineBorderColor(climateVoteAverage);
-					iconPath = determineIconPath(climateVoteAverage);
-					iconClass = 'card-icon';
-				}
-			});
-		} else {
-			iconPath = '';
-		}
-
-		let mediaType = respElement.media_type === "person" ? 3 : (respElement.media_type === "movie" ? 1 : 0);
-		let poster = respElement.poster_path || respElement.profile_path;
-		let posterUrl = safeTmdbImageUrl(poster);
-
-		const $item = $("<div>").addClass("item");
-		const $image = $("<div>").addClass("item_image").on("click", function() {
-			toDesc(resultId, mediaType);
-		});
-		const posterImage = createImageElement(posterUrl, "no image");
-		if (posterImage) {
-			$image.append(posterImage);
-		}
-
-		const $info = $("<div>").addClass("item_info").on("click", function() {
-			toDesc(resultId, mediaType);
-		});
-		$info.append($("<h5>").text(title));
-		$info.append($("<p>").text(overview));
-		$item.append($image).append($info);
-
-		if (mediaType !== 3) {
-			const $score = $("<div>").addClass("item_sore").on("click", function() {
-				toRate(resultId, mediaType);
-			});
-			const $scoreText = $("<span>").text(score);
-			if (color) {
-				$scoreText.css("color", color);
-			}
-			const $scoreParagraph = $("<p>");
-			const scoreIcon = createImageElement(iconPath, "rating icon", { className: iconClass });
-			if (scoreIcon) {
-				$scoreParagraph.append($("<span>").append(scoreIcon));
-			}
-			$scoreParagraph.append($scoreText);
-			$score.append($scoreParagraph);
-			$item.append($score);
-		}
-
-		$items.append($item);
-		renderedAny = true;
 	}
 
 	if (!renderedAny) {
-		showTextMessage(".items", "No results found");
+		setSearchMessage("No results found.", "search-empty");
 	}
 }
 
-function movies(where, page) {
-	window.sessionStorage.setItem("where", where)
-	window.sessionStorage.setItem("page", page)
+function createResultCard(result, type, climateVideo) {
+	const resultId = safePositiveInteger(result.id);
+	if (resultId === null) {
+		return null;
+	}
 
-	fetchClimateVideo()
-		.then(climateVideo => fetchMovies(value, page, climateVideo))
-		.then(renderMovies)
-		.catch(error => console.error("An error occurred while fetching movies: ", error));
+	const title = result.title || result.name || "";
+	const posterUrl = safeTmdbImageUrl(result.poster_path || result.profile_path);
+	const metaItems = getResultMeta(result, type);
+	const overview = getResultOverview(result, type);
+	const mediaTypeCode = type === "person" ? 3 : (type === "movie" ? 1 : 0);
+
+	const $card = $("<article>").addClass("search-result-card");
+	const detailsUrl = getDetailsUrl(resultId, type);
+	const $poster = $("<a>")
+		.attr("href", detailsUrl)
+		.addClass("search-result-card__poster")
+		.attr("aria-label", "View " + title);
+	const posterImage = createImageElement(posterUrl, title || "Search result image");
+	if (posterImage) {
+		$poster.append(posterImage);
+	} else {
+		$poster.append(
+			$("<span>").addClass("search-result-card__poster-placeholder")
+				.append($("<i>").addClass("bi bi-image").attr("aria-hidden", "true"))
+		);
+	}
+
+	const $body = $("<a>")
+		.attr("href", detailsUrl)
+		.addClass("search-result-card__body")
+		.attr("aria-label", "View " + title);
+	$body.append($("<h3>").addClass("search-result-card__title").text(title));
+	$body.append($("<div>").addClass("search-result-card__meta").text(metaItems.join(" / ")));
+	$body.append($("<p>").addClass("search-result-card__overview").text(overview));
+
+	const $action = $("<div>").addClass("search-result-card__action");
+	if (mediaTypeCode === 3) {
+		$action.append(
+			$("<a>")
+				.attr("href", detailsUrl)
+				.addClass("search-result-card__details")
+				.text("View details")
+		);
+	} else {
+		$action.append(createRatingButton(resultId, type, climateVideo));
+	}
+
+	$card.append($poster).append($body).append($action);
+	return $card;
+}
+
+function createRatingButton(resultId, type, climateVideo) {
+	const climateRating = climateVideo.find(function(item) {
+		return Number(item.vId) === resultId && item.videoType === type;
+	});
+	const score = climateRating ? Number(climateRating.score) : null;
+	const isRated = Number.isFinite(score);
+	const $button = $("<a>")
+		.attr("href", getRateUrl(resultId, type))
+		.addClass("search-result-card__rating")
+		.attr("aria-label", "Rate " + searchTypes[type].itemLabel.toLowerCase());
+
+	if (isRated) {
+		const scoreText = (score * 10).toFixed(1).replace(/\.0$/, "") + "%";
+		const icon = createImageElement(determineIconPath(score), "rating icon", { className: "card-icon" });
+		if (icon) {
+			$button.append(icon);
+		}
+		$button.append(
+			$("<span>").addClass("search-result-card__rating-value")
+				.css("color", determineBorderColor(score))
+				.text(scoreText)
+		);
+		$button.append($("<span>").addClass("search-result-card__rating-label").text("Rate again"));
+	} else {
+		$button.append($("<span>").addClass("search-result-card__rating-value").text("Rate"));
+		$button.append($("<span>").addClass("search-result-card__rating-label").text("Not yet rated"));
+	}
+
+	return $button;
+}
+
+function getDetailsUrl(id, type) {
+	if (type === "movie") {
+		return server + "/movie?id=" + id + "&type=movie";
+	}
+	if (type === "tv") {
+		return server + "/tv?id=" + id + "&type=tv";
+	}
+	return server + "/details?id=" + id;
+}
+
+function getRateUrl(id, type) {
+	if (type === "movie") {
+		return server + "/rate?id=" + id + "&type=movie";
+	}
+	if (type === "tv") {
+		return server + "/rate?id=" + id + "&type=tv";
+	}
+	return server + "/details?id=" + id;
+}
+
+function getResultMeta(result, type) {
+	const metaItems = [searchTypes[type].itemLabel];
+	const year = getResultYear(result, type);
+	if (year) {
+		metaItems.push(year);
+	}
+	if (type === "person" && result.known_for_department) {
+		metaItems.push(result.known_for_department);
+	}
+	return metaItems;
+}
+
+function getResultYear(result, type) {
+	const date = type === "movie" ? result.release_date : result.first_air_date;
+	if (typeof date !== "string" || date.length < 4) {
+		return "";
+	}
+	return date.substring(0, 4);
+}
+
+function getResultOverview(result, type) {
+	if (type === "person") {
+		const knownFor = Array.isArray(result.known_for)
+			? result.known_for.map(function(item) {
+				return item.title || item.name;
+			}).filter(Boolean)
+			: [];
+		return knownFor.length ? "Known for " + knownFor.slice(0, 3).join(", ") + "." : "No profile details available.";
+	}
+
+	return result.overview || "No overview available.";
 }
 
 function toRate(id, type) {
@@ -155,12 +343,12 @@ function toRate(id, type) {
 	if (resultId === null) {
 		return false;
 	}
-	if (type == 3) {
-		window.location.href = server + "/details?id=" + resultId;
-	} else if (type == 1) {
+	if (type === "movie") {
 		window.location.href = server + "/rate?id=" + resultId + "&type=movie";
-	} else {
+	} else if (type === "tv") {
 		window.location.href = server + "/rate?id=" + resultId + "&type=tv";
+	} else {
+		window.location.href = server + "/details?id=" + resultId;
 	}
 	return false;
 }
@@ -170,21 +358,21 @@ function toDesc(id, type) {
 	if (resultId === null) {
 		return;
 	}
-	if (type == 3) {
-		window.location.href = server + "/details?id=" + resultId;
-	} else if (type == 1) {
+	if (type === "movie") {
 		window.location.href = server + "/movie?id=" + resultId + "&type=movie";
-	} else {
+	} else if (type === "tv") {
 		window.location.href = server + "/tv?id=" + resultId + "&type=tv";
+	} else {
+		window.location.href = server + "/details?id=" + resultId;
 	}
 }
 
 function determineBorderColor(vote_average) {
-	if (vote_average >= 8) return '#669900'; // Green
-	else if (vote_average >= 6) return '#aec000'; // Old Yellow '#ffcc02'; Now Light green
-	else if (vote_average >= 4) return '#ff9900'; // Orange
-	else if (vote_average >= 2) return '#cc0100'; // Old_Brown '#9a6601'; Now Red
-	else return '#808080';  // Old_red '#cc3401'; // Now Grey
+	if (vote_average >= 8) return '#669900';
+	else if (vote_average >= 6) return '#aec000';
+	else if (vote_average >= 4) return '#ff9900';
+	else if (vote_average >= 2) return '#cc0100';
+	else return '#808080';
 }
 
 function determineIconPath(vote_average) {
@@ -196,12 +384,24 @@ function determineIconPath(vote_average) {
 }
 
 $(document).ready(function() {
-	$(".searchValue").text(value || "");
-	// Determine which tab to activate based on the 'type' parameter
-	if (videoType === 'tv') {
-		setActiveTab($('.btn-group .btn')[1]); // TV shows tab
-		movies('tv', 1); // Load TV shows
-	} else {
-	movies('movie', 1);
-	}
+	$(".searchValue").text(value || "No search term");
+
+	$(".search-tabs__button").on("click", function() {
+		loadSearch($(this).data("search-type"), 1);
+	});
+
+	$(".page-item").on("click", function() {
+		if (this.disabled) {
+			return;
+		}
+
+		const action = $(this).data("action");
+		if (action === "prev") {
+			loadSearch(searchState.type, searchState.page - 1);
+		} else if (action === "next") {
+			loadSearch(searchState.type, searchState.page + 1);
+		}
+	});
+
+	loadSearch(searchState.type, searchState.page);
 });

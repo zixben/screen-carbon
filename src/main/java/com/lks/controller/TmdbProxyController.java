@@ -34,7 +34,10 @@ public class TmdbProxyController {
     private static final Set<String> ALLOWED_FIXED_PATHS = Set.of(
             "/discover/movie",
             "/discover/tv",
+            "/search/movie",
             "/search/multi",
+            "/search/person",
+            "/search/tv",
             "/trending/all/day"
     );
 

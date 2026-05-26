@@ -52,8 +52,8 @@ public class WebController {
 	@GetMapping("/search-results")
 	public String searchPage(Model model) {
 		model.addAttribute("title", "Search Results");
-		model.addAttribute("styles", "/assets/css/search.css");
-		model.addAttribute("scripts", "/assets/js/search.js");
+		model.addAttribute("styles", "/assets/css/search.css?v=search-results-1");
+		model.addAttribute("scripts", "/assets/js/search.js?v=search-results-1");
 		return "search-page";
 	}
 

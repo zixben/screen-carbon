@@ -46,6 +46,18 @@ class TmdbProxyControllerTest {
     }
 
     @Test
+    void buildsAllowedTypedSearchTmdbUri() {
+        TmdbProxyController controller = new TmdbProxyController("token", HttpClient.newHttpClient());
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/tmdb/search/movie");
+        request.setQueryString("query=matrix&include_adult=false&language=en-US&page=1");
+
+        URI uri = controller.buildUpstreamUri(request);
+
+        assertEquals("https://api.themoviedb.org/3/search/movie?query=matrix&include_adult=false&language=en-US&page=1",
+                uri.toString());
+    }
+
+    @Test
     void rejectsDisallowedTmdbPath() {
         TmdbProxyController controller = new TmdbProxyController("token", HttpClient.newHttpClient());
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/tmdb/authentication/token/new");
