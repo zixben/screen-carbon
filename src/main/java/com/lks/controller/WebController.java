@@ -52,7 +52,7 @@ public class WebController {
 	@GetMapping("/search-results")
 	public String searchPage(Model model) {
 		model.addAttribute("title", "Search Results");
-		model.addAttribute("styles", "/assets/css/search.css?v=search-results-1");
+		model.addAttribute("styles", "/assets/css/search.css?v=search-results-2");
 		model.addAttribute("scripts", "/assets/js/search.js?v=search-results-1");
 		return "search-page";
 	}
@@ -71,7 +71,7 @@ public class WebController {
 
 		model.addAttribute("title", "Movies");
 		model.addAttribute("activePage", "movies");
-		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-2");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-3");
 
 		if (toggleState) {
 
@@ -107,7 +107,7 @@ public class WebController {
 
 		model.addAttribute("title", "TV Shows");
 		model.addAttribute("activePage", "tv-shows");
-		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-2");
+		model.addAttribute("styles", "/assets/css/movies.css?v=media-pagination-3");
 
 		if (toggleState) {
 			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-pagination-2");

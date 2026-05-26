@@ -156,22 +156,22 @@ function updateMediaPagination(page, options) {
     const hasNext = !isLoading && (settings.hasNext !== undefined
         ? Boolean(settings.hasNext)
         : !hasTotalPages || currentPage < totalPages);
-    const pageNumber = document.getElementById("pageNum");
-    const pageTotal = document.getElementById("pageTotal");
+    const pageNumbers = document.querySelectorAll("[data-pagination-current], #pageNum");
+    const pageTotals = document.querySelectorAll("[data-pagination-total], #pageTotal");
 
-    if (pageNumber) {
+    pageNumbers.forEach(function (pageNumber) {
         pageNumber.textContent = currentPage;
-    }
+    });
 
-    document.querySelectorAll('[data-action="prev"]').forEach(function (button) {
+    document.querySelectorAll('.media-pagination [data-action="prev"]').forEach(function (button) {
         setMediaPaginationButtonState(button, !hasPrevious);
     });
 
-    document.querySelectorAll('[data-action="next"]').forEach(function (button) {
+    document.querySelectorAll('.media-pagination [data-action="next"]').forEach(function (button) {
         setMediaPaginationButtonState(button, !hasNext);
     });
 
-    if (pageTotal) {
+    pageTotals.forEach(function (pageTotal) {
         if (isLoading) {
             pageTotal.textContent = "";
         } else if (hasTotalPages) {
@@ -179,7 +179,7 @@ function updateMediaPagination(page, options) {
         } else {
             pageTotal.textContent = hasNext ? "" : "last page";
         }
-    }
+    });
 }
 
 function setMediaPaginationButtonState(button, disabled) {

@@ -115,6 +115,25 @@
 				</div>
 			</div>
 
+			<div class="media-pagination media-pagination--top">
+				<nav class="media-pagination__nav" aria-label="TV shows pagination">
+					<button type="button" class="media-pagination__button page-item" data-action="prev"
+						aria-label="Previous page">
+						<i class="bi bi-chevron-left" aria-hidden="true"></i>
+						<span>Previous</span>
+					</button>
+					<div class="media-pagination__current" aria-live="polite">
+						<span class="media-pagination__label">Page</span>
+						<span class="media-pagination__number" data-pagination-current>1</span>
+						<span class="media-pagination__total" data-pagination-total></span>
+					</div>
+					<button type="button" class="media-pagination__button page-item" data-action="next"
+						aria-label="Next page">
+						<span>Next</span>
+						<i class="bi bi-chevron-right" aria-hidden="true"></i>
+					</button>
+				</nav>
+			</div>
 
 			<div class="videoStyle" id="tv-shows">
 			</div>
@@ -128,8 +147,8 @@
 					</button>
 					<div class="media-pagination__current" aria-live="polite">
 						<span class="media-pagination__label">Page</span>
-						<span id="pageNum" class="media-pagination__number">1</span>
-						<span id="pageTotal" class="media-pagination__total"></span>
+						<span class="media-pagination__number" data-pagination-current>1</span>
+						<span class="media-pagination__total" data-pagination-total></span>
 					</div>
 					<button type="button" class="media-pagination__button page-item" data-action="next"
 						aria-label="Next page">

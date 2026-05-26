@@ -302,6 +302,10 @@
 	width: 100%;
 }
 
+.media-pagination--top {
+	margin: 4px 0 22px;
+}
+
 .media-pagination__nav {
 	align-items: center;
 	display: inline-flex;
