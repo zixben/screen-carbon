@@ -54,6 +54,14 @@ function safeVideoType(value) {
     return value === "movie" || value === "tv" ? value : "";
 }
 
+function isSafeTmdbMedia(media) {
+    return !(media && media.adult === true);
+}
+
+function filterSafeTmdbResults(results) {
+    return Array.isArray(results) ? results.filter(isSafeTmdbMedia) : [];
+}
+
 function createImageElement(src, alt, options) {
     if (!src) {
         return null;

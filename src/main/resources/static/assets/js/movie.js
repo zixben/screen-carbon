@@ -2,6 +2,7 @@ var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
 var videoType = safeVideoType(params.get('type'));
+var mediaUnavailable = false;
 
 if (id === null) {
 	throw new Error("Invalid movie id.");
@@ -18,6 +19,9 @@ $.ajax({
 	},
 	success: function(response) {
 		response.forEach((avgScore) => {
+			if (mediaUnavailable) {
+				return;
+			}
 
 			let vote_average = avgScore;
 			if (vote_average !== null) {
@@ -37,23 +41,7 @@ $.ajax({
 			} else {
 
 				$("#poster_path").css("border", "none");
-
-				$.ajax({
-					url: "https://api.themoviedb.org/3/movie/" + id,
-					method: "get",
-					headers: {
-						"Authorization": jwt,
-						"accept": "application/json"
-					},
-					success: function(resp) {
-						scoreTMDB = resp.vote_average;
-
-						$(".rating-layout").empty().append($("<h3>").addClass("rating").text("Not yet rated"));
-					},
-					error: function(xhr, status, error) {
-						console.error("An error occurred: " + status + ", " + error + ", " + xhr);
-					}
-				});
+				$(".rating-layout").empty().append($("<h3>").addClass("rating").text("Not yet rated"));
 			}
 		});
 	},
@@ -72,6 +60,10 @@ $.ajax({
 	},
 	success: function(resp) {
 
+		if (!isSafeTmdbMedia(resp)) {
+			showUnavailableMedia("This title is unavailable.");
+			return;
+		}
 
 		$("#title").text(resp.title || "");
 		$("#release_date").empty().append($("<span>").addClass("movieInfo").text(" " + (resp.release_date || "")));
@@ -114,54 +106,71 @@ $.ajax({
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
 		setImageContent(".movieImage", posterUrl, "img");
 
-	}
-})
-
-$.ajax({
-	url: "https://api.themoviedb.org/3/movie/" + id + "/credits?language=en-US",
-	method: "get",
-	headers: {
-		"Authorization": jwt,
-		"accept": "application/json"
+		loadMovieCredits();
 	},
-	success: function(resp) {
-
-		$("#cast").text(resp.cast && resp.cast[0] ? resp.cast[0].name : "");
-
-		for (const respElement of resp.crew || []) {
-
-			if (respElement.known_for_department == "Directing") {
-
-				$("#director").text(respElement.name || "");
-				break;
-			}
+	error: function(xhr, status, error) {
+		if (xhr.status === 404) {
+			showUnavailableMedia("This title is unavailable.");
+			return;
 		}
-		for (const respElement of resp.crew || []) {
-			if (respElement.known_for_department == "Writing") {
-
-				$("#writer").text(respElement.name || "");
-				break;
-			}
-		}
-		const $actorImage = $(".actor_image").empty();
-		for (const respElement of (resp.crew || []).slice(0, 5)) {
-			const personId = safePositiveInteger(respElement.id);
-			if (personId === null) {
-				continue;
-			}
-			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
-			appendActorCard($actorImage, personId, profileUrl, respElement.name || "", respElement.job || "");
-		}
-		for (const respElement of (resp.cast || []).slice(0, 5)) {
-			const personId = safePositiveInteger(respElement.id);
-			if (personId === null) {
-				continue;
-			}
-			const profileUrl = safeTmdbImageUrl(respElement.profile_path);
-			appendActorCard($actorImage, personId, profileUrl, String(respElement.name || "").slice(0, 15), respElement.known_for_department || "");
-		}
+		console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 	}
 })
+
+function loadMovieCredits() {
+	$.ajax({
+		url: "https://api.themoviedb.org/3/movie/" + id + "/credits?language=en-US",
+		method: "get",
+		headers: {
+			"Authorization": jwt,
+			"accept": "application/json"
+		},
+		success: function(resp) {
+
+			$("#cast").text(resp.cast && resp.cast[0] ? resp.cast[0].name : "");
+
+			for (const respElement of resp.crew || []) {
+
+				if (respElement.known_for_department == "Directing") {
+
+					$("#director").text(respElement.name || "");
+					break;
+				}
+			}
+			for (const respElement of resp.crew || []) {
+				if (respElement.known_for_department == "Writing") {
+
+					$("#writer").text(respElement.name || "");
+					break;
+				}
+			}
+			const $actorImage = $(".actor_image").empty();
+			for (const respElement of (resp.crew || []).slice(0, 5)) {
+				const personId = safePositiveInteger(respElement.id);
+				if (personId === null) {
+					continue;
+				}
+				const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+				appendActorCard($actorImage, personId, profileUrl, respElement.name || "", respElement.job || "");
+			}
+			for (const respElement of (resp.cast || []).slice(0, 5)) {
+				const personId = safePositiveInteger(respElement.id);
+				if (personId === null) {
+					continue;
+				}
+				const profileUrl = safeTmdbImageUrl(respElement.profile_path);
+				appendActorCard($actorImage, personId, profileUrl, String(respElement.name || "").slice(0, 15), respElement.known_for_department || "");
+			}
+		}
+	})
+}
+
+function showUnavailableMedia(message) {
+	mediaUnavailable = true;
+	$("main.container").empty()
+		.append($("<h1>").text("Content unavailable"))
+		.append($("<p>").text(message || "This title is unavailable."));
+}
 
 function appendActorCard($container, personId, profileUrl, name, role) {
 	const $item = $("<div>").addClass("actorImageItem").on("click", function() {
@@ -182,10 +191,10 @@ function appendActorCard($container, personId, profileUrl, name, role) {
 }
 
 function toRatePage() {
-
+	if (mediaUnavailable) {
+		return;
+	}
 	window.location.href = server + "/rate?id=" + id + "&" + "type=movie"
-
-
 }
 
 function toPersonPage(uId) {

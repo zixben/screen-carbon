@@ -44,7 +44,7 @@ public class WebController {
 		model.addAttribute("title", "Screen Carbon Test");
 		model.addAttribute("activePage", "home");
 		model.addAttribute("styles", "/assets/css/index.css");
-		model.addAttribute("scripts", "/assets/js/index.js");
+		model.addAttribute("scripts", "/assets/js/index.js?v=adult-filter-1");
 
 		return "index";
 	}
@@ -53,7 +53,7 @@ public class WebController {
 	public String searchPage(Model model) {
 		model.addAttribute("title", "Search Results");
 		model.addAttribute("styles", "/assets/css/search.css?v=search-results-3");
-		model.addAttribute("scripts", "/assets/js/search.js?v=search-results-3");
+		model.addAttribute("scripts", "/assets/js/search.js?v=adult-filter-1");
 		return "search-page";
 	}
 
@@ -78,7 +78,7 @@ public class WebController {
 			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=media-loading-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=media-loading-1");
+			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=adult-filter-1");
 		}
 
 		return "movies";
@@ -89,7 +89,7 @@ public class WebController {
 		model.addAttribute("title", "Movie");
 		model.addAttribute("activePage", "movies");
 		model.addAttribute("styles", "/assets/css/movie.css");
-		model.addAttribute("scripts", "/assets/js/movie.js");
+		model.addAttribute("scripts", "/assets/js/movie.js?v=adult-filter-1");
 		return "movie";
 	}
 
@@ -113,7 +113,7 @@ public class WebController {
 			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-loading-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=media-loading-1");
+			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=adult-filter-1");
 		}
 
 		return "tv-shows";
@@ -124,7 +124,7 @@ public class WebController {
 		model.addAttribute("title", "TV");
 		model.addAttribute("activePage", "tv-shows");
 		model.addAttribute("styles", "/assets/css/movie.css");
-		model.addAttribute("scripts", "/assets/js/tv.js");
+		model.addAttribute("scripts", "/assets/js/tv.js?v=adult-filter-1");
 		return "tv";
 	}
 
@@ -132,7 +132,7 @@ public class WebController {
 	public String details(Model model) {
 		model.addAttribute("title", "Details");
 		model.addAttribute("styles", "/assets/css/CelebrityDetail.css");
-		model.addAttribute("scripts", "/assets/js/CelebrityDetail.js");
+		model.addAttribute("scripts", "/assets/js/CelebrityDetail.js?v=adult-filter-1");
 		return "CelebrityDetail";
 	}
 
@@ -208,7 +208,7 @@ public class WebController {
 
 		model.addAttribute("title", "Rating");
 		model.addAttribute("styles", "/assets/css/rate.css");
-		model.addAttribute("scripts", "/assets/js/rate.js");
+		model.addAttribute("scripts", "/assets/js/rate.js?v=adult-filter-1");
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
@@ -221,7 +221,7 @@ public class WebController {
 
 		model.addAttribute("title", "Finish Rating");
 		model.addAttribute("styles", "/assets/css/finishRating.css");
-		model.addAttribute("scripts", "/assets/js/finish-rating.js");
+		model.addAttribute("scripts", "/assets/js/finish-rating.js?v=adult-filter-1");
 
 		return "finish-rating";
 	}

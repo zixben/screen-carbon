@@ -4,6 +4,7 @@ var id = safePositiveInteger(params.get('id'));
 var type = safeVideoType(params.get('type'));
 var imgPath = "";
 var vType = "";
+var mediaUnavailable = false;
 
 if (id === null) {
 	throw new Error("Invalid video id.");
@@ -29,6 +30,10 @@ let countryShortNames = [];
 var csrfToken = $('input[name="_csrf"]').val();
 
 page.addEventListener("click", () => {
+	if (mediaUnavailable) {
+		return;
+	}
+
 	if (status == 1) {
 		let answers = collectAnswerOptions(1, 5);
 
@@ -107,6 +112,10 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(resp) {
+		if (!isSafeTmdbMedia(resp)) {
+			showUnavailableRating();
+			return;
+		}
 
 		if (type == 'movie') {
 			$("#title").text(resp.title || "");
@@ -141,6 +150,13 @@ $.ajax({
 
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
 		setImageContent("#poster_path", posterUrl, "img");
+	},
+	error: function(xhr, status, error) {
+		if (xhr.status === 404) {
+			showUnavailableRating();
+			return;
+		}
+		console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 	}
 })
 
@@ -152,6 +168,9 @@ $.ajax({
 	},
 	success: function(response) {
 		response.forEach((avgScore) => {
+			if (mediaUnavailable) {
+				return;
+			}
 
 			let vote_average = avgScore;
 			if (vote_average !== null) {
@@ -197,6 +216,10 @@ function determineIconPath(vote_average) {
 }
 
 function submitScore(vType, answers) {
+	if (mediaUnavailable) {
+		return;
+	}
+
 	let title = $("#title").text();
 	let obj = JSON.stringify({
 		vId: Number(id),
@@ -228,4 +251,14 @@ function submitScore(vType, answers) {
 			alert(message);
 		}
 	});
+}
+
+function showUnavailableRating() {
+	mediaUnavailable = true;
+	$("#title").text("Content unavailable");
+	$("#poster_path").empty().css("border", "none");
+	$("#ratingSection").hide();
+	$(".questionGroup1, .questionGroup2, .questionGroup3").hide();
+	$(".questionnaire-container").empty().append($("<p>").text("This title is unavailable."));
+	$(".page").prop("disabled", true).text("Unavailable");
 }

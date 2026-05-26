@@ -2,6 +2,7 @@ var queryString = decodeURIComponent(window.location.search);
 var params = new URLSearchParams(queryString);
 var id = safePositiveInteger(params.get('id'));
 var type = safeVideoType(params.get('type'));
+var mediaUnavailable = false;
 
 if (id === null) {
 	throw new Error("Invalid video id.");
@@ -47,6 +48,10 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(resp) {
+		if (!isSafeTmdbMedia(resp)) {
+			showUnavailableRatingResult();
+			return;
+		}
 
 		// Set the title based on the type
 		var titleText = type == 'movie' ? resp.title : resp.name;
@@ -58,6 +63,13 @@ $.ajax({
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
 		setImageContent(".finish-image", posterUrl, "img");
 
+	},
+	error: function(xhr, status, error) {
+		if (xhr.status === 404) {
+			showUnavailableRatingResult();
+			return;
+		}
+		console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 	}
 })
 
@@ -66,6 +78,9 @@ function loadSubmittedScore() {
 		url: server + "/score/last-submission",
 		method: "GET",
 		success: function(response) {
+			if (mediaUnavailable) {
+				return;
+			}
 			if (Number(response.vId) !== id || response.videoType !== type) {
 				displayUnavailableSubmittedScore();
 				return;
@@ -97,6 +112,10 @@ function displayUnavailableSubmittedScore() {
 }
 
 function fetchAndDisplayAverageScore() {
+	if (mediaUnavailable) {
+		return;
+	}
+
 	$.ajax({
 		url: server + "/score/getScoreAvg/" + id + "/" + type,
 		method: "GET",
@@ -117,6 +136,17 @@ function fetchAndDisplayAverageScore() {
 			console.error("AJAX Error:", textStatus, errorThrown, "Response:", xhr.responseText);
 		}
 	});
+}
+
+function showUnavailableRatingResult() {
+	mediaUnavailable = true;
+	$("#title").text("Content unavailable");
+	$("#overview").text("This title is unavailable.");
+	$(".finish-image").empty();
+	$("#poster_path").css("border", "none");
+	displayUnavailableSubmittedScore();
+	$("#averageScoreIcon").empty();
+	$("#averageScorePerc").text("Unavailable");
 }
 
 function normalizedScore(rawScore) {

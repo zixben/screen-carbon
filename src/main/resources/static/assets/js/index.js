@@ -60,7 +60,7 @@ $(document).ready(function() {
 			},
 			success: function(response) {
 				const trendingMoviesInner = document.querySelector('#trendingMoviesCarousel .carousel-inner');
-				updateCarousel(trendingMoviesInner, response.results || [], false);
+				updateCarousel(trendingMoviesInner, filterSafeTmdbResults(response.results), false);
 				restoreCarouselState('#trendingMoviesCarousel');
 			},
 			error: function(xhr, status, error) {
@@ -86,6 +86,9 @@ $(document).ready(function() {
 				media_type = safeVideoType(movie.videoType);
 
 			} else {
+				if (!isSafeTmdbMedia(movie)) {
+					return;
+				}
 				id = safePositiveInteger(movie.id);
 				media_type = movie.media_type === "tv" ? "tv" : movie.media_type === "movie" ? "movie" : "person";
 				title = movie.title || movie.name || "";

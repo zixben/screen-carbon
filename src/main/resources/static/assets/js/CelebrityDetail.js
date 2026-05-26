@@ -14,6 +14,10 @@ $.ajax({
 		"accept": "application/json"
 	},
 	success: function(resp) {
+		if (!isSafeTmdbMedia(resp)) {
+			showUnavailablePerson();
+			return;
+		}
 
 		$("#celebrityName").text(resp.name || "");
 		$("#Birthday").text(resp.birthday || "")
@@ -21,41 +25,57 @@ $.ajax({
 		$("#Introduction").text(String(resp.biography || "").slice(0, 600) + "...")
 		const profileUrl = safeTmdbImageUrl(resp.profile_path);
 		setImageContent(".image", profileUrl, "image");
-	}
-})
-
-
-$.ajax({
-	url: "https://api.themoviedb.org/3/person/" + id + "/combined_credits",
-	method: "get",
-	headers: {
-		"Authorization": jwt,
-		"accept": "application/json"
+		loadPersonCredits();
 	},
-	success: function(resp) {
-
-
-		const $known = $(".known").empty();
-		for (const respElement of (resp.crew || []).slice(0, 5)) {
-			const itemId = safePositiveInteger(respElement.id);
-			const mediaType = respElement.media_type === "tv" ? "tv" : respElement.media_type === "movie" ? "movie" : "";
-			if (itemId === null || mediaType === "") {
-				continue;
-			}
-			const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-			appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
+	error: function(xhr, status, error) {
+		if (xhr.status === 404) {
+			showUnavailablePerson();
+			return;
 		}
-		for (const respElement of (resp.cast || []).slice(0, 5)) {
-			const itemId = safePositiveInteger(respElement.id);
-			const mediaType = respElement.media_type === "tv" ? "tv" : respElement.media_type === "movie" ? "movie" : "";
-			if (itemId === null || mediaType === "") {
-				continue;
-			}
-			const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-			appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
-		}
+		console.error("An error occurred: " + status + ", " + error + ", " + xhr);
 	}
 })
+
+
+function loadPersonCredits() {
+	$.ajax({
+		url: "https://api.themoviedb.org/3/person/" + id + "/combined_credits",
+		method: "get",
+		headers: {
+			"Authorization": jwt,
+			"accept": "application/json"
+		},
+		success: function(resp) {
+
+
+			const $known = $(".known").empty();
+			for (const respElement of filterSafeTmdbResults(resp.crew).slice(0, 5)) {
+				const itemId = safePositiveInteger(respElement.id);
+				const mediaType = respElement.media_type === "tv" ? "tv" : respElement.media_type === "movie" ? "movie" : "";
+				if (itemId === null || mediaType === "") {
+					continue;
+				}
+				const posterUrl = safeTmdbImageUrl(respElement.poster_path);
+				appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
+			}
+			for (const respElement of filterSafeTmdbResults(resp.cast).slice(0, 5)) {
+				const itemId = safePositiveInteger(respElement.id);
+				const mediaType = respElement.media_type === "tv" ? "tv" : respElement.media_type === "movie" ? "movie" : "";
+				if (itemId === null || mediaType === "") {
+					continue;
+				}
+				const posterUrl = safeTmdbImageUrl(respElement.poster_path);
+				appendKnownItem($known, itemId, mediaType, posterUrl, respElement.vote_average, respElement.title || respElement.name || "");
+			}
+		}
+	})
+}
+
+function showUnavailablePerson() {
+	$("main.container").empty()
+		.append($("<h1>").text("Content unavailable"))
+		.append($("<p>").text("This profile is unavailable."));
+}
 
 function appendKnownItem($container, itemId, mediaType, posterUrl, voteAverage, title) {
 	const $item = $("<div>").addClass("knownItem flex-item").on("click", function() {

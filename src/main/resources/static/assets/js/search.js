@@ -173,7 +173,7 @@ function loadSearch(type, page) {
 			searchState.totalPages = totalPages;
 			searchState.page = normalizedPage;
 			setSearchSummary(formatSearchSummary(totalResults, normalizedType));
-			renderResults(Array.isArray(response.results) ? response.results : [], normalizedType, climateVideo);
+			renderResults(filterSafeTmdbResults(response.results), normalizedType, climateVideo);
 			updateMediaPagination(normalizedPage, { totalPages: totalPages });
 		})
 		.catch(function(error) {
@@ -214,6 +214,10 @@ function renderResults(results, type, climateVideo) {
 }
 
 function createResultCard(result, type, climateVideo) {
+	if (!isSafeTmdbMedia(result)) {
+		return null;
+	}
+
 	const resultId = safePositiveInteger(result.id);
 	if (resultId === null) {
 		return null;
@@ -338,11 +342,11 @@ function getResultYear(result, type) {
 
 function getResultOverview(result, type) {
 	if (type === "person") {
-		const knownFor = Array.isArray(result.known_for)
-			? result.known_for.map(function(item) {
+		const knownFor = filterSafeTmdbResults(result.known_for)
+			.map(function(item) {
 				return item.title || item.name;
-			}).filter(Boolean)
-			: [];
+			})
+			.filter(Boolean);
 		return knownFor.length ? "Known for " + knownFor.slice(0, 3).join(", ") + "." : "No profile details available.";
 	}
 

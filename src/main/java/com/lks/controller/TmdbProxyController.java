@@ -1,5 +1,10 @@
 package com.lks.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,10 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -31,6 +40,23 @@ public class TmdbProxyController {
     private static final Pattern MEDIA_CREDITS_PATH = Pattern.compile("^/(movie|tv)/\\d+/credits$");
     private static final Pattern PERSON_DETAIL_PATH = Pattern.compile("^/person/\\d+$");
     private static final Pattern PERSON_CREDITS_PATH = Pattern.compile("^/person/\\d+/combined_credits$");
+    private static final Set<String> ADULT_FILTERED_QUERY_PATHS = Set.of(
+            "/discover/movie",
+            "/discover/tv",
+            "/search/movie",
+            "/search/multi",
+            "/search/person",
+            "/search/tv"
+    );
+    private static final Set<String> ADULT_FILTERED_RESULT_PATHS = Set.of(
+            "/discover/movie",
+            "/discover/tv",
+            "/search/movie",
+            "/search/multi",
+            "/search/person",
+            "/search/tv",
+            "/trending/all/day"
+    );
     private static final Set<String> ALLOWED_FIXED_PATHS = Set.of(
             "/discover/movie",
             "/discover/tv",
@@ -43,15 +69,21 @@ public class TmdbProxyController {
 
     private final String bearerToken;
     private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public TmdbProxyController(@Value("${app.tmdb.bearer-token:}") String bearerToken) {
-        this(bearerToken, HttpClient.newHttpClient());
+        this(bearerToken, HttpClient.newHttpClient(), new ObjectMapper());
     }
 
     TmdbProxyController(String bearerToken, HttpClient httpClient) {
+        this(bearerToken, httpClient, new ObjectMapper());
+    }
+
+    TmdbProxyController(String bearerToken, HttpClient httpClient, ObjectMapper objectMapper) {
         this.bearerToken = normalizeBearerToken(bearerToken);
         this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/**")
@@ -62,8 +94,10 @@ public class TmdbProxyController {
         }
 
         URI upstreamUri;
+        String path;
         try {
-            upstreamUri = buildUpstreamUri(request);
+            path = extractValidatedPath(request);
+            upstreamUri = buildUpstreamUri(request, path);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -80,9 +114,15 @@ public class TmdbProxyController {
                     upstreamRequest,
                     HttpResponse.BodyHandlers.ofString()
             );
+            String responseBody = sanitizeAdultContent(path, upstreamResponse.body());
+            if (responseBody == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(Map.of("message", "TMDB media is unavailable."));
+            }
             return ResponseEntity.status(upstreamResponse.statusCode())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(upstreamResponse.body());
+                    .body(responseBody);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
@@ -94,6 +134,18 @@ public class TmdbProxyController {
     }
 
     URI buildUpstreamUri(HttpServletRequest request) {
+        return buildUpstreamUri(request, extractValidatedPath(request));
+    }
+
+    private URI buildUpstreamUri(HttpServletRequest request, String path) {
+        String queryString = request.getQueryString();
+        validateQueryString(queryString);
+        queryString = forceAdultFilter(path, queryString);
+        validateQueryString(queryString);
+        return URI.create(TMDB_API_BASE + path + (queryString == null ? "" : "?" + queryString));
+    }
+
+    private String extractValidatedPath(HttpServletRequest request) {
         String requestPrefix = request.getContextPath() + "/tmdb";
         String requestUri = request.getRequestURI();
         if (!requestUri.startsWith(requestPrefix)) {
@@ -109,9 +161,7 @@ public class TmdbProxyController {
             throw new IllegalArgumentException("TMDB proxy path is not allowed.");
         }
 
-        String queryString = request.getQueryString();
-        validateQueryString(queryString);
-        return URI.create(TMDB_API_BASE + path + (queryString == null ? "" : "?" + queryString));
+        return path;
     }
 
     private boolean isAllowedPath(String path) {
@@ -120,6 +170,103 @@ public class TmdbProxyController {
                 || MEDIA_CREDITS_PATH.matcher(path).matches()
                 || PERSON_DETAIL_PATH.matcher(path).matches()
                 || PERSON_CREDITS_PATH.matcher(path).matches();
+    }
+
+    private String forceAdultFilter(String path, String queryString) {
+        if (!ADULT_FILTERED_QUERY_PATHS.contains(path)) {
+            return queryString;
+        }
+        if (queryString == null || queryString.isBlank()) {
+            return "include_adult=false";
+        }
+
+        String[] pairs = queryString.split("&", -1);
+        List<String> safePairs = new ArrayList<>();
+        boolean includedAdultFilter = false;
+        for (String pair : pairs) {
+            String key = pair;
+            int separatorIndex = pair.indexOf('=');
+            if (separatorIndex >= 0) {
+                key = pair.substring(0, separatorIndex);
+            }
+
+            if (isIncludeAdultParameter(key)) {
+                if (!includedAdultFilter) {
+                    safePairs.add("include_adult=false");
+                    includedAdultFilter = true;
+                }
+            } else {
+                safePairs.add(pair);
+            }
+        }
+        if (!includedAdultFilter) {
+            safePairs.add("include_adult=false");
+        }
+        return String.join("&", safePairs);
+    }
+
+    private boolean isIncludeAdultParameter(String key) {
+        try {
+            return "include_adult".equals(URLDecoder.decode(key, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid TMDB proxy query.");
+        }
+    }
+
+    String sanitizeAdultContent(String path, String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return responseBody;
+        }
+
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            if (isAdultDetailPath(path) && isAdultNode(root)) {
+                return null;
+            }
+            if (ADULT_FILTERED_RESULT_PATHS.contains(path) && root instanceof ObjectNode objectNode) {
+                filterAdultItems(objectNode, "results");
+            } else if (PERSON_CREDITS_PATH.matcher(path).matches() && root instanceof ObjectNode objectNode) {
+                filterAdultItems(objectNode, "cast");
+                filterAdultItems(objectNode, "crew");
+            }
+            return objectMapper.writeValueAsString(root);
+        } catch (JsonProcessingException e) {
+            return responseBody;
+        }
+    }
+
+    private boolean isAdultDetailPath(String path) {
+        return MEDIA_DETAIL_PATH.matcher(path).matches() || PERSON_DETAIL_PATH.matcher(path).matches();
+    }
+
+    private void filterAdultItems(ObjectNode objectNode, String fieldName) {
+        JsonNode items = objectNode.get(fieldName);
+        if (!(items instanceof ArrayNode arrayNode)) {
+            return;
+        }
+
+        ArrayNode safeItems = objectMapper.createArrayNode();
+        for (JsonNode item : arrayNode) {
+            JsonNode safeItem = filterAdultItem(item);
+            if (safeItem != null) {
+                safeItems.add(safeItem);
+            }
+        }
+        objectNode.set(fieldName, safeItems);
+    }
+
+    private JsonNode filterAdultItem(JsonNode item) {
+        if (item == null || isAdultNode(item)) {
+            return null;
+        }
+        if (item instanceof ObjectNode objectNode) {
+            filterAdultItems(objectNode, "known_for");
+        }
+        return item;
+    }
+
+    private boolean isAdultNode(JsonNode node) {
+        return node != null && node.path("adult").asBoolean(false);
     }
 
     private void validateQueryString(String queryString) {

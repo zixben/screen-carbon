@@ -101,7 +101,7 @@ $(document).ready(function() {
 				"accept": "application/json"
 			},
 			success: function(resp) {
-				const results = Array.isArray(resp.results) ? resp.results : [];
+				const results = filterSafeTmdbResults(resp.results);
 				const totalPages = Math.max(1, Number(resp.total_pages) || 1);
 				window.sessionStorage.setItem("tvTotalPages", totalPages);
 
