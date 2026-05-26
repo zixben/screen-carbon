@@ -128,9 +128,17 @@ $(document).ready(function() {
 				cardImage.style.padding = "10px";
 				cardImage.style.backgroundColor = "white";
 			}
-			const image = createImageElement(posterUrl, "movie-img", { className: "img-fluid" });
+			const placeholderOptions = {
+				className: "img-fluid",
+				placeholderLabel: "No poster",
+				placeholderIcon: media_type === "tv" ? "bi bi-tv" : "bi bi-film",
+				placeholderClassName: "media-placeholder--poster media-placeholder--carousel"
+			};
+			const image = createImageElement(posterUrl, title ? "Poster for " + title : "Media poster", placeholderOptions);
 			if (image) {
 				cardImage.appendChild(image);
+			} else {
+				cardImage.appendChild(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 			}
 
 			const cardBody = document.createElement("div");

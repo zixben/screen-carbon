@@ -61,7 +61,11 @@ $.ajax({
 
 		$("#overview").text(resp.overview || "");
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		setImageContent(".finish-image", posterUrl, "img");
+		setImageContent(".finish-image", posterUrl, "Poster for " + (titleText || "this title"), {
+			placeholderLabel: "Poster unavailable",
+			placeholderIcon: type === "tv" ? "bi bi-tv" : "bi bi-film",
+			placeholderClassName: "media-placeholder--poster media-placeholder--detail-poster"
+		});
 
 	},
 	error: function(xhr, status, error) {

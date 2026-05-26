@@ -46,9 +46,16 @@ function loadUserRatings(userId) {
 				const $rating = $("<div>").addClass("ratings").on("click", function() {
 					toDesc2(videoId, videoType);
 				});
-				const image = createImageElement(imageUrl, "img");
+				const placeholderOptions = {
+					placeholderLabel: "No poster",
+					placeholderIcon: videoType === "tv" ? "bi bi-tv" : "bi bi-film",
+					placeholderClassName: "media-placeholder--poster media-placeholder--compact media-placeholder--user-rating"
+				};
+				const image = createImageElement(imageUrl, videoName ? "Poster for " + videoName : "Rated title poster", placeholderOptions);
 				if (image) {
 					$rating.append(image);
+				} else {
+					$rating.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 				}
 				const $ratingInfo = $("<div>").addClass("ratingInfo")
 					.append($("<h4>").attr("id", "title").text(videoName))

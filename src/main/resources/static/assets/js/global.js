@@ -298,6 +298,16 @@ function focusFilterOption(list, direction) {
     options[nextIndex].focus();
 }
 
+function getDomElement(target) {
+    if (target instanceof HTMLElement) {
+        return target;
+    }
+    if (target && target.jquery) {
+        return target.get(0);
+    }
+    return $(target).get(0);
+}
+
 function createImageElement(src, alt, options) {
     if (!src) {
         return null;
@@ -313,22 +323,68 @@ function createImageElement(src, alt, options) {
     if (options && options.style) {
         Object.assign(image.style, options.style);
     }
+    if (options && options.placeholderLabel) {
+        image.addEventListener("error", function handleImageError() {
+            image.removeEventListener("error", handleImageError);
+            image.replaceWith(createImagePlaceholder(options.placeholderLabel, options));
+        });
+    }
 
     return image;
 }
 
+function createImagePlaceholder(label, options) {
+    const placeholderLabel = label || "Image unavailable";
+    const placeholder = document.createElement("div");
+    const classNames = ["media-placeholder"];
+    if (options && options.placeholderClassName) {
+        classNames.push(options.placeholderClassName);
+    }
+    placeholder.className = classNames.join(" ");
+    placeholder.setAttribute("role", "img");
+    placeholder.setAttribute("aria-label", placeholderLabel);
+
+    const icon = document.createElement("i");
+    icon.className = options && options.placeholderIcon ? options.placeholderIcon : "bi bi-image";
+    icon.setAttribute("aria-hidden", "true");
+
+    const text = document.createElement("span");
+    text.textContent = placeholderLabel;
+
+    placeholder.appendChild(icon);
+    placeholder.appendChild(text);
+    return placeholder;
+}
+
+function appendImageContent(target, src, alt, options) {
+    const element = getDomElement(target);
+    if (!element) {
+        return null;
+    }
+
+    const image = createImageElement(src, alt, options);
+    if (image) {
+        element.appendChild(image);
+        return image;
+    }
+
+    if (options && options.placeholderLabel) {
+        const placeholder = createImagePlaceholder(options.placeholderLabel, options);
+        element.appendChild(placeholder);
+        return placeholder;
+    }
+
+    return null;
+}
+
 function setImageContent(target, src, alt, options) {
-    const element = target instanceof HTMLElement ? target : $(target).get(0);
+    const element = getDomElement(target);
     if (!element) {
         return null;
     }
 
     element.textContent = "";
-    const image = createImageElement(src, alt, options);
-    if (image) {
-        element.appendChild(image);
-    }
-    return image;
+    return appendImageContent(element, src, alt, options);
 }
 
 function setRatingIcon(target, iconPath, size) {

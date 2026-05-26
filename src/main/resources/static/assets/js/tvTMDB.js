@@ -219,9 +219,16 @@ $(document).ready(function() {
 		} else {
 			$imageWrapper.css("border", "none");
 		}
-		const image = createImageElement(posterUrl, "image");
+		const placeholderOptions = {
+			placeholderLabel: "No poster",
+			placeholderIcon: "bi bi-tv",
+			placeholderClassName: "media-placeholder--poster media-placeholder--compact"
+		};
+		const image = createImageElement(posterUrl, title ? "Poster for " + title : "TV show poster", placeholderOptions);
 		if (image) {
 			$imageWrapper.append(image);
+		} else {
+			$imageWrapper.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 		}
 
 		const $info = $("<div>");

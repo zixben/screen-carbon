@@ -93,7 +93,11 @@ $.ajax({
 			: "");
 
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		setImageContent(".movieImage", posterUrl, "img");
+		setImageContent(".movieImage", posterUrl, "Poster for " + (resp.name || "this title"), {
+			placeholderLabel: "Poster unavailable",
+			placeholderIcon: "bi bi-tv",
+			placeholderClassName: "media-placeholder--poster media-placeholder--detail-poster"
+		});
 
 		loadTvCredits();
 	},
@@ -161,10 +165,17 @@ function appendActorCard($container, personId, profileUrl, name, role) {
 		toPersonPage(personId);
 	});
 	const $image = $("<div>").addClass("image");
-	const image = createImageElement(profileUrl, "profile");
+	const placeholderOptions = {
+		placeholderLabel: "No photo",
+		placeholderIcon: "bi bi-person",
+		placeholderClassName: "media-placeholder--profile media-placeholder--avatar"
+	};
+	const image = createImageElement(profileUrl, name ? "Photo of " + name : "Profile photo", placeholderOptions);
 	if (image) {
 		image.setAttribute("srcset", "");
 		$image.append(image);
+	} else {
+		$image.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 	}
 	const $text = $("<div>").addClass("actorText")
 		.append($("<h4>").text(name || ""))

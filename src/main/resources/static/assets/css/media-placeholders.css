@@ -1,0 +1,94 @@
+.media-placeholder {
+	align-items: center;
+	background: linear-gradient(145deg, #f7f9fb, #e7edf2);
+	border: 1px solid #d5dde6;
+	color: #374151;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	height: 100%;
+	justify-content: center;
+	min-height: 100%;
+	padding: 12px;
+	text-align: center;
+	width: 100%;
+}
+
+.media-placeholder i {
+	color: #6b7785;
+	font-size: clamp(1.35rem, 14%, 2.8rem);
+	line-height: 1;
+}
+
+.media-placeholder span {
+	color: #374151;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 1.15;
+	overflow-wrap: anywhere;
+}
+
+.media-placeholder--poster {
+	aspect-ratio: 2 / 3;
+}
+
+.media-placeholder--detail-poster {
+	min-height: 260px;
+}
+
+.media-placeholder--profile {
+	background: linear-gradient(145deg, #f8fafc, #e8edf2);
+}
+
+.media-placeholder--avatar {
+	border-radius: 50%;
+	gap: 5px;
+	min-height: 0;
+	padding: 8px;
+}
+
+.media-placeholder--avatar i {
+	font-size: 1.45rem;
+}
+
+.media-placeholder--avatar span {
+	font-size: 10px;
+	max-width: 58px;
+}
+
+.media-placeholder--compact {
+	gap: 6px;
+	padding: 10px;
+}
+
+.media-placeholder--compact i {
+	font-size: 1.65rem;
+}
+
+.media-placeholder--compact span {
+	font-size: 12px;
+}
+
+.media-placeholder--search {
+	border: 0;
+	border-radius: 8px;
+}
+
+.media-placeholder--carousel {
+	border: 0;
+	border-radius: 20px;
+}
+
+.media-placeholder--user-rating {
+	border-radius: 8px;
+	float: left;
+	height: 170px;
+	margin-right: 20px;
+	width: 130px;
+}
+
+@media (max-width: 576px) {
+	.media-placeholder--detail-poster {
+		min-height: 220px;
+	}
+}

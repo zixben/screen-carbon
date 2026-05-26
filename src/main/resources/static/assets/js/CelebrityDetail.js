@@ -24,7 +24,11 @@ $.ajax({
 		$("#Birthplace").text(resp.place_of_birth || "")
 		$("#Introduction").text(String(resp.biography || "").slice(0, 600) + "...")
 		const profileUrl = safeTmdbImageUrl(resp.profile_path);
-		setImageContent(".image", profileUrl, "image");
+		setImageContent(".image", profileUrl, resp.name ? "Photo of " + resp.name : "Profile photo", {
+			placeholderLabel: "Photo unavailable",
+			placeholderIcon: "bi bi-person",
+			placeholderClassName: "media-placeholder--profile"
+		});
 		loadPersonCredits();
 	},
 	error: function(xhr, status, error) {
@@ -82,9 +86,16 @@ function appendKnownItem($container, itemId, mediaType, posterUrl, voteAverage, 
 		toDesc(itemId, mediaType);
 	});
 	const $imageWrapper = $("<div>").addClass("VideoImage");
-	const image = createImageElement(posterUrl, "not available");
+	const placeholderOptions = {
+		placeholderLabel: "No poster",
+		placeholderIcon: mediaType === "tv" ? "bi bi-tv" : "bi bi-film",
+		placeholderClassName: "media-placeholder--poster media-placeholder--compact"
+	};
+	const image = createImageElement(posterUrl, title ? "Poster for " + title : "Poster", placeholderOptions);
 	if (image) {
 		$imageWrapper.append(image);
+	} else {
+		$imageWrapper.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 	}
 
 	const $rating = $("<p>")

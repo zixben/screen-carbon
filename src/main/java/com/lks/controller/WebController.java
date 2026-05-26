@@ -44,7 +44,7 @@ public class WebController {
 		model.addAttribute("title", "Screen Carbon Test");
 		model.addAttribute("activePage", "home");
 		model.addAttribute("styles", "/assets/css/index.css");
-		model.addAttribute("scripts", "/assets/js/index.js?v=adult-filter-1");
+		model.addAttribute("scripts", "/assets/js/index.js?v=media-placeholders-1");
 
 		return "index";
 	}
@@ -53,7 +53,7 @@ public class WebController {
 	public String searchPage(Model model) {
 		model.addAttribute("title", "Search Results");
 		model.addAttribute("styles", "/assets/css/search.css?v=search-results-3");
-		model.addAttribute("scripts", "/assets/js/search.js?v=adult-filter-1");
+		model.addAttribute("scripts", "/assets/js/search.js?v=media-placeholders-1");
 		return "search-page";
 	}
 
@@ -75,10 +75,10 @@ public class WebController {
 
 		if (toggleState) {
 
-			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=media-clear-filters-1");
+			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=media-placeholders-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=media-clear-filters-1");
+			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=media-placeholders-1");
 		}
 
 		return "movies";
@@ -88,8 +88,8 @@ public class WebController {
 	public String movie(Model model) {
 		model.addAttribute("title", "Movie");
 		model.addAttribute("activePage", "movies");
-		model.addAttribute("styles", "/assets/css/movie.css");
-		model.addAttribute("scripts", "/assets/js/movie.js?v=adult-filter-1");
+		model.addAttribute("styles", "/assets/css/movie.css?v=media-placeholders-1");
+		model.addAttribute("scripts", "/assets/js/movie.js?v=media-placeholders-1");
 		return "movie";
 	}
 
@@ -110,10 +110,10 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/movies.css?v=media-clear-filters-1");
 
 		if (toggleState) {
-			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-clear-filters-1");
+			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-placeholders-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=media-clear-filters-1");
+			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=media-placeholders-1");
 		}
 
 		return "tv-shows";
@@ -123,8 +123,8 @@ public class WebController {
 	public String tv(Model model) {
 		model.addAttribute("title", "TV");
 		model.addAttribute("activePage", "tv-shows");
-		model.addAttribute("styles", "/assets/css/movie.css");
-		model.addAttribute("scripts", "/assets/js/tv.js?v=adult-filter-1");
+		model.addAttribute("styles", "/assets/css/movie.css?v=media-placeholders-1");
+		model.addAttribute("scripts", "/assets/js/tv.js?v=media-placeholders-1");
 		return "tv";
 	}
 
@@ -132,7 +132,7 @@ public class WebController {
 	public String details(Model model) {
 		model.addAttribute("title", "Details");
 		model.addAttribute("styles", "/assets/css/CelebrityDetail.css");
-		model.addAttribute("scripts", "/assets/js/CelebrityDetail.js?v=adult-filter-1");
+		model.addAttribute("scripts", "/assets/js/CelebrityDetail.js?v=media-placeholders-1");
 		return "CelebrityDetail";
 	}
 
@@ -208,7 +208,7 @@ public class WebController {
 
 		model.addAttribute("title", "Rating");
 		model.addAttribute("styles", "/assets/css/rate.css");
-		model.addAttribute("scripts", "/assets/js/rate.js?v=adult-filter-1");
+		model.addAttribute("scripts", "/assets/js/rate.js?v=media-placeholders-1");
 
 		CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 		model.addAttribute("csrfToken", csrfToken);
@@ -221,7 +221,7 @@ public class WebController {
 
 		model.addAttribute("title", "Finish Rating");
 		model.addAttribute("styles", "/assets/css/finishRating.css");
-		model.addAttribute("scripts", "/assets/js/finish-rating.js?v=adult-filter-1");
+		model.addAttribute("scripts", "/assets/js/finish-rating.js?v=media-placeholders-1");
 
 		return "finish-rating";
 	}
@@ -258,7 +258,7 @@ public class WebController {
 		model.addAttribute("title", "User ratings");
 		model.addAttribute("styles0", "/assets/css/docs.css");
 		model.addAttribute("styles", "/assets/css/User2.css");
-		model.addAttribute("scripts", "/assets/js/User2.js");
+		model.addAttribute("scripts", "/assets/js/User2.js?v=media-placeholders-1");
 
 		return "User2";
 	}

@@ -149,7 +149,11 @@ $.ajax({
 		});
 
 		const posterUrl = safeTmdbImageUrl(resp.poster_path);
-		setImageContent("#poster_path", posterUrl, "img");
+		setImageContent("#poster_path", posterUrl, "Poster for " + ($("#title").text() || "this title"), {
+			placeholderLabel: "Poster unavailable",
+			placeholderIcon: type === "tv" ? "bi bi-tv" : "bi bi-film",
+			placeholderClassName: "media-placeholder--poster media-placeholder--detail-poster"
+		});
 	},
 	error: function(xhr, status, error) {
 		if (xhr.status === 404) {

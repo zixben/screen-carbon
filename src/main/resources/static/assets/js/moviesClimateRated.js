@@ -79,9 +79,16 @@ $(document).ready(function() {
 				toDesc(videoId);
 			}).attr("data-search-title", title);
 			const $imageWrapper = $("<div>").addClass("VideoImage").css("border-color", borderColor);
-			const image = createImageElement(posterUrl, "image");
+			const placeholderOptions = {
+				placeholderLabel: "No poster",
+				placeholderIcon: "bi bi-film",
+				placeholderClassName: "media-placeholder--poster media-placeholder--compact"
+			};
+			const image = createImageElement(posterUrl, title ? "Poster for " + title : "Film poster", placeholderOptions);
 			if (image) {
 				$imageWrapper.append(image);
+			} else {
+				$imageWrapper.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 			}
 			const icon = createImageElement(iconPath, "rating icon", { className: "card-icon" });
 			const $rating = $("<p>");

@@ -235,14 +235,16 @@ function createResultCard(result, type, climateVideo) {
 		.attr("href", detailsUrl)
 		.addClass("search-result-card__poster")
 		.attr("aria-label", "View " + title);
-	const posterImage = createImageElement(posterUrl, title || "Search result image");
+	const placeholderOptions = {
+		placeholderLabel: type === "person" ? "No photo" : "No poster",
+		placeholderIcon: type === "person" ? "bi bi-person" : "bi " + searchTypes[type].icon,
+		placeholderClassName: "media-placeholder--search media-placeholder--compact"
+	};
+	const posterImage = createImageElement(posterUrl, title || "Search result image", placeholderOptions);
 	if (posterImage) {
 		$poster.append(posterImage);
 	} else {
-		$poster.append(
-			$("<span>").addClass("search-result-card__poster-placeholder")
-				.append($("<i>").addClass("bi bi-image").attr("aria-hidden", "true"))
-		);
+		$poster.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 	}
 
 	const $body = $("<a>")
