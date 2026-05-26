@@ -224,12 +224,28 @@ function enhanceFilterSelect(select) {
     });
 
     select.addEventListener("change", updateButton);
+    select.addEventListener("filter-combobox:refresh", function () {
+        updateButton();
+        renderOptions("");
+    });
     updateButton();
     renderOptions("");
 }
 
 function getFilterSelectPlaceholder(select) {
     return select.options[0] ? select.options[0].textContent.trim() : "Filter";
+}
+
+function resetEnhancedFilterSelects(root) {
+    const rootElement = typeof root === "string" ? document.querySelector(root) : (root || document);
+    if (!rootElement) {
+        return;
+    }
+
+    rootElement.querySelectorAll("select.form-select").forEach(function (select) {
+        select.selectedIndex = 0;
+        select.dispatchEvent(new Event("filter-combobox:refresh"));
+    });
 }
 
 function openFilterSelect(wrapper, search, list, renderOptions) {

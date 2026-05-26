@@ -306,6 +306,23 @@ $(document).ready(function() {
 		}
 	});
 
+	$('[data-clear-media-filters]').on("click", function() {
+		resetMediaFilters();
+	});
+
+	function resetMediaFilters() {
+		window.clearTimeout(searchDebounceTimer);
+		resetEnhancedFilterSelects(".search");
+		clearSearchInput();
+		window.sessionStorage.setItem("Sort", "popularity.desc");
+		window.sessionStorage.setItem("Genre", "");
+		window.sessionStorage.setItem("Country", "");
+		window.sessionStorage.setItem("Year", "");
+		window.sessionStorage.setItem("movieNumPage", 1);
+		window.sessionStorage.removeItem("movieTotalPages");
+		getMovies();
+	}
+
 	enhanceFilterSelects(".search");
 });
 function toDesc(id) {

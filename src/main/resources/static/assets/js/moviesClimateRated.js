@@ -217,6 +217,22 @@ $(document).ready(function() {
 		}
 	});
 
+	$('[data-clear-media-filters]').on("click", function() {
+		resetMediaFilters();
+	});
+
+	function resetMediaFilters() {
+		window.clearTimeout(searchDebounceTimer);
+		resetEnhancedFilterSelects(".search");
+		$(".moveInput").val("");
+		window.sessionStorage.setItem(storageKeys.country, "");
+		window.sessionStorage.setItem(storageKeys.genre, "");
+		window.sessionStorage.setItem(storageKeys.year, "");
+		window.sessionStorage.setItem(storageKeys.sortValue, defaultSortValue);
+		window.sessionStorage.setItem("movieNumPage", defaultPage);
+		handleDropdownChange();
+	}
+
 	// Event listener for country selection
 	$('.country-select').change(function() {
 		const selectedCountry = $(this).val();
