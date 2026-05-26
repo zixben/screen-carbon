@@ -1,5 +1,5 @@
 const params = new URLSearchParams(window.location.search);
-const value = String(params.get("value") || "").trim();
+const initialSearchValue = String(params.get("value") || "").trim();
 const requestedType = params.get("type");
 const requestedPage = Number(params.get("page"));
 const searchTypes = {
@@ -26,6 +26,7 @@ const searchTypes = {
 	}
 };
 const searchState = {
+	query: initialSearchValue,
 	type: normalizeSearchType(requestedType),
 	page: Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
 	totalPages: 1,
@@ -50,6 +51,12 @@ function setSearchSummary(message) {
 	$("#searchResultsSummary").text(message || "");
 }
 
+function updateSearchValueDisplay() {
+	const query = searchState.query || "";
+	$(".searchValue").text(query || "No search term");
+	$("#searchResultsInput").val(query);
+}
+
 function setSearchMessage(message, className) {
 	const $items = $(".items").empty();
 	$("<div>")
@@ -60,7 +67,7 @@ function setSearchMessage(message, className) {
 
 function updateSearchUrl(type, page) {
 	const nextParams = new URLSearchParams();
-	nextParams.set("value", value);
+	nextParams.set("value", searchState.query);
 	nextParams.set("type", type);
 	nextParams.set("page", String(page));
 	window.history.replaceState(null, "", window.location.pathname + "?" + nextParams.toString());
@@ -93,7 +100,7 @@ function fetchClimateVideo() {
 
 function fetchSearchResults(type, page) {
 	const searchParams = new URLSearchParams({
-		query: value,
+		query: searchState.query,
 		include_adult: "false",
 		language: "en-US",
 		page: String(page)
@@ -119,11 +126,13 @@ function fetchSearchResults(type, page) {
 function loadSearch(type, page) {
 	const normalizedType = normalizeSearchType(type);
 	const normalizedPage = Math.min(maxSearchPage, Math.max(1, Number(page) || 1));
+	const query = searchState.query;
 	const requestId = searchState.requestId + 1;
 	searchState.requestId = requestId;
 	searchState.type = normalizedType;
 	searchState.page = normalizedPage;
 
+	updateSearchValueDisplay();
 	setActiveTab(normalizedType);
 	setSearchSummary("Loading " + searchTypes[normalizedType].label.toLowerCase() + "...");
 	setSearchMessage("Loading results...", "search-loading");
@@ -133,9 +142,11 @@ function loadSearch(type, page) {
 	});
 	updateSearchUrl(normalizedType, normalizedPage);
 
-	if (!value) {
+	if (!query) {
+		searchState.page = 1;
 		setSearchSummary("");
 		setSearchMessage("No search term provided.", "search-empty");
+		updateSearchUrl(normalizedType, 1);
 		updateMediaPagination(1, { totalPages: 1 });
 		return;
 	}
@@ -384,7 +395,15 @@ function determineIconPath(vote_average) {
 }
 
 $(document).ready(function() {
-	$(".searchValue").text(value || "No search term");
+	updateSearchValueDisplay();
+
+	$("#searchResultsForm").on("submit", function(event) {
+		event.preventDefault();
+		const nextQuery = String($("#searchResultsInput").val() || "").trim();
+		searchState.query = nextQuery;
+		searchState.totalPages = 1;
+		loadSearch(searchState.type, 1);
+	});
 
 	$(".search-tabs__button").on("click", function() {
 		loadSearch($(this).data("search-type"), 1);

@@ -16,6 +16,19 @@
 				<p class="search-page__summary" id="searchResultsSummary" aria-live="polite"></p>
 			</header>
 
+			<form class="search-page__form" id="searchResultsForm" role="search">
+				<label class="visually-hidden" for="searchResultsInput">Search films, TV shows, cast and crew</label>
+				<div class="search-page__input-wrapper">
+					<i class="bi bi-search" aria-hidden="true"></i>
+					<input type="search" class="search-page__input" id="searchResultsInput"
+						placeholder="Search films, TV shows, cast and crew" autocomplete="off">
+				</div>
+				<button type="submit" class="search-page__submit">
+					<i class="bi bi-arrow-return-left" aria-hidden="true"></i>
+					<span>Search</span>
+				</button>
+			</form>
+
 			<div class="search-tabs" role="tablist" aria-label="Search result type">
 				<button type="button" class="search-tabs__button active" data-search-type="movie" role="tab"
 					aria-selected="true">
