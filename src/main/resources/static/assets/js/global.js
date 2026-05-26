@@ -112,6 +112,31 @@ function showTextMessage(target, message) {
     element.appendChild(paragraph);
 }
 
+function showLoadingMessage(target, message) {
+    const element = target instanceof HTMLElement ? target : $(target).get(0);
+    if (!element) {
+        return;
+    }
+
+    element.textContent = "";
+    const loading = document.createElement("div");
+    loading.className = "media-loading";
+    loading.setAttribute("role", "status");
+    loading.setAttribute("aria-live", "polite");
+
+    const spinner = document.createElement("span");
+    spinner.className = "media-loading__spinner";
+    spinner.setAttribute("aria-hidden", "true");
+
+    const label = document.createElement("span");
+    label.className = "media-loading__label";
+    label.textContent = message || "Loading results...";
+
+    loading.appendChild(spinner);
+    loading.appendChild(label);
+    element.appendChild(loading);
+}
+
 function redirectToSearch(inputValue, videoType) {
     const value = String(inputValue || "").trim();
     if (value.length === 0) {

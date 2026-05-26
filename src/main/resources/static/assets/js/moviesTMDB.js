@@ -40,6 +40,8 @@ $(document).ready(function() {
 	}
 
 	function getMovies() {
+		showLoadingMessage("#movies", "Loading films...");
+
 		let sort = sessionStorage.getItem("Sort");
 		if (sort == null) sort = "";
 		let Genre = sessionStorage.getItem("Genre");

@@ -12,6 +12,7 @@ $(document).ready(function() {
 		const year = window.sessionStorage.getItem("selectedYear") || "";
 
 		updateMediaPagination(page, { isLoading: true });
+		showLoadingMessage("#movies", "Loading rated films...");
 
 		$.ajax({
 			url: url,
@@ -44,6 +45,7 @@ $(document).ready(function() {
 			},
 			error: function(error) {
 				console.error("Error fetching videos:", error);
+				showTextMessage("#movies", "No results found");
 				updatePageNumber(page, false);
 			}
 		});
