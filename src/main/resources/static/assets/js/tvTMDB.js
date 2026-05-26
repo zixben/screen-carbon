@@ -217,6 +217,8 @@ $(document).ready(function() {
 			nextPage();
 		}
 	});
+
+	enhanceFilterSelects(".search");
 });
 function toDesc(id) {
 	const resultId = safePositiveInteger(id);

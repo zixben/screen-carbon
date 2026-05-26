@@ -62,6 +62,226 @@ function filterSafeTmdbResults(results) {
     return Array.isArray(results) ? results.filter(isSafeTmdbMedia) : [];
 }
 
+function enhanceFilterSelects(root) {
+    const rootElement = typeof root === "string" ? document.querySelector(root) : (root || document);
+    if (!rootElement) {
+        return;
+    }
+
+    rootElement.querySelectorAll("select.form-select").forEach(function (select) {
+        enhanceFilterSelect(select);
+    });
+}
+
+function enhanceFilterSelect(select) {
+    if (!(select instanceof HTMLSelectElement) || select.dataset.filterEnhanced === "true") {
+        return;
+    }
+
+    select.dataset.filterEnhanced = "true";
+    const selectId = select.id || "filter-select-" + Math.random().toString(36).slice(2);
+    select.id = selectId;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "filter-combobox";
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    select.classList.add("filter-combobox__native");
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter-combobox__button";
+    button.setAttribute("aria-haspopup", "listbox");
+    button.setAttribute("aria-expanded", "false");
+
+    const buttonText = document.createElement("span");
+    buttonText.className = "filter-combobox__text";
+
+    const buttonLabel = document.createElement("span");
+    buttonLabel.className = "filter-combobox__label";
+
+    const buttonValue = document.createElement("span");
+    buttonValue.className = "filter-combobox__value";
+
+    const chevron = document.createElement("i");
+    chevron.className = "bi bi-chevron-down filter-combobox__chevron";
+    chevron.setAttribute("aria-hidden", "true");
+
+    buttonText.appendChild(buttonLabel);
+    buttonText.appendChild(buttonValue);
+    button.appendChild(buttonText);
+    button.appendChild(chevron);
+
+    const panel = document.createElement("div");
+    panel.className = "filter-combobox__panel";
+
+    const search = document.createElement("input");
+    search.type = "search";
+    search.className = "filter-combobox__search";
+    search.autocomplete = "off";
+
+    const list = document.createElement("div");
+    list.className = "filter-combobox__list";
+    list.id = selectId + "-listbox";
+    list.setAttribute("role", "listbox");
+
+    panel.appendChild(search);
+    panel.appendChild(list);
+    wrapper.appendChild(button);
+    wrapper.appendChild(panel);
+
+    const placeholder = getFilterSelectPlaceholder(select);
+    search.placeholder = "Search " + placeholder.toLowerCase();
+    button.setAttribute("aria-controls", list.id);
+
+    function updateButton() {
+        const selectedOption = select.options[select.selectedIndex] || select.options[0];
+        const hasActiveValue = select.selectedIndex > 0 && selectedOption && selectedOption.value !== "";
+        buttonLabel.textContent = hasActiveValue ? placeholder : "";
+        buttonValue.textContent = selectedOption ? selectedOption.textContent : placeholder;
+        wrapper.classList.toggle("has-value", hasActiveValue);
+    }
+
+    function renderOptions(query) {
+        const normalizedQuery = String(query || "").trim().toLowerCase();
+        const matchingOptions = Array.from(select.options).filter(function (option) {
+            return option.textContent.toLowerCase().includes(normalizedQuery);
+        });
+
+        list.textContent = "";
+        if (!matchingOptions.length) {
+            const empty = document.createElement("div");
+            empty.className = "filter-combobox__empty";
+            empty.textContent = "No matches";
+            list.appendChild(empty);
+            return;
+        }
+
+        matchingOptions.forEach(function (option) {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "filter-combobox__option";
+            item.textContent = option.textContent;
+            item.setAttribute("role", "option");
+            item.setAttribute("aria-selected", String(option.index === select.selectedIndex));
+            item.addEventListener("click", function () {
+                select.selectedIndex = option.index;
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+                updateButton();
+                closeFilterSelect(wrapper);
+                button.focus();
+            });
+            list.appendChild(item);
+        });
+    }
+
+    button.addEventListener("click", function () {
+        if (wrapper.classList.contains("is-open")) {
+            closeFilterSelect(wrapper);
+        } else {
+            openFilterSelect(wrapper, search, list, renderOptions);
+        }
+    });
+
+    button.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openFilterSelect(wrapper, search, list, renderOptions);
+        }
+    });
+
+    search.addEventListener("input", function () {
+        renderOptions(search.value);
+    });
+
+    search.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeFilterSelect(wrapper);
+            button.focus();
+        } else if (event.key === "ArrowDown") {
+            event.preventDefault();
+            focusFilterOption(list, "next");
+        }
+    });
+
+    list.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeFilterSelect(wrapper);
+            button.focus();
+        } else if (event.key === "ArrowDown") {
+            event.preventDefault();
+            focusFilterOption(list, "next");
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            focusFilterOption(list, "previous");
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!wrapper.contains(event.target)) {
+            closeFilterSelect(wrapper);
+        }
+    });
+
+    select.addEventListener("change", updateButton);
+    updateButton();
+    renderOptions("");
+}
+
+function getFilterSelectPlaceholder(select) {
+    return select.options[0] ? select.options[0].textContent.trim() : "Filter";
+}
+
+function openFilterSelect(wrapper, search, list, renderOptions) {
+    closeAllFilterSelects(wrapper);
+    wrapper.classList.add("is-open");
+    const button = wrapper.querySelector(".filter-combobox__button");
+    if (button) {
+        button.setAttribute("aria-expanded", "true");
+    }
+    search.value = "";
+    renderOptions("");
+    window.setTimeout(function () {
+        search.focus();
+        const selectedOption = list.querySelector('[aria-selected="true"]');
+        if (selectedOption) {
+            selectedOption.scrollIntoView({ block: "nearest" });
+        }
+    }, 0);
+}
+
+function closeFilterSelect(wrapper) {
+    wrapper.classList.remove("is-open");
+    const button = wrapper.querySelector(".filter-combobox__button");
+    if (button) {
+        button.setAttribute("aria-expanded", "false");
+    }
+}
+
+function closeAllFilterSelects(exceptWrapper) {
+    document.querySelectorAll(".filter-combobox.is-open").forEach(function (wrapper) {
+        if (wrapper !== exceptWrapper) {
+            closeFilterSelect(wrapper);
+        }
+    });
+}
+
+function focusFilterOption(list, direction) {
+    const options = Array.from(list.querySelectorAll(".filter-combobox__option"));
+    if (!options.length) {
+        return;
+    }
+
+    const activeIndex = options.indexOf(document.activeElement);
+    let nextIndex = 0;
+    if (activeIndex >= 0) {
+        nextIndex = direction === "previous"
+            ? (activeIndex - 1 + options.length) % options.length
+            : (activeIndex + 1) % options.length;
+    }
+    options[nextIndex].focus();
+}
+
 function createImageElement(src, alt, options) {
     if (!src) {
         return null;
