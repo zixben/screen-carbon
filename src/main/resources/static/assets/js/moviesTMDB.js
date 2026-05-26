@@ -1,9 +1,11 @@
 $(document).ready(function() {
     loadTMDBOptions();
-	window.sessionStorage.clear();
 	window.sessionStorage.setItem("Sort", "popularity.desc");
+	window.sessionStorage.setItem("Genre", "");
+	window.sessionStorage.setItem("Country", "");
 	window.sessionStorage.setItem("Year", '');
 	window.sessionStorage.setItem("movieNumPage", 1);
+	window.sessionStorage.removeItem("movieTotalPages");
 	let searchDebounceTimer = null;
 	configureSearchInput();
 	getMovies();

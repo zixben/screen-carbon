@@ -75,10 +75,10 @@ public class WebController {
 
 		if (toggleState) {
 
-			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=full-media-search-1");
+			model.addAttribute("scripts", "/assets/js/moviesClimateRated.js?v=media-state-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=full-media-search-1");
+			model.addAttribute("scripts", "/assets/js/moviesTMDB.js?v=media-state-1");
 		}
 
 		return "movies";
@@ -110,10 +110,10 @@ public class WebController {
 		model.addAttribute("styles", "/assets/css/movies.css?v=full-media-search-1");
 
 		if (toggleState) {
-			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=full-media-search-1");
+			model.addAttribute("scripts", "/assets/js/tvClimateRated.js?v=media-state-1");
 		} else {
 
-			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=full-media-search-1");
+			model.addAttribute("scripts", "/assets/js/tvTMDB.js?v=media-state-1");
 		}
 
 		return "tv-shows";

@@ -4,13 +4,19 @@ $(document).ready(function() {
 	const defaultPage = 1;
 	const defaultSortValue = "avg_desc";
 	const defaultSortUrl = server + "/score/getMovieAvgDesc";
+	const storageKeys = {
+		country: "movieRatedSelectedCountry",
+		genre: "movieRatedSelectedGenre",
+		year: "movieRatedSelectedYear",
+		sortValue: "movieRatedSortValue"
+	};
 	let searchDebounceTimer = null;
 
 	function fetchVideos(url, page) {
 		const offset = (page - 1) * pageSize;
-		const country = window.sessionStorage.getItem("selectedCountry") || "";
-		const genre = window.sessionStorage.getItem("selectedGenre") || "";
-		const year = window.sessionStorage.getItem("selectedYear") || "";
+		const country = window.sessionStorage.getItem(storageKeys.country) || "";
+		const genre = window.sessionStorage.getItem(storageKeys.genre) || "";
+		const year = window.sessionStorage.getItem(storageKeys.year) || "";
 		const query = getMediaSearchQuery();
 
 		updateMediaPagination(page, { isLoading: true });
@@ -109,7 +115,7 @@ $(document).ready(function() {
 	$('.genre-select').change(function() {
 		const selectedGenre = $(this).val();
 
-		window.sessionStorage.setItem("selectedGenre", selectedGenre);
+		window.sessionStorage.setItem(storageKeys.genre, selectedGenre);
 		window.sessionStorage.setItem("movieNumPage", defaultPage);
 		handleDropdownChange();
 	});
@@ -118,7 +124,7 @@ $(document).ready(function() {
 	$('.year-select').change(function() {
 		const selectedYear = $(this).val();
 
-		window.sessionStorage.setItem("selectedYear", selectedYear);
+		window.sessionStorage.setItem(storageKeys.year, selectedYear);
 		window.sessionStorage.setItem("movieNumPage", defaultPage);
 		handleDropdownChange();
 	});
@@ -143,8 +149,7 @@ $(document).ready(function() {
 		}
 
 		const page = Number(window.sessionStorage.getItem("movieNumPage")) || defaultPage;
-		window.sessionStorage.setItem("sortValue", selectedOption);
-		window.sessionStorage.setItem("sortUrl", url);
+		window.sessionStorage.setItem(storageKeys.sortValue, selectedOption);
 
 		fetchVideos(url, page);
 	}
@@ -216,25 +221,26 @@ $(document).ready(function() {
 	$('.country-select').change(function() {
 		const selectedCountry = $(this).val();
 
-		window.sessionStorage.setItem("selectedCountry", selectedCountry);
+		window.sessionStorage.setItem(storageKeys.country, selectedCountry);
 		window.sessionStorage.setItem("movieNumPage", defaultPage);
 		handleDropdownChange();
 	});
 
 	function initialize() {
-		const page = Number(window.sessionStorage.getItem("movieNumPage")) || defaultPage;
-		const url = window.sessionStorage.getItem("sortUrl") || defaultSortUrl;
-		const country = window.sessionStorage.getItem("selectedCountry") || "";
-		const genre = window.sessionStorage.getItem("selectedGenre") || "";
-		const year = window.sessionStorage.getItem("selectedYear") || "";
-		const sortValue = window.sessionStorage.getItem("sortValue") || defaultSortValue;
+		const country = window.sessionStorage.getItem(storageKeys.country) || "";
+		const genre = window.sessionStorage.getItem(storageKeys.genre) || "";
+		const year = window.sessionStorage.getItem(storageKeys.year) || "";
+		const sortValue = window.sessionStorage.getItem(storageKeys.sortValue) || defaultSortValue;
 
 		$('.sort-select').val(sortValue);
+		if (!$('.sort-select').val()) {
+			$('.sort-select').val(defaultSortValue);
+		}
 		$('.country-select').val(country);
 		$('.genre-select').val(genre);
 		$('.year-select').val(year);
 
-		fetchVideos(url, page);
+		handleDropdownChange();
 	}
 
 	configureSearchInput();
