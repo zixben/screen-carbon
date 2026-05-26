@@ -148,7 +148,7 @@ $(document).ready(function() {
 
 		const $card = $("<div>").addClass("videoCar").on("click", function() {
 			toDesc(resultId);
-		});
+		}).attr("data-search-title", title);
 		const $imageWrapper = $("<div>").addClass("VideoImage");
 		if (isRated) {
 			$imageWrapper.css("border-color", borderColor);
@@ -197,18 +197,6 @@ $(document).ready(function() {
 		else return 'assets/images/ranking_icons/ICONS_0004_Grey.png';
 	}
 
-	$(".moveInput").on("keyup", function(e) {
-		const inputValue = $(this).val().trim();
-		const videoType = "tv";
-
-		if (e.key === "Enter" && inputValue.length > 0) {
-			redirectToSearch(inputValue, videoType);
-		} else if (e.key === "Enter") {
-			// If the Enter key was pressed but the input is empty, show an alert
-			redirectToSearch(inputValue, videoType);
-		}
-	});
-
 	$('.page-item').click(function() {
 		const action = $(this).data('action');
 		if (action === 'prev') {
@@ -219,6 +207,12 @@ $(document).ready(function() {
 	});
 
 	enhanceFilterSelects(".search");
+	initializeMediaPageSearch({
+		containerSelector: "#tv-shows",
+		videoType: "tv",
+		allResultsLabel: "TV shows",
+		placeholder: "Filter visible TV shows"
+	});
 });
 function toDesc(id) {
 	const resultId = safePositiveInteger(id);

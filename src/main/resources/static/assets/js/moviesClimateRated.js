@@ -68,7 +68,7 @@ $(document).ready(function() {
 
 			const $card = $("<div>").addClass("videoCar").on("click", function() {
 				toDesc(videoId);
-			});
+			}).attr("data-search-title", title);
 			const $imageWrapper = $("<div>").addClass("VideoImage").css("border-color", borderColor);
 			const image = createImageElement(posterUrl, "image");
 			if (image) {
@@ -207,6 +207,12 @@ $(document).ready(function() {
 
 	initialize();
 	enhanceFilterSelects(".search");
+	initializeMediaPageSearch({
+		containerSelector: "#movies",
+		videoType: "movie",
+		allResultsLabel: "films",
+		placeholder: "Filter visible films"
+	});
 });
 
 function toDesc(id) {
@@ -215,16 +221,6 @@ function toDesc(id) {
 		window.location.href = server + "/movie?id=" + videoId + "&type=movie";
 	}
 }
-
-$(".moveInput").on("keyup", function(e) {
-	const inputValue = $(this).val().trim();
-	if (e.key === "Enter" && inputValue.length > 0) {
-		redirectToSearch(inputValue);
-	} else if (e.key === "Enter") {
-		// If the Enter key was pressed but the input is empty, show an alert
-		redirectToSearch(inputValue);
-	}
-});
 
 function loadClimateRatedOptions() {
 	let climateRatedOptions = `

@@ -282,6 +282,106 @@ function focusFilterOption(list, direction) {
     options[nextIndex].focus();
 }
 
+function initializeMediaPageSearch(options) {
+    const settings = options || {};
+    const input = document.querySelector(settings.inputSelector || ".moveInput");
+    const container = document.querySelector(settings.containerSelector);
+    if (!input || !container) {
+        return null;
+    }
+
+    const cardSelector = settings.cardSelector || ".videoCar";
+    const titleSelector = settings.titleSelector || "h5";
+    const videoType = safeVideoType(settings.videoType);
+    const allResultsLabel = settings.allResultsLabel || "titles";
+    const emptyMessage = createMediaPageSearchMessage(input, videoType, allResultsLabel);
+
+    if (settings.placeholder) {
+        input.placeholder = settings.placeholder;
+    }
+    input.setAttribute("autocomplete", "off");
+
+    if (container.parentNode) {
+        container.parentNode.insertBefore(emptyMessage, container.nextSibling);
+    }
+
+    function applyFilter() {
+        const query = input.value.trim().toLowerCase();
+        const cards = Array.from(container.querySelectorAll(cardSelector));
+        const hasLoading = Boolean(container.querySelector(".media-loading"));
+        let visibleCount = 0;
+
+        cards.forEach(function (card) {
+            const searchText = getMediaCardSearchText(card, titleSelector);
+            const isVisible = query.length === 0 || searchText.includes(query);
+            card.hidden = !isVisible;
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        emptyMessage.hidden = query.length === 0 || hasLoading || cards.length === 0 || visibleCount > 0;
+    }
+
+    input.addEventListener("input", applyFilter);
+    input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            const query = input.value.trim();
+            if (query.length > 0) {
+                redirectToSearch(query, videoType);
+            }
+        }
+    });
+
+    const observer = new MutationObserver(function () {
+        applyFilter();
+    });
+    observer.observe(container, { childList: true });
+
+    applyFilter();
+    return {
+        refresh: applyFilter,
+        disconnect: function () {
+            observer.disconnect();
+        }
+    };
+}
+
+function createMediaPageSearchMessage(input, videoType, allResultsLabel) {
+    const message = document.createElement("div");
+    message.className = "media-page-search-empty";
+    message.hidden = true;
+    message.setAttribute("role", "status");
+
+    const text = document.createElement("span");
+    text.textContent = "No visible matches on this page.";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "media-page-search-empty__button";
+    button.textContent = "Search all " + allResultsLabel;
+    button.addEventListener("click", function () {
+        const query = input.value.trim();
+        if (query.length > 0) {
+            redirectToSearch(query, videoType);
+        }
+    });
+
+    message.appendChild(text);
+    message.appendChild(button);
+    return message;
+}
+
+function getMediaCardSearchText(card, titleSelector) {
+    if (card.dataset.searchTitle) {
+        return card.dataset.searchTitle.toLowerCase();
+    }
+
+    const title = card.querySelector(titleSelector);
+    return title ? title.textContent.trim().toLowerCase() : "";
+}
+
 function createImageElement(src, alt, options) {
     if (!src) {
         return null;
