@@ -40,8 +40,29 @@ class ScoreMapperAdminQueryTest {
         assertTrue(selectQuery("getCountY").contains("LIMIT 10"));
     }
 
-    private String selectQuery(String methodName) throws Exception {
-        Method method = ScoreMapper.class.getMethod(methodName);
+    @Test
+    void ratedMediaListQueriesCanFilterByTitleSearchQuery() throws Exception {
+        Class<?>[] parameterTypes = { int.class, int.class, String.class, String.class, String.class, String.class };
+
+        for (String methodName : new String[] {
+                "getMovieAvgScoreListDesc",
+                "getMovieAvgScoreListAsc",
+                "getTVAvgScoreListDesc",
+                "getTVAvgScoreListAsc",
+                "getMovieScoresCountDesc",
+                "getMovieScoresCountAsc",
+                "getTVScoresCountDesc",
+                "getTVScoresCountAsc"
+        }) {
+            String query = selectQuery(methodName, parameterTypes);
+
+            assertTrue(query.contains("LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%')"),
+                    methodName + " must include title query filtering");
+        }
+    }
+
+    private String selectQuery(String methodName, Class<?>... parameterTypes) throws Exception {
+        Method method = ScoreMapper.class.getMethod(methodName, parameterTypes);
         return String.join(" ", method.getAnnotation(Select.class).value());
     }
 }

@@ -4,6 +4,8 @@ $(document).ready(function() {
 	window.sessionStorage.setItem("Sort", "popularity.desc");
 	window.sessionStorage.setItem("Year", '');
 	window.sessionStorage.setItem("tvNumPage", 1);
+	let searchDebounceTimer = null;
+	configureSearchInput();
 	getMovies();
 
 	$(".form-select").on("change", function(e) {
@@ -11,6 +13,7 @@ $(document).ready(function() {
 		let index = element.selectedIndex;
 		let value = element.options[index].value;
 		let key = element.options[0].text;
+		clearSearchInput();
 		window.sessionStorage.setItem(key, value);
 		window.sessionStorage.setItem("tvNumPage", 1);
 		window.sessionStorage.removeItem("tvTotalPages");
@@ -72,11 +75,22 @@ $(document).ready(function() {
 				"accept": "application/json"
 			},
 			success: function(response) {
-				loadTmdbShows(Array.isArray(response) ? response : []);
+				const climateMovies = Array.isArray(response) ? response : [];
+				const searchQuery = getMediaSearchQuery();
+				if (searchQuery) {
+					loadTmdbShowSearch(searchQuery, climateMovies);
+				} else {
+					loadTmdbShows(climateMovies);
+				}
 			},
 			error: function(xhr, status, error) {
 				console.error("An error occurred: " + status + ", " + error + ", " + xhr);
-				loadTmdbShows([]);
+				const searchQuery = getMediaSearchQuery();
+				if (searchQuery) {
+					loadTmdbShowSearch(searchQuery, []);
+				} else {
+					loadTmdbShows([]);
+				}
 			}
 		});
 	}
@@ -127,6 +141,54 @@ $(document).ready(function() {
 			error: function() {
 				updateMediaPagination(num, { hasNext: false });
 				showTextMessage("#tv-shows", "No results found");
+			}
+		})
+	}
+
+	function loadTmdbShowSearch(query, climateMovies) {
+		let num = Number(window.sessionStorage.getItem("tvNumPage"));
+		const searchParams = new URLSearchParams({
+			query: query,
+			include_adult: "false",
+			language: "en-US",
+			page: String(num)
+		});
+
+		$.ajax({
+			url: "https://api.themoviedb.org/3/search/tv?" + searchParams.toString(),
+			cache: false,
+			method: "get",
+			headers: {
+				"Authorization": jwt,
+				"accept": "application/json"
+			},
+			success: function(resp) {
+				const results = filterSafeTmdbResults(resp.results);
+				const totalPages = Math.max(1, Number(resp.total_pages) || 1);
+				window.sessionStorage.setItem("tvTotalPages", totalPages);
+
+				if (num > totalPages) {
+					window.sessionStorage.setItem("tvNumPage", totalPages);
+					updateMediaPagination(totalPages, { totalPages: totalPages });
+					getMovies();
+					return;
+				}
+
+				updateMediaPagination(num, { totalPages: totalPages });
+
+				if (results.length) {
+					const $tvShows = $("#tv-shows").empty();
+
+					for (const respElement of results) {
+						appendTmdbTvCard($tvShows, respElement, climateMovies);
+					}
+				} else {
+					showTextMessage("#tv-shows", "No matching TV shows found");
+				}
+			},
+			error: function() {
+				updateMediaPagination(num, { hasNext: false });
+				showTextMessage("#tv-shows", "Search results could not be loaded.");
 			}
 		})
 	}
@@ -197,6 +259,42 @@ $(document).ready(function() {
 		else return 'assets/images/ranking_icons/ICONS_0004_Grey.png';
 	}
 
+	function configureSearchInput() {
+		const $input = $(".moveInput");
+		$input.attr("placeholder", "Search all TV shows");
+		$input.attr("autocomplete", "off");
+		$input.on("input", scheduleSearchRefresh);
+		$input.on("keydown", function(event) {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				refreshSearchNow();
+			}
+		});
+	}
+
+	function getMediaSearchQuery() {
+		return String($(".moveInput").val() || "").trim();
+	}
+
+	function clearSearchInput() {
+		$(".moveInput").val("");
+		window.clearTimeout(searchDebounceTimer);
+	}
+
+	function scheduleSearchRefresh() {
+		window.sessionStorage.setItem("tvNumPage", 1);
+		window.sessionStorage.removeItem("tvTotalPages");
+		window.clearTimeout(searchDebounceTimer);
+		searchDebounceTimer = window.setTimeout(getMovies, 300);
+	}
+
+	function refreshSearchNow() {
+		window.sessionStorage.setItem("tvNumPage", 1);
+		window.sessionStorage.removeItem("tvTotalPages");
+		window.clearTimeout(searchDebounceTimer);
+		getMovies();
+	}
+
 	$('.page-item').click(function() {
 		const action = $(this).data('action');
 		if (action === 'prev') {
@@ -207,12 +305,6 @@ $(document).ready(function() {
 	});
 
 	enhanceFilterSelects(".search");
-	initializeMediaPageSearch({
-		containerSelector: "#tv-shows",
-		videoType: "tv",
-		allResultsLabel: "TV shows",
-		placeholder: "Filter visible TV shows"
-	});
 });
 function toDesc(id) {
 	const resultId = safePositiveInteger(id);

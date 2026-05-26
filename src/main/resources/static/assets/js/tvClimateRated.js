@@ -4,12 +4,14 @@ $(document).ready(function() {
 	const defaultPage = 1;
 	const defaultSortValue = "avg_desc";
 	const defaultSortUrl = server + "/score/getTVAvgDesc";
+	let searchDebounceTimer = null;
 
 	function fetchVideos(url, page) {
 		const offset = (page - 1) * pageSize;
 		const country = window.sessionStorage.getItem("selectedCountry") || "";
 		const genre = window.sessionStorage.getItem("selectedGenre") || "";
 		const year = window.sessionStorage.getItem("selectedYear") || "";
+		const query = getMediaSearchQuery();
 
 		updateMediaPagination(page, { isLoading: true });
 		showLoadingMessage("#tv-shows", "Loading rated TV shows...");
@@ -22,7 +24,8 @@ $(document).ready(function() {
 				offset: offset,
 				country: country,
 				genre: genre,
-				year: year
+				year: year,
+				query: query
 			},
 			success: function(response) {
 				const videos = Array.isArray(response) ? response : [];
@@ -150,6 +153,35 @@ $(document).ready(function() {
 		updateMediaPagination(page, { hasNext: hasNextPage });
 	}
 
+	function configureSearchInput() {
+		const $input = $(".moveInput");
+		$input.attr("placeholder", "Search rated TV shows");
+		$input.attr("autocomplete", "off");
+		$input.on("input", scheduleSearchRefresh);
+		$input.on("keydown", function(event) {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				refreshSearchNow();
+			}
+		});
+	}
+
+	function getMediaSearchQuery() {
+		return String($(".moveInput").val() || "").trim();
+	}
+
+	function scheduleSearchRefresh() {
+		window.sessionStorage.setItem("tvNumPage", defaultPage);
+		window.clearTimeout(searchDebounceTimer);
+		searchDebounceTimer = window.setTimeout(handleDropdownChange, 300);
+	}
+
+	function refreshSearchNow() {
+		window.sessionStorage.setItem("tvNumPage", defaultPage);
+		window.clearTimeout(searchDebounceTimer);
+		handleDropdownChange();
+	}
+
 	function prePage() {
 		let num = Number(window.sessionStorage.getItem("tvNumPage")) || defaultPage;
 		if (num > 1) {
@@ -205,14 +237,9 @@ $(document).ready(function() {
 		fetchVideos(url, page);
 	}
 
+	configureSearchInput();
 	initialize();
 	enhanceFilterSelects(".search");
-	initializeMediaPageSearch({
-		containerSelector: "#tv-shows",
-		videoType: "tv",
-		allResultsLabel: "TV shows",
-		placeholder: "Filter visible TV shows"
-	});
 });
 
 function toDesc(id) {

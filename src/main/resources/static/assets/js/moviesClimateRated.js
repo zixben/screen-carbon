@@ -4,12 +4,14 @@ $(document).ready(function() {
 	const defaultPage = 1;
 	const defaultSortValue = "avg_desc";
 	const defaultSortUrl = server + "/score/getMovieAvgDesc";
+	let searchDebounceTimer = null;
 
 	function fetchVideos(url, page) {
 		const offset = (page - 1) * pageSize;
 		const country = window.sessionStorage.getItem("selectedCountry") || "";
 		const genre = window.sessionStorage.getItem("selectedGenre") || "";
 		const year = window.sessionStorage.getItem("selectedYear") || "";
+		const query = getMediaSearchQuery();
 
 		updateMediaPagination(page, { isLoading: true });
 		showLoadingMessage("#movies", "Loading rated films...");
@@ -22,7 +24,8 @@ $(document).ready(function() {
 				offset: offset,
 				country: country,
 				genre: genre,
-				year: year
+				year: year,
+				query: query
 			},
 			success: function(response) {
 				const videos = Array.isArray(response) ? response : [];
@@ -150,6 +153,35 @@ $(document).ready(function() {
 		updateMediaPagination(page, { hasNext: hasNextPage });
 	}
 
+	function configureSearchInput() {
+		const $input = $(".moveInput");
+		$input.attr("placeholder", "Search rated films");
+		$input.attr("autocomplete", "off");
+		$input.on("input", scheduleSearchRefresh);
+		$input.on("keydown", function(event) {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				refreshSearchNow();
+			}
+		});
+	}
+
+	function getMediaSearchQuery() {
+		return String($(".moveInput").val() || "").trim();
+	}
+
+	function scheduleSearchRefresh() {
+		window.sessionStorage.setItem("movieNumPage", defaultPage);
+		window.clearTimeout(searchDebounceTimer);
+		searchDebounceTimer = window.setTimeout(handleDropdownChange, 300);
+	}
+
+	function refreshSearchNow() {
+		window.sessionStorage.setItem("movieNumPage", defaultPage);
+		window.clearTimeout(searchDebounceTimer);
+		handleDropdownChange();
+	}
+
 	function prePage() {
 		let num = Number(window.sessionStorage.getItem("movieNumPage")) || defaultPage;
 		if (num > 1) {
@@ -205,14 +237,9 @@ $(document).ready(function() {
 		fetchVideos(url, page);
 	}
 
+	configureSearchInput();
 	initialize();
 	enhanceFilterSelects(".search");
-	initializeMediaPageSearch({
-		containerSelector: "#movies",
-		videoType: "movie",
-		allResultsLabel: "films",
-		placeholder: "Filter visible films"
-	});
 });
 
 function toDesc(id) {

@@ -11,22 +11,25 @@ class ScoreListRequestValidatorTest {
 
 	@Test
 	void validateAcceptsFrontendDefaultsAndNormalizesFilters() {
-		ScoreListRequestValidator.ScoreListFilters filters = validator.validate(20, 40, " gb ", " 10759 ", " 2034 ");
+		ScoreListRequestValidator.ScoreListFilters filters =
+				validator.validate(20, 40, " gb ", " 10759 ", " 2034 ", " matrix ");
 
 		assertEquals(20, filters.limit());
 		assertEquals(40, filters.offset());
 		assertEquals("GB", filters.country());
 		assertEquals("10759", filters.genre());
 		assertEquals("2034", filters.year());
+		assertEquals("matrix", filters.query());
 	}
 
 	@Test
 	void validateTreatsEmptyOptionalFiltersAsUnset() {
-		ScoreListRequestValidator.ScoreListFilters filters = validator.validate(20, 0, "", " ", null);
+		ScoreListRequestValidator.ScoreListFilters filters = validator.validate(20, 0, "", " ", null, "");
 
 		assertNull(filters.country());
 		assertNull(filters.genre());
 		assertNull(filters.year());
+		assertNull(filters.query());
 	}
 
 	@Test
@@ -50,5 +53,13 @@ class ScoreListRequestValidatorTest {
 				() -> validator.validate(20, 0, null, null, String.valueOf(ScoreListRequestValidator.MIN_YEAR - 1)));
 		assertThrows(IllegalArgumentException.class,
 				() -> validator.validate(20, 0, null, null, String.valueOf(ScoreListRequestValidator.MAX_YEAR + 1)));
+	}
+
+	@Test
+	void validateRejectsMalformedQuery() {
+		assertThrows(IllegalArgumentException.class, () -> validator.validate(20, 0, null, null, null, "<script>"));
+		assertThrows(IllegalArgumentException.class, () -> validator.validate(20, 0, null, null, null, "mat\nrix"));
+		assertThrows(IllegalArgumentException.class,
+				() -> validator.validate(20, 0, null, null, null, "a".repeat(ScoreListRequestValidator.MAX_QUERY_LENGTH + 1)));
 	}
 }

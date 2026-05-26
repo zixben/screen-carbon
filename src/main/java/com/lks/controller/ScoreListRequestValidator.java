@@ -7,15 +7,21 @@ final class ScoreListRequestValidator {
 	static final int MAX_OFFSET = 10_000;
 	static final int MIN_YEAR = 1888;
 	static final int MAX_YEAR = 2100;
+	static final int MAX_QUERY_LENGTH = 100;
 	private static final int MAX_GENRE_ID = 200_000;
 
 	ScoreListFilters validate(int limit, int offset, String country, String genre, String year) {
+		return validate(limit, offset, country, genre, year, null);
+	}
+
+	ScoreListFilters validate(int limit, int offset, String country, String genre, String year, String query) {
 		return new ScoreListFilters(
 				validateLimit(limit),
 				validateOffset(offset),
 				validateCountry(country),
 				validateGenre(genre),
-				validateYear(year));
+				validateYear(year),
+				validateQuery(query));
 	}
 
 	private int validateLimit(int limit) {
@@ -68,6 +74,17 @@ final class ScoreListRequestValidator {
 		return String.valueOf(parsedYear);
 	}
 
+	private String validateQuery(String query) {
+		String normalized = trimToNull(query);
+		if (normalized == null) {
+			return null;
+		}
+		if (normalized.length() > MAX_QUERY_LENGTH || containsHtmlBoundary(normalized) || containsControlCharacter(normalized)) {
+			throw new IllegalArgumentException("Search query is invalid.");
+		}
+		return normalized;
+	}
+
 	private int parsePositiveInteger(String value, String message) {
 		if (!value.matches("\\d{1,6}")) {
 			throw new IllegalArgumentException(message);
@@ -87,6 +104,19 @@ final class ScoreListRequestValidator {
 		return trimmed.isEmpty() ? null : trimmed;
 	}
 
-	record ScoreListFilters(int limit, int offset, String country, String genre, String year) {
+	private boolean containsHtmlBoundary(String value) {
+		return value.indexOf('<') >= 0 || value.indexOf('>') >= 0;
+	}
+
+	private boolean containsControlCharacter(String value) {
+		for (int i = 0; i < value.length(); i++) {
+			if (Character.isISOControl(value.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	record ScoreListFilters(int limit, int offset, String country, String genre, String year, String query) {
 	}
 }

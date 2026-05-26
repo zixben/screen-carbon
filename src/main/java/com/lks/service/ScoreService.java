@@ -27,21 +27,21 @@ public interface ScoreService {
 
 	List<Score> getAvgScoreListDesc();
 
-	List<Score> getMovieAvgScoreListDesc(int limit, int offset, String country, String genre, String year);
+	List<Score> getMovieAvgScoreListDesc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getMovieAvgScoreListAsc(int limit, int offset, String country, String genre, String year);
+	List<Score> getMovieAvgScoreListAsc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getTVAvgScoreListDesc(int limit, int offset, String country, String genre, String year);
+	List<Score> getTVAvgScoreListDesc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getTVAvgScoreListAsc(int limit, int offset, String country, String genre, String year);
+	List<Score> getTVAvgScoreListAsc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getMovieScoresCountDesc(int limit, int offset, String country, String genre, String year);
+	List<Score> getMovieScoresCountDesc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getMovieScoresCountAsc(int limit, int offset, String country, String genre, String year);
+	List<Score> getMovieScoresCountAsc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getTVScoresCountDesc(int limit, int offset, String country, String genre, String year);
+	List<Score> getTVScoresCountDesc(int limit, int offset, String country, String genre, String year, String query);
 
-	List<Score> getTVScoresCountAsc(int limit, int offset, String country, String genre, String year);
+	List<Score> getTVScoresCountAsc(int limit, int offset, String country, String genre, String year, String query);
 
 	List<String> getAvgScoreByIdAndTitle(String VId, String videoType);
 

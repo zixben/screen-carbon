@@ -13,11 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ScoreControllerTest {
@@ -82,6 +85,17 @@ class ScoreControllerTest {
         RateLimitExceededException exception = assertThrows(RateLimitExceededException.class,
                 () -> controller.add(request, null, session));
         assertEquals("Too many score submissions. Please try again later.", exception.getMessage());
+    }
+
+    @Test
+    void getMovieAvgDescNormalizesFiltersAndPassesSearchQuery() {
+        ScoreService scoreService = mock(ScoreService.class);
+        ScoreController controller = new ScoreController(scoreService, new RequestRateLimiter());
+
+        ResponseEntity<List<Score>> response = controller.getMovieAvgDesc(20, 0, " gb ", " 18 ", " 2024 ", " matrix ");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(scoreService).getMovieAvgScoreListDesc(20, 0, "GB", "18", "2024", "matrix");
     }
 
     private Score savedScore() {

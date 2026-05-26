@@ -92,43 +92,43 @@ public class ScoreServiceImpl implements ScoreService {
 	}
 
 	@Override
-	public List<Score> getMovieAvgScoreListDesc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getMovieAvgScoreListDesc(limit, offset, country, genre, year);
+	public List<Score> getMovieAvgScoreListDesc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getMovieAvgScoreListDesc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getMovieAvgScoreListAsc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getMovieAvgScoreListAsc(limit, offset, country, genre, year);
+	public List<Score> getMovieAvgScoreListAsc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getMovieAvgScoreListAsc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getTVAvgScoreListDesc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getTVAvgScoreListDesc(limit, offset, country, genre, year);
+	public List<Score> getTVAvgScoreListDesc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getTVAvgScoreListDesc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getTVAvgScoreListAsc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getTVAvgScoreListAsc(limit, offset, country, genre, year);
+	public List<Score> getTVAvgScoreListAsc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getTVAvgScoreListAsc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getMovieScoresCountDesc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getMovieScoresCountDesc(limit, offset, country, genre, year);
+	public List<Score> getMovieScoresCountDesc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getMovieScoresCountDesc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getMovieScoresCountAsc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getMovieScoresCountAsc(limit, offset, country, genre, year);
+	public List<Score> getMovieScoresCountAsc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getMovieScoresCountAsc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getTVScoresCountDesc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getTVScoresCountDesc(limit, offset, country, genre, year);
+	public List<Score> getTVScoresCountDesc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getTVScoresCountDesc(limit, offset, country, genre, year, query);
 	}
 
 	@Override
-	public List<Score> getTVScoresCountAsc(int limit, int offset, String country, String genre, String year) {
-		return scoreMapper.getTVScoresCountAsc(limit, offset, country, genre, year);
+	public List<Score> getTVScoresCountAsc(int limit, int offset, String country, String genre, String year, String query) {
+		return scoreMapper.getTVScoresCountAsc(limit, offset, country, genre, year, query);
 	}
 
 	@Override

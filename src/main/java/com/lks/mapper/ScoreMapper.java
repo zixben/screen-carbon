@@ -62,10 +62,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type " + "ORDER BY AVG(s.score) DESC "
 			+ "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getMovieAvgScoreListDesc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>" + "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) score, s.v_img, s.video_type "
 			+ "FROM score s " + "LEFT JOIN movies_countries mc ON s.v_id = mc.movie_id "
@@ -75,10 +77,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type " + "ORDER BY AVG(s.score) ASC "
 			+ "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getMovieAvgScoreListAsc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>" + "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) score, s.v_img, s.video_type "
 			+ "FROM score s " + "LEFT JOIN tv_countries mc ON s.v_id = mc.tv_id "
@@ -87,10 +91,13 @@ public interface ScoreMapper {
 			+ "WHERE s.video_type = 'tv' " + "<if test='country != null and !country.isEmpty()'>"
 			+ "AND c.short_name = #{country} " + "</if>" + "<if test='genre != null and !genre.isEmpty()'>"
 			+ "AND g.id = #{genre} " + "</if>" + "<if test='year != null and !year.isEmpty()'>"
-			+ "AND mry.year = #{year} " + "</if>" + "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type "
+			+ "AND mry.year = #{year} " + "</if>" + "<if test='query != null and !query.isEmpty()'>"
+			+ "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
+			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type "
 			+ "ORDER BY AVG(s.score) DESC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getTVAvgScoreListDesc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>" + "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) score, s.v_img, s.video_type "
 			+ "FROM score s " + "LEFT JOIN tv_countries mc ON s.v_id = mc.tv_id "
@@ -99,10 +106,13 @@ public interface ScoreMapper {
 			+ "WHERE s.video_type = 'tv' " + "<if test='country != null and !country.isEmpty()'>"
 			+ "AND c.short_name = #{country} " + "</if>" + "<if test='genre != null and !genre.isEmpty()'>"
 			+ "AND g.id = #{genre} " + "</if>" + "<if test='year != null and !year.isEmpty()'>"
-			+ "AND mry.year = #{year} " + "</if>" + "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type "
+			+ "AND mry.year = #{year} " + "</if>" + "<if test='query != null and !query.isEmpty()'>"
+			+ "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
+			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type "
 			+ "ORDER BY AVG(s.score) ASC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getTVAvgScoreListAsc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>"
 			+ "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) AS score, s.v_img, s.video_type, subquery.score_count AS count "
@@ -115,10 +125,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type, subquery.score_count "
 			+ "ORDER BY subquery.score_count DESC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getMovieScoresCountDesc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>"
 			+ "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) AS score, s.v_img, s.video_type, subquery.score_count AS count "
@@ -131,10 +143,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type, subquery.score_count "
 			+ "ORDER BY subquery.score_count ASC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getMovieScoresCountAsc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>"
 			+ "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) AS score, s.v_img, s.video_type, subquery.score_count AS count "
@@ -146,10 +160,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type, subquery.score_count "
 			+ "ORDER BY subquery.score_count DESC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getTVScoresCountDesc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 
 	@Select("<script>"
 			+ "SELECT s.v_id, s.video_name, ROUND(AVG(s.score), 2) AS score, s.v_img, s.video_type, subquery.score_count AS count "
@@ -161,10 +177,12 @@ public interface ScoreMapper {
 			+ "<if test='country != null and !country.isEmpty()'>" + "AND c.short_name = #{country} " + "</if>"
 			+ "<if test='genre != null and !genre.isEmpty()'>" + "AND g.id = #{genre} " + "</if>"
 			+ "<if test='year != null and !year.isEmpty()'>" + "AND mry.year = #{year} " + "</if>"
+			+ "<if test='query != null and !query.isEmpty()'>" + "AND LOWER(s.video_name) LIKE CONCAT('%', LOWER(#{query}), '%') " + "</if>"
 			+ "GROUP BY s.v_id, s.video_name, s.v_img, s.video_type, subquery.score_count "
 			+ "ORDER BY subquery.score_count ASC " + "LIMIT #{limit} OFFSET #{offset};" + "</script>")
 	List<Score> getTVScoresCountAsc(@Param("limit") int limit, @Param("offset") int offset,
-			@Param("country") String country, @Param("genre") String genre, @Param("year") String year);
+			@Param("country") String country, @Param("genre") String genre, @Param("year") String year,
+			@Param("query") String query);
 	
 	@Select("<script>" +
 	        "SELECT p.v_id, p.video_type, p.popularity, " +
