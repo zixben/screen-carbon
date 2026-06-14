@@ -179,11 +179,14 @@ $(document).ready(function() {
 				updateMediaPagination(num, { totalPages: totalPages });
 
 				if (results.length) {
-					const $tvShows = $("#tv-shows").empty();
-
-					for (const respElement of results) {
-						appendTmdbTvCard($tvShows, respElement, climateMovies);
-					}
+					const requestedPage = num;
+					const requestedQuery = query;
+					resolveDetailedTmdbPosters(results, "tv").then(function(detailedResults) {
+						if (getMediaSearchQuery() !== requestedQuery || Number(window.sessionStorage.getItem("tvNumPage")) !== requestedPage) {
+							return;
+						}
+						renderTmdbTvCards(detailedResults, climateMovies);
+					});
 				} else {
 					showTextMessage("#tv-shows", "No matching TV shows found");
 				}
@@ -203,7 +206,7 @@ $(document).ready(function() {
 
 		const title = respElement.name || respElement.title || "";
 		const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-		const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === resultId && m.videoName === title));
+		const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === resultId && m.videoType === "tv"));
 		const score = matchedClimateMovie ? Number(matchedClimateMovie.score) : null;
 		const isRated = Number.isFinite(score);
 		const borderColor = isRated ? determineBorderColor(score) : "";
@@ -246,6 +249,13 @@ $(document).ready(function() {
 		$info.append($rating).append($("<h5>").text(title));
 		$card.append($imageWrapper).append($info);
 		$container.append($card);
+	}
+
+	function renderTmdbTvCards(results, climateMovies) {
+		const $tvShows = $("#tv-shows").empty();
+		for (const respElement of results) {
+			appendTmdbTvCard($tvShows, respElement, climateMovies);
+		}
 	}
 
 

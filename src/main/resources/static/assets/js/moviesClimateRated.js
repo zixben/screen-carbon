@@ -73,7 +73,7 @@ $(document).ready(function() {
 			const iconPath = determineIconPath(score);
 			const voteAveragePercentage = (score * 10).toFixed(1);
 			const title = video.videoName || "";
-			const posterUrl = safeTmdbStoredImageUrl(video.vImg);
+			const fallbackPosterUrl = safeTmdbStoredImageUrl(video.vImg);
 
 			const $card = $("<div>").addClass("videoCar").on("click", function() {
 				toDesc(videoId);
@@ -84,12 +84,17 @@ $(document).ready(function() {
 				placeholderIcon: "bi bi-film",
 				placeholderClassName: "media-placeholder--poster media-placeholder--compact"
 			};
-			const image = createImageElement(posterUrl, title ? "Poster for " + title : "Film poster", placeholderOptions);
+			const image = createImageElement(fallbackPosterUrl, title ? "Poster for " + title : "Film poster", placeholderOptions);
 			if (image) {
 				$imageWrapper.append(image);
 			} else {
 				$imageWrapper.append(createImagePlaceholder(placeholderOptions.placeholderLabel, placeholderOptions));
 			}
+			resolveTmdbPosterUrl("movie", videoId, video.vImg).then(function(resolvedPosterUrl) {
+				if (resolvedPosterUrl && resolvedPosterUrl !== fallbackPosterUrl) {
+					setImageContent($imageWrapper.get(0), resolvedPosterUrl, title ? "Poster for " + title : "Film poster", placeholderOptions);
+				}
+			});
 			const icon = createImageElement(iconPath, "rating icon", { className: "card-icon" });
 			const $rating = $("<p>");
 			if (icon) {

@@ -179,11 +179,14 @@ $(document).ready(function() {
 				updateMediaPagination(num, { totalPages: totalPages });
 
 				if (results.length) {
-					const $movies = $("#movies").empty();
-
-					for (const respElement of results) {
-						appendTmdbMovieCard($movies, respElement, climateMovies);
-					}
+					const requestedPage = num;
+					const requestedQuery = query;
+					resolveDetailedTmdbPosters(results, "movie").then(function(detailedResults) {
+						if (getMediaSearchQuery() !== requestedQuery || Number(window.sessionStorage.getItem("movieNumPage")) !== requestedPage) {
+							return;
+						}
+						renderTmdbMovieCards(detailedResults, climateMovies);
+					});
 				} else {
 					showTextMessage("#movies", "No matching films found");
 				}
@@ -203,7 +206,7 @@ $(document).ready(function() {
 
 		const title = respElement.title || respElement.name || "";
 		const posterUrl = safeTmdbImageUrl(respElement.poster_path);
-		const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === resultId && m.videoName === title));
+		const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === resultId && m.videoType === "movie"));
 		const score = matchedClimateMovie ? Number(matchedClimateMovie.score) : null;
 		const isRated = Number.isFinite(score);
 		const borderColor = isRated ? determineBorderColor(score) : "";
@@ -246,6 +249,13 @@ $(document).ready(function() {
 		$info.append($rating).append($("<h5>").text(title));
 		$card.append($imageWrapper).append($info);
 		$container.append($card);
+	}
+
+	function renderTmdbMovieCards(results, climateMovies) {
+		const $movies = $("#movies").empty();
+		for (const respElement of results) {
+			appendTmdbMovieCard($movies, respElement, climateMovies);
+		}
 	}
 
 	

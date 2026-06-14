@@ -157,7 +157,7 @@ function loadSearch(type, page) {
 	])
 		.then(function(results) {
 			if (requestId !== searchState.requestId) {
-				return;
+				return null;
 			}
 
 			const response = results[0] || {};
@@ -167,14 +167,29 @@ function loadSearch(type, page) {
 
 			if (normalizedPage > totalPages) {
 				loadSearch(normalizedType, totalPages);
+				return null;
+			}
+
+			const safeResults = filterSafeTmdbResults(response.results);
+			return resolveDetailedTmdbPosters(safeResults, normalizedType).then(function(detailedResults) {
+				return {
+					climateVideo: climateVideo,
+					results: detailedResults,
+					totalPages: totalPages,
+					totalResults: totalResults
+				};
+			});
+		})
+		.then(function(searchResult) {
+			if (!searchResult || requestId !== searchState.requestId) {
 				return;
 			}
 
-			searchState.totalPages = totalPages;
+			searchState.totalPages = searchResult.totalPages;
 			searchState.page = normalizedPage;
-			setSearchSummary(formatSearchSummary(totalResults, normalizedType));
-			renderResults(filterSafeTmdbResults(response.results), normalizedType, climateVideo);
-			updateMediaPagination(normalizedPage, { totalPages: totalPages });
+			setSearchSummary(formatSearchSummary(searchResult.totalResults, normalizedType));
+			renderResults(searchResult.results, normalizedType, searchResult.climateVideo);
+			updateMediaPagination(normalizedPage, { totalPages: searchResult.totalPages });
 		})
 		.catch(function(error) {
 			if (requestId !== searchState.requestId) {

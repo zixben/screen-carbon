@@ -101,7 +101,7 @@ $(document).ready(function() {
 				return;
 			}
 
-			const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === id && m.videoName === title));
+			const matchedClimateMovie = climateMovies.find(m => (Number(m.vId) === id && m.videoType === media_type));
 			if (matchedClimateMovie) {
 				vote_average = Number(matchedClimateMovie.score);
 			}

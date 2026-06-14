@@ -50,6 +50,16 @@ function safeTmdbStoredImageUrl(url) {
     }
 }
 
+function safeTmdbImageSource(value) {
+    if (typeof value !== "string" || value.trim() === "") {
+        return "";
+    }
+    const source = value.trim();
+    return source.startsWith("https://")
+        ? safeTmdbStoredImageUrl(source)
+        : safeTmdbImageUrl(source);
+}
+
 function safeVideoType(value) {
     return value === "movie" || value === "tv" ? value : "";
 }
@@ -60,6 +70,58 @@ function isSafeTmdbMedia(media) {
 
 function filterSafeTmdbResults(results) {
     return Array.isArray(results) ? results.filter(isSafeTmdbMedia) : [];
+}
+
+function fetchTmdbMediaDetail(mediaType, id) {
+    const safeType = safeVideoType(mediaType);
+    const safeId = safePositiveInteger(id);
+    if (!safeType || safeId === null) {
+        return Promise.resolve(null);
+    }
+
+    return new Promise(function (resolve) {
+        $.ajax({
+            url: "https://api.themoviedb.org/3/" + safeType + "/" + safeId,
+            method: "get",
+            headers: {
+                "accept": "application/json"
+            },
+            success: function (response) {
+                resolve(isSafeTmdbMedia(response) ? response : null);
+            },
+            error: function () {
+                resolve(null);
+            }
+        });
+    });
+}
+
+function resolveDetailedTmdbPosters(results, mediaType) {
+    const safeType = safeVideoType(mediaType);
+    if (!safeType || !Array.isArray(results) || !results.length) {
+        return Promise.resolve(Array.isArray(results) ? results : []);
+    }
+
+    return Promise.all(results.map(function (result) {
+        const resultId = safePositiveInteger(result && result.id);
+        if (resultId === null) {
+            return Promise.resolve(result);
+        }
+
+        return fetchTmdbMediaDetail(safeType, resultId).then(function (details) {
+            if (details && details.poster_path) {
+                return Object.assign({}, result, { poster_path: details.poster_path });
+            }
+            return result;
+        });
+    }));
+}
+
+function resolveTmdbPosterUrl(mediaType, id, fallbackImage) {
+    const fallbackUrl = safeTmdbImageSource(fallbackImage);
+    return fetchTmdbMediaDetail(mediaType, id).then(function (details) {
+        return details && details.poster_path ? safeTmdbImageUrl(details.poster_path) || fallbackUrl : fallbackUrl;
+    });
 }
 
 function enhanceFilterSelects(root) {
