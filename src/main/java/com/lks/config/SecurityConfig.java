@@ -43,6 +43,7 @@ public class SecurityConfig {
                     "/finish-rating", "/about", "/privacy-notice", "/signup", "/login", "/reset-password**",
                     "/update-password", "/logout",
                     "/assets/**", "/css/**", "/js/**", "/plugins/**", "/table/**",
+                    "/phpmyadmin", "/phpmyadmin/**",
                     "/tmdb/**",
                     "/user/me", "/user/getCode", "/user/login", "/user/save", "/user/check-username", "/user/check-email",
                     "/user/password-recovery", "/user/update-password",
